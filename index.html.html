@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>BattleFish</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+:root{
+  --bg:#04080f;--bg2:#080f1c;--bg3:#0e1828;--bg4:#162234;
+  --border:#2a4060;--border2:#3a5578;
+  --text:#f0f6ff;--text2:#a8bdd4;--text3:#5a7a9e;
+  --blue:#4f8ef7;--blue2:#1d6ef5;--blue3:#0f3d9e;
+  --green:#22c55e;--green2:#16a34a;
+  --amber:#f59e0b;--red:#ef4444;--red2:#b91c1c;
+  --teal:#14b8a6;--purple:#a78bfa;--gold:#ffd700;
+  --r:12px;--rl:18px;--rxl:24px;
+  --t:.18s cubic-bezier(.4,0,.2,1);
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.5;overflow-x:hidden;max-width:430px;margin:0 auto}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* LANDING */
+#landing{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:0 22px 50px}
+#ocean-bg{position:absolute;inset:0;background:linear-gradient(180deg,#010a18 0%,#011830 30%,#02284f 60%,#021530 100%);z-index:0}
+#ocean-glow{position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:500px;height:500px;background:radial-gradient(ellipse,rgba(59,130,246,.12) 0%,transparent 65%);z-index:0;pointer-events:none}
+#bubble-container{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.bubble{position:absolute;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(160,210,255,.55),rgba(80,160,230,.08));border:1.5px solid rgba(140,200,255,.65);box-shadow:0 0 5px rgba(100,180,255,.25),inset 0 0 4px rgba(255,255,255,.18);animation:bubRise linear infinite;pointer-events:none}
+@keyframes bubRise{0%{transform:translateY(0) translateX(0);opacity:0}5%{opacity:1}50%{transform:translateY(-50vh) translateX(var(--dx,8px))}95%{opacity:.7}100%{transform:translateY(-105vh) translateX(var(--dx2,-8px));opacity:0}}
+.land-content{position:relative;z-index:2;text-align:center;width:100%;margin-top:20px}
+.land-logo{font-family:'Bebas Neue',sans-serif;font-size:72px;color:#fff;letter-spacing:2px;line-height:1;margin-bottom:6px;text-shadow:0 0 60px rgba(59,130,246,.7),0 4px 20px rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;gap:4px}
+.land-logo span{color:#60a5fa}
+.land-slogan{font-size:20px;font-weight:600;color:rgba(255,255,255,.85);margin-bottom:24px;font-style:italic}
+.auth-tabs{display:flex;gap:5px;background:rgba(0,0,0,.4);border:1px solid rgba(80,130,200,.3);border-radius:var(--rxl);padding:4px;margin-bottom:14px;width:100%}
+.auth-tab{flex:1;padding:9px;border:none;background:transparent;color:rgba(255,255,255,.5);border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;transition:var(--t);font-family:'Inter',sans-serif}
+.auth-tab.active{background:var(--blue2);color:#fff;box-shadow:0 4px 15px rgba(29,110,245,.4)}
+.land-card{background:rgba(8,15,28,.75);border:1px solid rgba(80,130,200,.35);border-radius:var(--rxl);padding:20px 18px;backdrop-filter:blur(20px);width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.lf label{font-size:10px;color:rgba(255,255,255,.5);font-weight:700;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.07em}
+.lf input{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(80,130,200,.3);border-radius:var(--r);padding:12px 14px;color:#fff;font-size:14px;outline:none;transition:var(--t);margin-bottom:10px;font-family:'Inter',sans-serif}
+.lf input:focus{border-color:rgba(59,130,246,.6);background:rgba(59,130,246,.06)}
+.btn-join{width:100%;background:var(--blue2);color:#fff;border:none;border-radius:var(--rl);padding:16px;font-size:16px;font-weight:800;cursor:pointer;transition:var(--t);letter-spacing:.04em;margin-bottom:10px;font-family:'Inter',sans-serif}
+.btn-join:hover{background:var(--blue);transform:translateY(-1px);box-shadow:0 10px 30px rgba(29,110,245,.5)}
+.btn-outline{width:100%;background:transparent;color:rgba(255,255,255,.8);border:1px solid rgba(80,140,210,.4);border-radius:var(--rl);padding:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.csel-wrap{position:relative;margin-bottom:10px}
+.csel-btn{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(80,130,200,.3);border-radius:var(--r);padding:12px 14px;color:#fff;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:'Inter',sans-serif;transition:var(--t);text-align:left}
+.csel-btn:hover{border-color:rgba(59,130,246,.5)}
+.csel-dd{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#0a1520;border:1px solid rgba(59,130,246,.4);border-radius:var(--r);z-index:9999;display:none;box-shadow:0 10px 30px rgba(0,0,0,.7);max-height:260px;overflow-y:auto}
+.csel-dd.open{display:block}
+.csel-cat{padding:7px 14px 4px;font-size:9px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.1em;background:rgba(29,110,245,.08);border-bottom:1px solid rgba(59,130,246,.15)}
+.csel-opt{padding:9px 14px;font-size:12px;color:#e0eeff;cursor:pointer;transition:.12s;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:6px}
+.csel-opt:hover{background:rgba(59,130,246,.2);color:#fff}
+.csel-opt.sel{color:var(--blue);font-weight:700}
+.tag-btn{background:rgba(255,255,255,.04);border:1px solid rgba(80,130,200,.25);border-radius:20px;padding:6px 12px;color:rgba(255,255,255,.55);font-size:11px;font-weight:600;cursor:pointer;transition:.15s;font-family:'Inter',sans-serif}
+.tag-btn.selected{background:rgba(29,110,245,.2);border-color:var(--blue);color:var(--blue)}
+.rdrop-section{padding:12px 14px;border-bottom:1px solid rgba(80,130,200,.15)}
+.rdrop-title{font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.rdrop-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:rgba(255,255,255,.82);padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.rdrop-row:last-of-type{border-bottom:none}
+.rdrop-xp{color:var(--amber);font-weight:700;font-size:11px;text-align:right;white-space:nowrap;margin-left:8px}
+.rdrop-cap{color:var(--text2);font-weight:400;font-size:10px;margin-left:4px}
+.rdrop-note{font-size:10px;color:rgba(255,255,255,.4);margin-top:7px;font-style:italic;line-height:1.5}
+
+/* APP */
+#app{display:none;flex-direction:column;min-height:100vh}
+#topnav{background:rgba(4,8,15,.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;height:48px;padding:0 10px;gap:6px;position:sticky;top:0;z-index:200}
+.logo-sm{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff;letter-spacing:1.5px;display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.logo-sm span{color:var(--blue)}
+.nav-right-top{margin-left:auto;display:flex;align-items:center;gap:5px;flex-shrink:0}
+.pill{display:inline-flex;align-items:center;gap:3px;border-radius:20px;padding:4px 8px;font-size:11px;font-weight:700;white-space:nowrap}
+.pill-fire{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.25);color:var(--amber)}
+.pill-xp{background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);color:var(--blue)}
+.icon-btn{background:none;border:none;color:var(--text2);cursor:pointer;position:relative;padding:4px;border-radius:7px;font-size:15px;line-height:1;transition:var(--t);width:28px;height:28px;display:flex;align-items:center;justify-content:center}
+.ndot{width:6px;height:6px;background:var(--red);border-radius:50%;position:absolute;top:2px;right:2px;border:1.5px solid var(--bg)}
+.ava-btn{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue2),var(--blue3));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;cursor:pointer;border:2px solid rgba(59,130,246,.3)}
+.page{display:none;padding:12px 12px 80px;animation:fadeUp .22s ease;overflow-x:hidden;width:100%}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+#bottomnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(8,14,28,.98);border-top:1px solid rgba(60,100,160,.4);display:flex;height:62px;z-index:200;backdrop-filter:blur(20px)}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;color:rgba(255,255,255,.75);cursor:pointer;transition:var(--t);padding:0}
+.tab-btn.active{color:#fff}
+.tab-btn.active .tl{color:var(--blue)}
+.tab-btn .ti{font-size:22px;line-height:1}
+.tab-btn .tl{font-size:10px;font-weight:600;letter-spacing:.02em}
+.tab-upload{flex:1;display:flex;align-items:center;justify-content:center;border:none;background:none;cursor:pointer;padding:0}
+.upload-orb{width:52px;height:52px;background:linear-gradient(145deg,#3b8ef8,#1a5fd4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;margin-top:-18px;box-shadow:0 0 0 3px rgba(8,14,28,1),0 0 0 5px rgba(59,130,246,.35),0 8px 24px rgba(29,110,245,.65),inset 0 2px 4px rgba(255,255,255,.3),inset 0 -2px 4px rgba(0,0,0,.3);transition:var(--t);position:relative;overflow:hidden}
+.upload-orb::before{content:'';position:absolute;top:6px;left:10px;width:32px;height:12px;background:radial-gradient(ellipse,rgba(255,255,255,.35) 0%,transparent 80%);border-radius:50%;pointer-events:none}
+.tab-upload:hover .upload-orb{transform:scale(1.07)}
+.sec{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;margin-top:20px}
+.sec:first-child{margin-top:0}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px}
+.card-sm{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:11px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.b-tro{background:#1a1200;color:#ffd700;border:1px solid rgba(255,215,0,.35)}
+.b-leg{background:#170d38;color:#a78bfa;border:1px solid rgba(167,139,250,.2)}
+.b-epi{background:#1a0e00;color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
+.b-rar{background:#012e2c;color:#14b8a6;border:1px solid rgba(20,184,166,.2)}
+.b-unc{background:#0a1f3d;color:#60a5fa;border:1px solid rgba(96,165,250,.2)}
+.b-com{background:var(--bg4);color:var(--text2)}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:9px 16px;border-radius:var(--r);border:none;cursor:pointer;font-size:13px;font-weight:600;transition:var(--t);font-family:'Inter',sans-serif}
+.btn:active{transform:scale(.96)}
+.btn-p{background:var(--blue2);color:#fff}.btn-p:hover{background:var(--blue)}
+.btn-g{background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--border2)}.btn-g:hover{background:rgba(255,255,255,.08)}
+.btn-d{background:rgba(239,68,68,.08);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.btn-big{width:100%;justify-content:center;padding:14px;font-size:15px;font-weight:800;border-radius:var(--rl)}
+.srow{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.slbl{color:var(--text2);font-size:10px;width:28px;flex-shrink:0;font-weight:700}
+.strk{flex:1;background:rgba(255,255,255,.06);border-radius:20px;height:4px;overflow:hidden}
+.sfil{height:100%;border-radius:20px;transition:.6s}
+.sval{font-size:11px;font-weight:700;width:22px;text-align:right}
+.ava{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.post{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px;margin-bottom:10px}
+.post-img{background:var(--bg3);border-radius:var(--r);height:220px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;border:1px solid var(--border);font-size:72px;overflow:hidden}
+.post-img img{width:100%;height:100%;object-fit:cover}
+.post-acts{display:flex;gap:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.05)}
+.act-btn{background:none;border:none;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:4px;font-size:13px;padding:5px 0;transition:var(--t)}
+.act-btn:hover{color:var(--text)}.act-btn.liked{color:var(--red)}
+.tag{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.15);border-radius:20px;padding:2px 9px;font-size:11px;color:var(--blue);display:inline-block;margin:2px}
+.tabs{display:flex;gap:3px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r);padding:3px;margin-bottom:12px}
+.tab{flex:1;padding:7px 4px;border:none;background:none;color:var(--text2);border-radius:9px;cursor:pointer;font-size:11px;font-weight:500;transition:var(--t)}
+.tab.active{background:var(--bg4);color:var(--text);font-weight:700;border:1px solid var(--border2)}
+.nitem{display:flex;align-items:center;gap:10px;padding:11px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);margin-bottom:8px}
+.lb-row{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:var(--r);transition:var(--t);cursor:pointer}
+.lb-row:hover{background:rgba(255,255,255,.03)}
+.lb-me{background:rgba(29,110,245,.06);border:1px solid rgba(29,110,245,.15);border-radius:var(--r)}
+.fld{margin-bottom:10px}
+.fld label{font-size:10px;color:var(--text2);margin-bottom:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.fld input,.fld textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:var(--r);padding:10px 12px;color:var(--text);font-size:13px;outline:none;transition:var(--t);font-family:'Inter',sans-serif}
+.fld input:focus{border-color:rgba(59,130,246,.5)}
+.fish-db-row{display:flex;align-items:center;gap:9px;padding:10px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:var(--t)}
+.fish-db-row:hover{background:rgba(255,255,255,.03)}
+.fish-db-row:last-child{border-bottom:none}
+.modal-overlay{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--bg2);border:1px solid rgba(255,255,255,.08);border-radius:var(--rxl);width:100%;max-width:400px;padding:20px;max-height:88vh;overflow-y:auto;animation:scaleIn .22s ease;box-shadow:0 30px 80px rgba(0,0,0,.7)}
+@keyframes scaleIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-head h2{font-size:16px;font-weight:800}
+.modal-close{background:rgba(255,255,255,.06);border:none;color:var(--text2);font-size:18px;cursor:pointer;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.algo-badge{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);border-radius:var(--r);padding:8px 10px;font-size:11px;color:var(--purple);display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.match-score{display:inline-flex;align-items:center;gap:4px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;color:var(--green)}
+/* TCG Cards */
+.battle-arena{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:16px}
+.tcg-card{border-radius:14px;overflow:hidden;position:relative;transition:transform .3s ease,box-shadow .3s ease;aspect-ratio:2/3;display:flex;flex-direction:column}
+.tcg-card:hover{transform:scale(1.03) rotate(-1deg)}
+.tcg-card::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.08) 30%,rgba(255,255,255,.18) 38%,rgba(255,255,255,.08) 46%,transparent 56%);background-size:200% 200%;animation:holo 3s ease infinite;pointer-events:none;border-radius:14px}
+@keyframes holo{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.tcg-tro{border:3px solid var(--gold);box-shadow:0 0 20px rgba(255,215,0,.5),0 0 40px rgba(255,215,0,.2)}
+.tcg-leg{border:3px solid #a78bfa;box-shadow:0 0 20px rgba(167,139,250,.5)}
+.tcg-epi{border:3px solid #f59e0b;box-shadow:0 0 20px rgba(245,158,11,.5)}
+.tcg-rar{border:3px solid #14b8a6;box-shadow:0 0 18px rgba(20,184,166,.4)}
+.tcg-unc{border:3px solid #60a5fa;box-shadow:0 0 16px rgba(96,165,250,.4)}
+.tcg-com{border:3px solid #4a5568;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+.tcg-me{border:3px solid var(--blue)!important;box-shadow:0 0 20px rgba(29,110,245,.6),0 0 40px rgba(29,110,245,.2)!important}
+.tcg-header{padding:6px 8px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.5);flex-shrink:0}
+.tcg-name{font-size:9px;font-weight:800;color:#fff;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px}
+.tcg-hp{font-size:9px;font-weight:800;color:var(--red);white-space:nowrap}
+.tcg-photo{flex:1;position:relative;overflow:hidden;background:var(--bg3);min-height:80px}
+.tcg-photo img{width:100%;height:100%;object-fit:cover}
+.tcg-photo-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:44px;background:linear-gradient(135deg,rgba(10,20,40,1),rgba(20,40,80,.8))}
+.tcg-photo-label{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:700;color:rgba(255,255,255,.8);white-space:nowrap}
+.tcg-body{padding:6px 7px;background:rgba(0,0,0,.6);flex-shrink:0}
+.tcg-species{font-size:8px;color:rgba(255,255,255,.55);margin-bottom:4px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tcg-stat-row{display:flex;align-items:center;gap:3px;margin-bottom:3px}
+.tcg-stat-lbl{font-size:7px;font-weight:700;color:rgba(255,255,255,.4);width:20px;flex-shrink:0}
+.tcg-stat-bar{flex:1;height:3px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.tcg-stat-fill{height:100%;border-radius:3px}
+.tcg-stat-val{font-size:7px;font-weight:800;width:14px;text-align:right}
+.tcg-footer{padding:5px 7px;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.tcg-score{font-size:10px;font-weight:900;color:var(--amber)}
+.tcg-badge-sm{font-size:7px;font-weight:700;padding:1px 5px;border-radius:10px}
+.vs-sep{text-align:center;font-family:'Bebas Neue',sans-serif;font-size:28px;color:rgba(255,255,255,.3);letter-spacing:2px;text-shadow:0 0 20px rgba(255,100,100,.3)}
+.res-box{border-radius:var(--rxl);padding:22px;text-align:center;margin-top:14px}
+.rw{background:rgba(34,197,94,.07);border:2px solid var(--green2)}
+.rl{background:rgba(239,68,68,.07);border:2px solid var(--red2)}
+/* Chat */
+#chat-fab{position:fixed;bottom:72px;right:14px;z-index:300;display:flex;flex-direction:column;align-items:flex-end}
+#chat-panel{background:rgba(6,10,20,.97);border:1px solid rgba(59,130,246,.25);border-radius:20px;width:280px;display:none;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.7);margin-bottom:10px;overflow:hidden}
+#chat-panel.open{display:flex}
+#chat-head{background:linear-gradient(135deg,rgba(29,110,245,.25),rgba(14,165,233,.15));border-bottom:1px solid rgba(59,130,246,.2);padding:12px 14px;display:flex;align-items:center;gap:8px}
+#chat-msgs{padding:12px 12px 8px;height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.cmsg-u{align-self:flex-end;background:linear-gradient(135deg,var(--blue2),#1a5fd4);color:#fff;border-radius:14px 14px 4px 14px;padding:8px 12px;font-size:12px;max-width:82%}
+.cmsg-b{align-self:flex-start;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:14px 14px 14px 4px;padding:8px 12px;font-size:12px;max-width:82%;color:var(--text)}
+#chat-qrow{display:flex;gap:5px;padding:8px 10px;border-top:1px solid rgba(255,255,255,.07);flex-wrap:wrap;background:rgba(255,255,255,.02)}
+.cq{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:20px;padding:4px 10px;color:rgba(255,255,255,.7);cursor:pointer;font-size:10px;transition:var(--t);font-family:'Inter',sans-serif}
+.cq:hover{background:rgba(59,130,246,.2);color:#fff}
+#chat-irow{border-top:1px solid rgba(255,255,255,.07);padding:8px 10px;display:flex;gap:6px;background:rgba(255,255,255,.02)}
+#chat-inp{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:7px 12px;color:var(--text);font-size:12px;outline:none;font-family:'Inter',sans-serif}
+#chat-inp:focus{border-color:rgba(59,130,246,.5)}
+.csend{background:var(--blue2);border:none;border-radius:50%;width:30px;height:30px;color:#fff;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.csend:hover{background:var(--blue)}
+#chat-fab-btn{width:54px;height:54px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--t)}
+#chat-fab-btn:hover{transform:scale(1.08)}
+#chat-fab-btn svg{width:38px;height:38px;filter:drop-shadow(0 4px 14px rgba(0,0,0,.4))}
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<div id="landing">
+  <div id="ocean-bg"></div><div id="ocean-glow"></div><div id="bubble-container"></div>
+  <div class="land-content">
+    <div class="land-logo">Battle<span>Fish</span></div>
+    <div class="land-slogan">Your catch, their crush!</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchAuth('login')">Connexion</button>
+      <button class="auth-tab" id="tab-reg" onclick="switchAuth('register')">Inscription</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="land-card" id="form-login">
+      <div class="lf">
+        <label>Email</label><input type="email" value="demo@battlefish.app">
+        <label>Mot de passe <span id="pw-toggle" onclick="togglePw()" style="color:var(--blue);cursor:pointer;font-size:10px;float:right;font-weight:400;text-transform:none">Afficher</span></label>
+        <input type="password" id="pw-inp" value="demo1234">
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.3);text-align:center;margin-bottom:14px">Compte démo — identifiants pré-remplis</div>
+      <button class="btn-join" onclick="doLogin()">JOIN THE BATTLE →</button>
+      <button class="btn-outline" onclick="switchAuth('register')">Créer un compte</button>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="land-card" id="form-reg" style="display:none">
+      <div class="lf">
+        <label>Pseudo</label><input type="text" id="reg-pseudo" placeholder="@monpseudo">
+        <label>Email</label><input type="email" id="reg-email" placeholder="email@example.com">
+        <label>Mot de passe</label><input type="password" id="reg-pw" placeholder="••••••••">
+      </div>
+      <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:var(--r);padding:12px 14px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:800;color:var(--amber);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">⚠️ Vérification d'âge obligatoire</div>
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:8px">
+          <input type="checkbox" id="age-check" style="margin-top:2px;width:16px;height:16px;accent-color:var(--blue);flex-shrink:0">
+          <span style="font-size:12px;color:rgba(255,255,255,.85);line-height:1.5">J'atteste avoir <strong style="color:#fff">18 ans ou plus</strong>. BattleFish est réservé aux adultes.</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:8px">
+          <input type="checkbox" id="cgu-check" style="margin-top:2px;width:16px;height:16px;accent-color:var(--blue);flex-shrink:0">
+          <span style="font-size:12px;color:rgba(255,255,255,.85);line-height:1.5">J'accepte les <span onclick="openLegal('cgu')" style="color:var(--blue);cursor:pointer;text-decoration:underline">CGU</span> et la <span onclick="openLegal('confidentialite')" style="color:var(--blue);cursor:pointer;text-decoration:underline">politique de confidentialité</span></span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+          <input type="checkbox" id="rgpd-check" style="margin-top:2px;width:16px;height:16px;accent-color:var(--blue);flex-shrink:0">
+          <span style="font-size:12px;color:rgba(255,255,255,.85);line-height:1.5">J'accepte le traitement de mes données conformément au <span onclick="openLegal('rgpd')" style="color:var(--blue);cursor:pointer;text-decoration:underline">RGPD</span></span>
+        </label>
+      </div>
+      <div style="background:rgba(29,110,245,.06);border:1px solid rgba(29,110,245,.15);border-radius:var(--r);padding:10px 12px;margin-bottom:12px;font-size:11px;color:rgba(255,255,255,.55);line-height:1.6">
+        🛡️ BattleFish applique une modération stricte. Tout contenu inapproprié entraîne une suspension immédiate.
+      </div>
+      <button class="btn-join" onclick="doRegister()">JOIN THE BATTLE →</button>
+    </div>
+
+    <!-- RULES -->
+    <div style="width:100%;margin-top:14px">
+      <button id="rules-btn" style="width:100%;background:rgba(30,60,120,.35);border:1px solid rgba(80,130,200,.4);border-radius:50px;padding:12px 20px;color:rgba(255,255,255,.85);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Inter',sans-serif">
+        <span>🎯 Règles du jeu BattleFish</span><span id="rules-arrow" style="font-size:12px;transition:.3s">▼</span>
+      </button>
+      <div id="rules-dropdown" style="display:none;background:#06090f;border:1px solid rgba(80,130,200,.35);border-radius:18px;margin-top:6px;overflow-y:auto">
+        <div class="rdrop-section"><div class="rdrop-title">🎁 Bienvenue</div>
+          <div class="rdrop-row"><span>Création de compte</span><span class="rdrop-xp">+50 XP</span></div>
+          <div class="rdrop-row"><span>1ère photo uploadée</span><span class="rdrop-xp">+30 XP</span></div>
+          <div class="rdrop-row"><span>1er Battle lancé</span><span class="rdrop-xp">+20 XP</span></div>
+        </div>
+        <div class="rdrop-section"><div class="rdrop-title">📸 Upload — XP par rareté</div>
+          <div class="rdrop-row"><span>⚪ Commun ×2</span><span class="rdrop-xp">+15 XP</span></div>
+          <div class="rdrop-row"><span>🟢 Peu commun ×2.5</span><span class="rdrop-xp">+25 XP</span></div>
+          <div class="rdrop-row"><span>🔵 Rare ×3</span><span class="rdrop-xp">+35 XP</span></div>
+          <div class="rdrop-row"><span>🟠 Épique ×4</span><span class="rdrop-xp">+65 XP</span></div>
+          <div class="rdrop-row"><span>🟣 Légendaire ×5</span><span class="rdrop-xp">+110 XP</span></div>
+          <div class="rdrop-row"><span>🏆 Trophée ×6</span><span class="rdrop-xp">+180 XP + 500 XP bonus</span></div>
+        </div>
+        <div class="rdrop-section"><div class="rdrop-title">⚔️ Battles</div>
+          <div class="rdrop-row"><span>Participer (défaite)</span><span class="rdrop-xp">+20 XP</span></div>
+          <div class="rdrop-row"><span>Victoire</span><span class="rdrop-xp">+90 XP</span></div>
+          <div class="rdrop-row"><span>Victoire vs niveau sup.</span><span class="rdrop-xp">+130 XP</span></div>
+          <div class="rdrop-row"><span>Victoire avec Trophée ×6</span><span class="rdrop-xp">+200 XP bonus</span></div>
+        </div>
+        <div class="rdrop-section"><div class="rdrop-title">🔥 Combos</div>
+          <div class="rdrop-row"><span>3 victoires consécutives</span><span class="rdrop-xp">+50 XP</span></div>
+          <div class="rdrop-row"><span>5 victoires consécutives</span><span class="rdrop-xp">+100 XP</span></div>
+          <div class="rdrop-row"><span>10 victoires consécutives</span><span class="rdrop-xp">+250 XP · cadre doré</span></div>
+        </div>
+        <div class="rdrop-section" style="border-bottom:none"><div class="rdrop-title">🏅 Grades</div>
+          <div class="rdrop-row"><span style="color:#9ca3af">Niv. 1–10</span><span>🪨 Amateur</span></div>
+          <div class="rdrop-row"><span style="color:#34d399">Niv. 11–20</span><span>🌿 Confirmé</span></div>
+          <div class="rdrop-row"><span style="color:#60a5fa">Niv. 21–30</span><span>💧 Expert</span></div>
+          <div class="rdrop-row"><span style="color:#a78bfa">Niv. 41–50</span><span>💜 Chasseur</span></div>
+          <div class="rdrop-row"><span style="color:#fbbf24">Niv. 51–60</span><span>🥇 Légende</span></div>
+          <div class="rdrop-row"><span style="color:#ffd700;font-weight:800">Niv. 91–100</span><span>👑 DIEU DE LA PÊCHE</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:28px;padding-bottom:10px;text-align:center">
+      <div style="display:flex;justify-content:center;align-items:center;gap:36px;margin-bottom:14px">
+        <a href="https://www.youtube.com/@fabfishing" target="_blank" style="text-decoration:none"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="4" fill="#FF0000"/><path d="M8.3 12.2V7.8L12.5 10l-4.2 2.2z" fill="white"/></svg></a>
+        <a href="https://www.tiktok.com/@fabfishing" target="_blank" style="text-decoration:none"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="4" fill="#010101"/><path d="M13.8 4.2a3.8 3.8 0 01-.9-2.5H10v11c0 1-.9 1.9-1.9 1.9s-1.9-.9-1.9-1.9.9-1.9 1.9-1.9c.2 0 .4 0 .5.1V8c-.2 0-.4 0-.5 0C5.5 8 3.3 10.2 3.3 13s2.2 5 4.8 5 4.8-2.2 4.8-5V8.2c1 .6 2.1 1 3.3 1V6.4c-.9 0-1.8-.8-2.4-2.2z" fill="white"/></svg></a>
+        <a href="https://www.instagram.com/fabfishing.officiel" target="_blank" style="text-decoration:none"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><defs><linearGradient id="ig2" x1="0" y1="20" x2="20" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#f09433"/><stop offset="50%" stop-color="#dc2743"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs><rect width="20" height="20" rx="4" fill="url(#ig2)"/><rect x="4" y="4" width="12" height="12" rx="3.5" stroke="white" stroke-width="1.5"/><circle cx="10" cy="10" r="3" stroke="white" stroke-width="1.5"/><circle cx="14" cy="6" r="1" fill="white"/></svg></a>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.88);margin-bottom:4px">FabFishing</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.45)">Fondateur de BattleFish</div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+<div id="topnav">
+  <div class="logo-sm" onclick="show('home')">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;margin-right:-4px"><line x1="1" y1="4" x2="19" y2="4" stroke="white" stroke-width="1.5" stroke-linecap="round"/><line x1="5" y1="8" x2="19" y2="8" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round" opacity=".85"/><line x1="8" y1="12" x2="19" y2="12" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity=".65"/><line x1="11" y1="16" x2="19" y2="16" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round" opacity=".45"/></svg>
+    Battle<span>Fish</span>
+  </div>
+  <div class="nav-right-top">
+    <div class="pill pill-fire">🔥 7</div>
+    <div class="pill pill-xp">⚡ 648</div>
+    <button class="icon-btn" onclick="show('notifs')">🔔<span class="ndot"></span></button>
+    <button class="icon-btn" id="lang-btn" onclick="toggleLang()" style="font-size:9px;font-weight:700;border:1px solid var(--border);border-radius:6px;width:auto;padding:3px 6px;height:22px">FR</button>
+    <div class="ava-btn" onclick="show('profile')">F</div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home" class="page active">
+  <div style="background:linear-gradient(135deg,rgba(11,30,69,.9),rgba(17,45,110,.85));border:1px solid rgba(59,130,246,.2);border-radius:var(--rxl);padding:20px 16px;margin-bottom:14px;display:flex;align-items:center;gap:14px">
+    <div style="flex:1">
+      <div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Maître des Lacs · Rang #5</div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:3px">Bonjour, @fabfishing</div>
+      <div style="color:var(--text2);font-size:12px;margin-bottom:10px">152 XP avant le rang Légendaire</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <div style="flex:1;background:rgba(255,255,255,.06);border-radius:20px;height:6px;overflow:hidden"><div style="width:81%;height:100%;background:linear-gradient(90deg,var(--blue2),#60a5fa);border-radius:20px"></div></div>
+        <span style="font-size:11px;font-weight:700;color:var(--blue)">648/800</span>
+      </div>
+      <div style="display:flex;gap:7px">
+        <button class="btn btn-p" style="font-size:12px" onclick="openBattle()">⚔️ Battle</button>
+        <button class="btn btn-g" style="font-size:12px" onclick="openUpload()">📸 Upload</button>
+      </div>
+    </div>
+    <div style="font-size:50px;opacity:.65">🎣</div>
+  </div>
+  <div class="algo-badge">
+    <span style="font-size:16px">🤖</span>
+    <div><div style="font-weight:700;margin-bottom:1px">Match suggéré par l'algo</div><div style="color:rgba(167,139,250,.7);font-size:10px">@carpeludo · Compatibilité 94%</div></div>
+    <button class="btn btn-p" style="font-size:11px;padding:5px 10px;margin-left:auto" onclick="openBattle()">Défier</button>
+  </div>
+  <div class="g4" style="margin-bottom:14px">
+    <div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:800;color:var(--green)">42</div><div style="font-size:10px;color:var(--text2)">Victoires</div></div>
+    <div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:800;color:var(--amber)">89</div><div style="font-size:10px;color:var(--text2)">Prises</div></div>
+    <div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:800;color:var(--amber)">🔥7</div><div style="font-size:10px;color:var(--text2)">Série</div></div>
+    <div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:800;color:var(--purple)">#5</div><div style="font-size:10px;color:var(--text2)">Rang</div></div>
+  </div>
+  <div class="sec">Activité récente</div>
+  <div class="nitem"><div class="ava" style="width:32px;height:32px;background:#170d38;color:#a78bfa;font-size:11px">S</div><div style="flex:1"><span style="font-weight:600">@saumonberet</span> <span style="color:var(--text2)">a capturé un</span> <span style="color:var(--amber);font-weight:600">Brochet 8.4 kg</span><div style="font-size:10px;color:var(--text3);margin-top:1px">23 min · Loire · 840 pts</div></div><span class="badge b-leg">Légend.</span></div>
+  <div class="nitem"><div class="ava" style="width:32px;height:32px;background:#012e2c;color:var(--teal);font-size:11px">C</div><div style="flex:1"><span style="font-weight:600">@carpeludo</span> <span style="color:var(--text2)">t'a défié</span><div style="font-size:10px;color:var(--text3);margin-top:1px">1h · Algo match 94%</div></div><button class="btn btn-p" style="font-size:11px;padding:4px 9px" onclick="openBattle()">⚔️</button></div>
+  <div class="sec">Défi du jour</div>
+  <div class="card" style="display:flex;align-items:center;gap:10px">
+    <div style="font-size:26px">🎯</div>
+    <div style="flex:1"><div style="font-weight:700;font-size:13px;margin-bottom:2px">Capture un Sandre aujourd'hui</div><div style="font-size:11px;color:var(--text2)">+200 XP · badge Chasseur de Sandre</div></div>
+    <button class="btn btn-g" style="font-size:11px;padding:5px 9px" onclick="openUpload()">Relever</button>
+  </div>
+</div>
+
+<!-- FEED -->
+<div id="feed" class="page">
+  <div class="tabs"><button class="tab active">Pour toi</button><button class="tab">Abonnés</button><button class="tab">Battles live</button></div>
+  <div id="feed-posts"></div>
+</div>
+
+<!-- RANKING -->
+<div id="ranking" class="page">
+  <div class="tabs"><button class="tab active" onclick="switchRank(0)">Jour</button><button class="tab" onclick="switchRank(1)">Semaine</button><button class="tab" onclick="switchRank(2)">Mois</button><button class="tab" onclick="switchRank(3)">Global</button></div>
+  <div id="rank-content" class="card" style="padding:0;overflow:hidden"></div>
+</div>
+
+<!-- FISH DB -->
+<div id="fishdb" class="page">
+  <div style="display:flex;gap:7px;margin-bottom:10px">
+    <input id="fish-search" style="flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:var(--r);padding:10px 13px;color:var(--text);font-size:13px;outline:none;font-family:'Inter',sans-serif" placeholder="Rechercher..." oninput="filterFish(this.value)">
+    <div class="csel-wrap" style="margin-bottom:0;min-width:100px">
+      <div class="csel-btn" onclick="toggleCsel(this)" style="padding:10px 12px;font-size:12px"><span>Zone</span><span style="font-size:10px;opacity:.5">▼</span></div>
+      <div class="csel-dd">
+        <div class="csel-opt sel" onclick="pickCselZone(this,'')">Tout</div>
+        <div class="csel-opt" onclick="pickCselZone(this,'Eau douce')">🏞️ Eau douce</div>
+        <div class="csel-opt" onclick="pickCselZone(this,'Marine')">🌊 Marine</div>
+        <div class="csel-opt" onclick="pickCselZone(this,'Méditerranée')">☀️ Méditerranée</div>
+      </div>
+    </div>
+  </div>
+  <div class="tabs" style="flex-wrap:wrap;gap:2px">
+    <button class="tab active" style="font-size:10px" onclick="filterRarity('')">Tout</button>
+    <button class="tab" style="font-size:10px" onclick="filterRarity('Trophée')">🏆</button>
+    <button class="tab" style="font-size:10px" onclick="filterRarity('Légendaire')">Légend.</button>
+    <button class="tab" style="font-size:10px" onclick="filterRarity('Épique')">Épique</button>
+    <button class="tab" style="font-size:10px" onclick="filterRarity('Rare')">Rare</button>
+    <button class="tab" style="font-size:10px" onclick="filterRarity('Peu commun')">P.Com.</button>
+    <button class="tab" style="font-size:10px" onclick="filterRarity('Commun')">Commun</button>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden"><div id="fish-list"></div></div>
+  <div id="fish-detail"></div>
+</div>
+
+<!-- PROFILE -->
+<div id="profile" class="page">
+  <div class="sec">Ma carte publique</div>
+  <div class="card" style="margin-bottom:12px;background:linear-gradient(135deg,rgba(11,30,69,.95),rgba(17,45,110,.85));border:1px solid rgba(59,130,246,.25)">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      <div id="card-avatar" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--blue2),#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;border:2px solid rgba(59,130,246,.4);flex-shrink:0;overflow:hidden">F</div>
+      <div style="flex:1"><div style="font-size:16px;font-weight:800">@fabfishing</div><div style="font-size:11px;color:var(--text2)">Maître des Lacs · Niveau 12</div><span class="badge b-epi" style="margin-top:4px;display:inline-flex">ÉPIQUE</span></div>
+      <div style="text-align:right"><div style="font-size:10px;color:var(--text3)">Rang global</div><div style="font-size:20px;font-weight:900;color:var(--purple)">#5</div></div>
+    </div>
+    <div class="g4" style="margin-bottom:10px">
+      <div style="background:rgba(0,0,0,.2);border-radius:var(--r);padding:7px;text-align:center"><div style="font-size:15px;font-weight:800;color:var(--green)">42</div><div style="font-size:9px;color:var(--text2)">Victoires</div></div>
+      <div style="background:rgba(0,0,0,.2);border-radius:var(--r);padding:7px;text-align:center"><div style="font-size:15px;font-weight:800;color:var(--blue)">79%</div><div style="font-size:9px;color:var(--text2)">Win Rate</div></div>
+      <div style="background:rgba(0,0,0,.2);border-radius:var(--r);padding:7px;text-align:center"><div style="font-size:15px;font-weight:800;color:var(--amber)">89</div><div style="font-size:9px;color:var(--text2)">Prises</div></div>
+      <div style="background:rgba(0,0,0,.2);border-radius:var(--r);padding:7px;text-align:center"><div style="font-size:15px;font-weight:800;color:var(--amber)">🔥7</div><div style="font-size:9px;color:var(--text2)">Série</div></div>
+    </div>
+    <div style="margin-bottom:10px">
+      <div class="srow"><span class="slbl">ATK</span><div class="strk"><div class="sfil" style="width:85%;background:var(--red)"></div></div><span class="sval" style="color:var(--red)">85</span></div>
+      <div class="srow"><span class="slbl">EF</span><div class="strk"><div class="sfil" style="width:79%;background:var(--blue)"></div></div><span class="sval" style="color:var(--blue)">79</span></div>
+      <div class="srow"><span class="slbl">SPD</span><div class="strk"><div class="sfil" style="width:60%;background:var(--amber)"></div></div><span class="sval" style="color:var(--amber)">60</span></div>
+      <div class="srow"><span class="slbl">HP</span><div class="strk"><div class="sfil" style="width:70%;background:var(--green)"></div></div><span class="sval" style="color:var(--green)">70</span></div>
+    </div>
+    <div style="display:flex;gap:7px;margin-top:10px">
+      <button class="btn btn-p" style="flex:1;justify-content:center;font-size:12px" onclick="openBattle()">⚔️ Défier</button>
+      <button class="btn btn-g" style="flex:1;justify-content:center;font-size:12px">+ Suivre</button>
+    </div>
+  </div>
+
+  <div class="sec">Évolution des prises</div>
+  <div class="card" style="margin-bottom:12px;overflow:hidden">
+    <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+      <div><div style="font-size:24px;font-weight:900;color:var(--blue);line-height:1" id="chart-total">89</div><div style="font-size:10px;color:var(--text2)">prises au total</div></div>
+      <div style="text-align:right"><div style="font-size:16px;font-weight:800;color:var(--green)" id="chart-right">+12 ce mois</div></div>
+    </div>
+    <div style="display:flex;gap:5px;margin-bottom:10px">
+      <button class="btn btn-p" id="btn-m" style="font-size:10px;padding:4px 9px" onclick="switchChart('monthly')">Mensuel</button>
+      <button class="btn btn-g" id="btn-c" style="font-size:10px;padding:4px 9px" onclick="switchChart('cumul')">Cumulé</button>
+      <button class="btn btn-g" id="btn-xp" style="font-size:10px;padding:4px 9px" onclick="switchChart('xp')">XP 26 vs 25</button>
+    </div>
+    <div style="position:relative;height:148px;width:100%;overflow:hidden"><canvas id="prof-canvas" style="display:block;max-width:100%"></canvas></div>
+    <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-top:4px" id="chart-x"></div>
+  </div>
+
+  <div class="sec">Analyse — Hashtags &amp; Espèces</div>
+  <div class="card" style="margin-bottom:12px" id="hashtag-insights">
+    <div style="font-size:11px;color:var(--text2);font-style:italic">Publie des prises avec des hashtags pour voir tes statistiques ici.</div>
+  </div>
+
+  <div class="sec">Informations privées</div>
+  <div class="card" style="margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700">Mon profil</div>
+      <div style="display:flex;gap:8px">
+        <button id="edit-toggle-btn" class="btn btn-g" style="font-size:11px;padding:5px 12px" onclick="toggleEditProfile()">✏️ Modifier</button>
+        <button class="btn btn-d" style="font-size:11px;padding:5px 12px" onclick="doLogout()">Déconnexion</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.06)">
+      <div id="avatar-display" style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--blue2),#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;border:2px solid rgba(59,130,246,.3);flex-shrink:0;overflow:hidden">F</div>
+      <div><div style="font-size:12px;font-weight:600;margin-bottom:5px">Photo de profil</div><label style="cursor:pointer"><input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="handleAvatar(this)"><span class="btn btn-g" style="font-size:11px;padding:5px 12px;cursor:pointer">📷 Choisir</span></label></div>
+    </div>
+    <div id="profile-view">
+      <div style="font-size:12px;color:var(--text2);line-height:2.2">
+        <div>Civilité : <span style="color:var(--text);font-weight:600">M.</span></div>
+        <div>Prénom : <span style="color:var(--text);font-weight:600">Fabien</span></div>
+        <div>Nom : <span style="color:var(--text);font-weight:600">Haller</span></div>
+        <div>Email : <span style="color:var(--text);font-weight:600">demo@battlefish.app</span></div>
+      </div>
+      <div style="margin-top:10px;font-size:10px;color:var(--text3);font-style:italic">🔒 Informations strictement privées.</div>
+    </div>
+    <div id="profile-edit" style="display:none">
+      <div class="g2">
+        <div class="fld"><label>Prénom</label><input type="text" value="Fabien"></div>
+        <div class="fld"><label>Nom</label><input type="text" value="Haller"></div>
+      </div>
+      <div class="fld"><label>Email</label><input type="email" value="demo@battlefish.app"></div>
+      <div class="fld"><label>Pseudo public</label><input type="text" value="@fabfishing"></div>
+      <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:4px" onclick="saveProfile()">💾 Sauvegarder</button>
+    </div>
+  </div>
+
+  <div class="sec">Mes prises publiées</div>
+  <div id="profile-gallery" style="margin-bottom:20px">
+    <div style="text-align:center;padding:24px;color:var(--text2);font-size:12px">📸 Aucune prise publiée.<br>Upload ta première prise !</div>
+  </div>
+
+  <!-- Footer profil -->
+  <div style="border-top:1px solid rgba(255,255,255,.08);margin-top:24px;padding-top:20px;padding-bottom:100px;text-align:center">
+    <div style="display:flex;justify-content:center;align-items:center;gap:24px;margin-bottom:14px">
+      <a href="https://www.youtube.com/@fabfishing" target="_blank" style="text-decoration:none"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="4" fill="#FF0000"/><path d="M8.3 12.2V7.8L12.5 10l-4.2 2.2z" fill="white"/></svg></a>
+      <a href="https://www.tiktok.com/@fabfishing" target="_blank" style="text-decoration:none"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="4" fill="#111"/><path d="M13.8 4.2a3.8 3.8 0 01-.9-2.5H10v11c0 1-.9 1.9-1.9 1.9s-1.9-.9-1.9-1.9.9-1.9 1.9-1.9c.2 0 .4 0 .5.1V8c-.2 0-.4 0-.5 0C5.5 8 3.3 10.2 3.3 13s2.2 5 4.8 5 4.8-2.2 4.8-5V8.2c1 .6 2.1 1 3.3 1V6.4c-.9 0-1.8-.8-2.4-2.2z" fill="white"/></svg></a>
+      <a href="https://www.instagram.com/fabfishing.officiel" target="_blank" style="text-decoration:none"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><defs><linearGradient id="igpro" x1="0" y1="20" x2="20" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#f09433"/><stop offset="50%" stop-color="#dc2743"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs><rect width="20" height="20" rx="4" fill="url(#igpro)"/><rect x="4" y="4" width="12" height="12" rx="3.5" stroke="white" stroke-width="1.5"/><circle cx="10" cy="10" r="3" stroke="white" stroke-width="1.5"/><circle cx="14" cy="6" r="1" fill="white"/></svg></a>
+    </div>
+    <div style="font-size:14px;font-weight:700;color:rgba(255,255,255,.85);margin-bottom:3px">FabFishing</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:18px">Fondateur de BattleFish</div>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);padding:10px 0;margin-bottom:12px">
+      <a onclick="openLegal('mentions')" style="color:rgba(255,255,255,.6);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">Mentions légales</a>
+      <a onclick="openLegal('cgu')" style="color:rgba(255,255,255,.6);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">CGU</a>
+      <a onclick="openLegal('confidentialite')" style="color:rgba(255,255,255,.6);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">Confidentialité</a>
+      <a onclick="openLegal('cookies')" style="color:rgba(255,255,255,.6);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">Cookies</a>
+      <a onclick="openLegal('rgpd')" style="color:rgba(255,255,255,.6);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">RGPD</a>
+      <a onclick="openLegal('dpo')" style="color:rgba(255,255,255,.6);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">DPO</a>
+      <a onclick="openLegal('suppression')" style="color:rgba(255,255,255,.6);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">Supprimer compte</a>
+      <a onclick="openLegal('signalement')" style="color:rgba(255,255,255,.6);font-size:10px;padding:4px 7px;cursor:pointer">Signaler</a>
+    </div>
+    <div style="font-size:9px;color:rgba(255,255,255,.25);margin-bottom:3px">RGPD · dpo@battlefish.com</div>
+    <div style="font-size:9px;color:rgba(255,255,255,.18)">BattleFish © 2026 — FabFishing</div>
+  </div>
+</div>
+
+<!-- NOTIFS -->
+<div id="notifs" class="page">
+  <div class="sec">Notifications</div>
+  <div class="nitem"><div style="font-size:16px">⚔️</div><div style="flex:1;font-size:13px"><strong>@carpeludo</strong> t'a défié<div style="font-size:10px;color:var(--text2);margin-top:1px">1h · Sandre vs Sandre</div></div><button class="btn btn-p" style="font-size:11px;padding:4px 9px" onclick="openBattle()">Voir</button></div>
+  <div class="nitem"><div style="font-size:16px">❤️</div><div style="font-size:13px"><strong>@saumonberet</strong> a aimé ta prise<div style="font-size:10px;color:var(--text2);margin-top:1px">2h · +12 XP</div></div></div>
+  <div class="nitem"><div style="font-size:16px">🏆</div><div style="font-size:13px"><strong>+50 XP</strong> — Victoire !<div style="font-size:10px;color:var(--text2);margin-top:1px">Hier</div></div></div>
+</div>
+
+<div id="bottomnav">
+  <button class="tab-btn active" onclick="show('home');setTab(this)"><span class="ti">🏠</span><span class="tl">Accueil</span></button>
+  <button class="tab-btn" onclick="show('feed');setTab(this)"><span class="ti">⚡</span><span class="tl">Feed</span></button>
+  <button class="tab-upload" onclick="openUpload()"><div class="upload-orb">📸</div></button>
+  <button class="tab-btn" onclick="show('ranking');setTab(this);initRank()"><span class="ti">🏆</span><span class="tl">Top</span></button>
+  <button class="tab-btn" onclick="show('profile');setTab(this);setTimeout(function(){initChart();renderProfilePosts();renderHashtagInsights();},80)"><span class="ti">👤</span><span class="tl">Profil</span></button>
+</div>
+</div>
+
+<!-- MODALS -->
+<div id="legal-modal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto">
+  <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rxl);width:100%;max-width:420px;margin:auto;box-shadow:0 30px 80px rgba(0,0,0,.7)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg2);border-radius:var(--rxl) var(--rxl) 0 0;z-index:1">
+      <div id="legal-title" style="font-size:15px;font-weight:800"></div>
+      <button onclick="closeLegal()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--text2);cursor:pointer;font-size:16px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center">×</button>
+    </div>
+    <div id="legal-body" style="padding:18px;max-height:75vh;overflow-y:auto;font-size:12px;line-height:1.8;color:rgba(255,255,255,.7)"></div>
+  </div>
+</div>
+
+<div id="upload-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-head"><h2>📸 Nouvelle prise</h2><button class="modal-close" onclick="closeUpload()">×</button></div>
+    <label id="upload-drop" style="background:rgba(255,255,255,.03);border:2px dashed rgba(255,255,255,.12);border-radius:var(--rl);padding:0;text-align:center;cursor:pointer;margin-bottom:12px;display:block;overflow:hidden;position:relative;min-height:130px">
+      <input type="file" id="catch-photo-inp" accept="image/*" style="display:none" onchange="handleCatchPhoto(this)">
+      <div id="upload-placeholder" style="padding:28px 20px"><div style="font-size:28px;margin-bottom:5px">📷</div><div style="font-weight:600;margin-bottom:2px;font-size:13px">Appuyer pour ajouter une photo</div><div style="font-size:11px;color:var(--text2)">JPG, PNG · max 10 Mo</div></div>
+      <div id="upload-preview" style="display:none;width:100%;height:160px;position:relative"><img id="upload-preview-img" style="width:100%;height:100%;object-fit:cover"><div style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.6);border-radius:8px;padding:3px 8px;font-size:10px;color:#fff;font-weight:600">✅ Photo ajoutée</div></div>
+    </label>
+    <div class="g2">
+      <div class="fld" style="grid-column:1/-1"><label>Espèce</label>
+        <div class="csel-wrap" style="margin-bottom:0"><div class="csel-btn" onclick="toggleCsel(this)" id="species-btn"><span>Choisir une espèce...</span><span style="font-size:10px;opacity:.5">▼</span></div><div class="csel-dd" id="species-dd"></div></div>
+      </div>
+      <div class="fld"><label>Poids (kg)</label><input type="text" inputmode="decimal" id="w-inp" placeholder="ex : 3.5" oninput="calcPrev()"></div>
+      <div class="fld"><label>Taille (cm)</label><input type="text" inputmode="numeric" id="s-inp" placeholder="ex : 65"></div>
+      <div class="fld"><label>Lieu</label><input type="text" id="loc-inp" placeholder="Loire, lac..."></div>
+      <div class="fld"><label>Technique</label><input type="text" placeholder="Leurre, mouche..."></div>
+    </div>
+    <div class="fld"><label>Description &amp; hashtags</label><textarea rows="2" id="desc-inp" style="background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:var(--r);padding:9px 11px;color:var(--text);font-size:13px;outline:none;width:100%;resize:none;font-family:'Inter',sans-serif" placeholder="#brochet #loire #spinning..."></textarea></div>
+    <div id="sc-prev" style="display:none;border-radius:var(--r);padding:12px;text-align:center;margin-bottom:10px">
+      <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Score estimé</div>
+      <div id="sc-val" style="font-size:28px;font-weight:800">0 pts</div>
+      <div id="sc-badge" style="margin-top:4px"></div>
+      <div id="sc-xp" style="font-size:11px;color:var(--text2);margin-top:4px"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-g" style="flex:1;justify-content:center" onclick="closeUpload()">Annuler</button>
+      <button class="btn btn-p" style="flex:2;justify-content:center;font-weight:800" onclick="submitCatch()">📤 Publier</button>
+    </div>
+  </div>
+</div>
+
+<div id="battle-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-head"><h2>⚔️ Battle Arena</h2><button class="modal-close" onclick="closeBattle()">×</button></div>
+    <div style="font-size:11px;color:var(--text2);text-align:center;margin-bottom:12px">Tes cartes TCG s'affrontent — la meilleure prise l'emporte !</div>
+    <div style="display:flex;gap:6px;margin-bottom:16px">
+      <button id="btn-algo-match" onclick="setBattleMode('algo')" style="flex:1;background:rgba(29,110,245,.2);border:1px solid var(--blue);border-radius:20px;padding:8px;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">🤖 Algo</button>
+      <button id="btn-manual-match" onclick="setBattleMode('manual')" style="flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:20px;padding:8px;color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">👤 Manuel</button>
+    </div>
+    <div class="battle-arena">
+      <div class="tcg-card tcg-epi tcg-me" id="my-card">
+        <div class="tcg-header"><span class="tcg-name" id="my-card-name">@fabfishing</span><span class="tcg-hp">HP 648</span></div>
+        <div class="tcg-photo" id="my-card-photo">
+          <div class="tcg-photo-placeholder" id="my-card-placeholder">🎣</div>
+          <img id="my-card-img" style="display:none;width:100%;height:100%;object-fit:cover">
+          <div class="tcg-photo-label" id="my-card-label">Aucune prise active</div>
+        </div>
+        <div class="tcg-body">
+          <div class="tcg-species" id="my-card-species">Publie une prise pour l'activer</div>
+          <div class="tcg-stat-row"><span class="tcg-stat-lbl">ATK</span><div class="tcg-stat-bar"><div class="tcg-stat-fill" style="width:85%;background:var(--red)"></div></div><span class="tcg-stat-val" style="color:var(--red)">85</span></div>
+          <div class="tcg-stat-row"><span class="tcg-stat-lbl">EF</span><div class="tcg-stat-bar"><div class="tcg-stat-fill" style="width:79%;background:var(--blue)"></div></div><span class="tcg-stat-val" style="color:var(--blue)">79</span></div>
+          <div class="tcg-stat-row"><span class="tcg-stat-lbl">SPD</span><div class="tcg-stat-bar"><div class="tcg-stat-fill" style="width:60%;background:var(--amber)"></div></div><span class="tcg-stat-val" style="color:var(--amber)">60</span></div>
+          <div class="tcg-stat-row"><span class="tcg-stat-lbl">HP</span><div class="tcg-stat-bar"><div class="tcg-stat-fill" style="width:70%;background:var(--green)"></div></div><span class="tcg-stat-val" style="color:var(--green)">70</span></div>
+        </div>
+        <div class="tcg-footer"><span class="tcg-score" id="my-card-score">— pts</span><span class="badge b-epi tcg-badge-sm" id="my-card-badge">ÉPIQUE</span></div>
+      </div>
+      <div class="vs-sep">VS</div>
+      <div class="tcg-card tcg-epi" id="opp-card">
+        <div class="tcg-header"><span class="tcg-name" id="opp-card-name">@carpeludo</span><span class="tcg-hp">HP 820</span></div>
+        <div class="tcg-photo" id="opp-card-photo">
+          <div class="tcg-photo-placeholder">🐟</div>
+          <div class="tcg-photo-label">Sandre · 4.2 kg</div>
+        </div>
+        <div class="tcg-body">
+          <div class="tcg-species" id="opp-card-species">Sander lucioperca</div>
+          <div class="tcg-stat-row"><span class="tcg-stat-lbl">ATK</span><div class="tcg-stat-bar"><div class="tcg-stat-fill" id="oa" style="width:78%;background:var(--red)"></div></div><span class="tcg-stat-val" style="color:var(--red)" id="ova">78</span></div>
+          <div class="tcg-stat-row"><span class="tcg-stat-lbl">EF</span><div class="tcg-stat-bar"><div class="tcg-stat-fill" id="oe" style="width:82%;background:var(--blue)"></div></div><span class="tcg-stat-val" style="color:var(--blue)" id="ove">82</span></div>
+          <div class="tcg-stat-row"><span class="tcg-stat-lbl">SPD</span><div class="tcg-stat-bar"><div class="tcg-stat-fill" id="os" style="width:65%;background:var(--amber)"></div></div><span class="tcg-stat-val" style="color:var(--amber)" id="ovs">65</span></div>
+          <div class="tcg-stat-row"><span class="tcg-stat-lbl">HP</span><div class="tcg-stat-bar"><div class="tcg-stat-fill" id="oh" style="width:87%;background:var(--green)"></div></div><span class="tcg-stat-val" style="color:var(--green)" id="ovh">87</span></div>
+        </div>
+        <div class="tcg-footer"><span class="tcg-score" id="opp-card-score">336 pts</span><span class="badge b-epi tcg-badge-sm" id="opp-badge">ÉPIQUE</span></div>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--text2);margin-bottom:7px;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Choisir l'adversaire</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px">
+      <button class="btn btn-g" style="font-size:11px;padding:5px 9px" onclick="selOpp(this,'@saumonberet','leg','🐊','Brochet commun',92,85,74,88,840)">@saumonberet</button>
+      <button class="btn btn-g" style="font-size:11px;padding:5px 9px" onclick="selOpp(this,'@carpeludo','epi','🐟','Sandre',78,82,65,87,336)">@carpeludo</button>
+      <button class="btn btn-g" style="font-size:11px;padding:5px 9px" onclick="selOpp(this,'@bassman','rar','🐬','Bar commun',72,65,80,78,210)">@bassman</button>
+    </div>
+    <button class="btn btn-p btn-big" onclick="launchDuel()">⚔️ Lancer le Battle</button>
+    <div id="battle-res" style="display:none"></div>
+  </div>
+</div>
+
+<div id="comment-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-head"><h2>💬 Commentaires</h2><button class="modal-close" onclick="closeComments()">×</button></div>
+    <input type="hidden" id="comment-post-id">
+    <div id="comment-list" style="max-height:280px;overflow-y:auto;margin-bottom:14px;padding-right:4px"></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input id="comment-inp" type="text" placeholder="Ton commentaire..." style="flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:var(--r);padding:10px 13px;color:var(--text);font-size:13px;outline:none;font-family:Inter,sans-serif" onkeydown="if(event.key==='Enter')addComment()">
+      <button class="btn btn-p" style="padding:10px 14px" onclick="addComment()">→</button>
+    </div>
+  </div>
+</div>
+
+<div id="photo-modal" class="modal-overlay" style="background:rgba(0,0,0,.95)" onclick="closePhotoModal()">
+  <div style="width:100%;max-width:420px;padding:16px;text-align:center">
+    <img id="photo-modal-img" style="width:100%;border-radius:var(--rl);max-height:70vh;object-fit:contain;box-shadow:0 20px 60px rgba(0,0,0,.8)">
+    <div id="photo-modal-caption" style="margin-top:12px;font-size:13px;font-weight:600;color:rgba(255,255,255,.8)"></div>
+    <div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,.35)">Appuyer pour fermer</div>
+  </div>
+</div>
+
+<!-- CHAT FAB -->
+<div id="chat-fab">
+  <div id="chat-panel">
+    <div id="chat-head">
+      <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--blue2),#0ea5e9);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px">🎣</div>
+      <div style="flex:1"><div style="font-weight:700;font-size:12px;color:#fff">Coach BattleFish</div><div style="font-size:10px;color:#4ade80;display:flex;align-items:center;gap:4px"><span style="width:5px;height:5px;border-radius:50%;background:#4ade80;display:inline-block"></span>En ligne</div></div>
+      <button style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.6);cursor:pointer;font-size:13px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center" onclick="toggleChat()">×</button>
+    </div>
+    <div id="chat-msgs"><div class="cmsg-b">Salut ! Publie une prise avec des hashtags pour que je personnalise mes conseils 🎣</div></div>
+    <div id="chat-qrow">
+      <button class="cq" onclick="qMsg('Max score ?')">Max score ?</button>
+      <button class="cq" onclick="qMsg('Mes stats ?')">Mes stats ?</button>
+      <button class="cq" onclick="qMsg('Conseils ?')">Conseils ?</button>
+    </div>
+    <div id="chat-irow"><input id="chat-inp" placeholder="Ta question..." onkeydown="if(event.key==='Enter')sendChat()"><button class="csend" onclick="sendChat()">→</button></div>
+  </div>
+  <button id="chat-fab-btn" onclick="toggleChat()" title="Coach IA">
+    <svg viewBox="0 0 28 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bubG" x1="2" y1="0" x2="26" y2="26" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#dbeafe"/></linearGradient>
+        <filter id="bubShadow" x="-10%" y="-10%" width="130%" height="150%"><feDropShadow dx="0" dy="3" stdDeviation="2.5" flood-color="rgba(0,0,0,0.35)"/></filter>
+      </defs>
+      <path d="M2 2.5C2 1.4 2.9 0.5 4 0.5H24C25.1 0.5 26 1.4 26 2.5V16.5C26 17.6 25.1 18.5 24 18.5H16L11 25V18.5H4C2.9 18.5 2 17.6 2 16.5V2.5Z" fill="url(#bubG)" filter="url(#bubShadow)"/>
+      <path d="M4 2.5C4 2 4.5 1.5 5 1.5H23C23.5 1.5 24 2 24 2.5V6C24 6.5 23.5 7 23 7H5C4.5 7 4 6.5 4 6V2.5Z" fill="rgba(255,255,255,.55)"/>
+      <circle cx="9" cy="9.5" r="2" fill="#1d6ef5"><animate attributeName="opacity" values="1;0.2;1" dur="1.4s" begin="0s" repeatCount="indefinite"/></circle>
+      <circle cx="14" cy="9.5" r="2" fill="#1d6ef5"><animate attributeName="opacity" values="1;0.2;1" dur="1.4s" begin="0.22s" repeatCount="indefinite"/></circle>
+      <circle cx="19" cy="9.5" r="2" fill="#1d6ef5"><animate attributeName="opacity" values="1;0.2;1" dur="1.4s" begin="0.44s" repeatCount="indefinite"/></circle>
+    </svg>
+  </button>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   BATTLEFISH BETA 1 — JS COMPLET ET PROPRE
+═══════════════════════════════════════════════ */
+
+/* ── MODERATION ENGINE ── */
+var ModerationEngine=(function(){
+  var BANNED=['connard','connasse','salope','pute','putain','enculé','enculer','fdp','fils de pute','pd','tapette','batard','bâtard','merde','cul','bite','chier','niquer','nique','raclure','ordure','abruti','idiot','imbécile','crétin','con','conne','débile','nazi','raciste','nègre','bougnoule','youpin','gouine','travelo','bastard','shit','fuck','asshole','bitch','cunt','nigger','faggot','whore','slut','motherfucker','dickhead','wanker','retard','moron','porn','porno','xxx','sex','nude','naked','nsfw','hentai','onlyfans','hitler','terroriste','violer','viol','pédophile','pedophile','inceste'];
+  function normalize(s){return s.toLowerCase().replace(/3/g,'e').replace(/@/g,'a').replace(/0/g,'o').replace(/1/g,'i').replace(/\$/g,'s').replace(/5/g,'s').replace(/4/g,'a').replace(/7/g,'t').replace(/!/g,'i').replace(/[^a-zàâäéèêëîïôöùûüç\s]/g,'');}
+  function checkText(text,field){
+    if(!text||!text.trim())return{ok:true};
+    var norm=normalize(text);
+    for(var i=0;i<BANNED.length;i++){if(norm.includes(normalize(BANNED[i])))return{ok:false,reason:'Contenu inapproprié dans '+field+'. Merci de respecter la communauté.',severity:'high'};}
+    var words=norm.split(/\s+/).filter(function(w){return w.length>2;});
+    if(words.length>4){var u=new Set(words);if(u.size/words.length<0.35)return{ok:false,reason:'Contenu répétitif détecté.',severity:'low'};}
+    if(text.length>500)return{ok:false,reason:'Texte trop long (500 caractères max).',severity:'low'};
+    return{ok:true};
+  }
+  function checkPhoto(file){
+    if(!file)return{ok:false,reason:'Aucun fichier sélectionné.'};
+    if(!['image/jpeg','image/png','image/webp','image/heic','image/heif'].includes(file.type))return{ok:false,reason:'Format non autorisé. Utilise JPG, PNG ou WebP.'};
+    if(file.size>10*1024*1024)return{ok:false,reason:'Photo trop lourde. Maximum 10 Mo.'};
+    if(file.size<1024)return{ok:false,reason:'Photo invalide ou corrompue.'};
+    if(/(nude|naked|porn|xxx|nsfw|sex|explicit|adult|onlyfans|hentai|erotic)/i.test(file.name))return{ok:false,reason:'Photo refusée — nom de fichier inapproprié.',severity:'high'};
+    return{ok:true};
+  }
+  var rl={post:{max:10,win:60000,log:[]},comment:{max:20,win:60000,log:[]},like:{max:50,win:60000,log:[]}};
+  function checkRate(action){
+    var r=rl[action];if(!r)return{ok:true};
+    var now=Date.now();r.log=r.log.filter(function(t){return now-t<r.win;});
+    if(r.log.length>=r.max)return{ok:false,reason:'Trop d\'actions rapides. Attends un moment.'};
+    r.log.push(now);return{ok:true};
+  }
+  var reports=[];
+  function report(postId,reason){reports.push({postId:postId,reason:reason,ts:Date.now()});return{ok:true,msg:'Signalement envoyé. Notre équipe examine ce contenu sous 48h. Merci 🛡️'};}
+  function showAlert(msg,severity){
+    var el=document.getElementById('mod-alert');
+    if(!el){el=document.createElement('div');el.id='mod-alert';el.style.cssText='position:fixed;top:56px;left:50%;transform:translateX(-50%);border-radius:12px;padding:11px 16px;font-size:12px;font-weight:600;z-index:2000;max-width:360px;width:90%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.5);transition:opacity .3s';document.body.appendChild(el);}
+    var high=severity==='high';
+    el.style.background=high?'#7f1d1d':'#1e3a5f';el.style.border='1px solid '+(high?'#ef4444':'#3b82f6');el.style.color=high?'#fca5a5':'#93c5fd';
+    el.style.opacity='1';el.style.display='block';el.textContent=(high?'🚫 ':'⚠️ ')+msg;
+    clearTimeout(el._t);el._t=setTimeout(function(){el.style.opacity='0';setTimeout(function(){el.style.display='none';},300);},4500);
+  }
+  function log(type,content,reason){console.warn('[BattleFish Mod] '+type+' | '+reason+' | '+String(content).substring(0,60));}
+  return{checkText:checkText,checkPhoto:checkPhoto,checkRate:checkRate,report:report,showAlert:showAlert,log:log};
+})();
+
+/* ── FISH DB ── */
+var FISH_DB=[
+  {n:"Thon rouge",s:"Thunnus thynnus",z:"Marine",t:"150–300 cm",p:"30–600 kg",r:"Trophée",mult:6,eco:"tro",peche:"Traîne hauturière",em:"🐟"},
+  {n:"Sériole",s:"Seriola dumerili",z:"Méditerranée",t:"80–200 cm",p:"5–80 kg",r:"Trophée",mult:6,eco:"tro",peche:"Jigging, vifs, popper",em:"⚡"},
+  {n:"Marlin bleu",s:"Makaira nigricans",z:"Marine",t:"150–450 cm",p:"50–600 kg",r:"Trophée",mult:6,eco:"tro",peche:"Traîne hauturière",em:"🐠"},
+  {n:"Liche",s:"Lichia amia",z:"Méditerranée",t:"50–200 cm",p:"2–30 kg",r:"Trophée",mult:6,eco:"tro",peche:"Leurres rapides, popper",em:"🌊"},
+  {n:"Brochet commun",s:"Esox lucius",z:"Eau douce",t:"60–130 cm",p:"1–20 kg",r:"Légendaire",mult:5,eco:"leg",peche:"Lancer, jigging",em:"🐊"},
+  {n:"Silure glane",s:"Silurus glanis",z:"Eau douce",t:"100–300 cm",p:"10–150 kg",r:"Légendaire",mult:5,eco:"leg",peche:"Ledgering, vifs",em:"🐋"},
+  {n:"Saumon atlantique",s:"Salmo salar",z:"Eau douce",t:"60–150 cm",p:"2–35 kg",r:"Légendaire",mult:5,eco:"leg",peche:"Mouche, cuillère",em:"🎣"},
+  {n:"Espadon",s:"Xiphias gladius",z:"Marine",t:"150–300 cm",p:"30–250 kg",r:"Légendaire",mult:5,eco:"leg",peche:"Traîne nuit",em:"⚔️"},
+  {n:"Thon blanc",s:"Thunnus alalunga",z:"Marine",t:"70–130 cm",p:"5–40 kg",r:"Légendaire",mult:5,eco:"leg",peche:"Traîne, sondeur",em:"🐟"},
+  {n:"Anguille européenne",s:"Anguilla anguilla",z:"Eau douce",t:"40–150 cm",p:"0.5–6 kg",r:"Légendaire",mult:5,eco:"leg",peche:"Posé nuit",em:"🐍"},
+  {n:"Grande alose",s:"Alosa alosa",z:"Eau douce",t:"40–75 cm",p:"0.5–4 kg",r:"Légendaire",mult:5,eco:"leg",peche:"Mouche, cuillère",em:"🐟"},
+  {n:"Sandre",s:"Sander lucioperca",z:"Eau douce",t:"40–100 cm",p:"0.5–12 kg",r:"Épique",mult:4,eco:"epi",peche:"Jigging, drop-shot",em:"🐟"},
+  {n:"Bar commun",s:"Dicentrarchus labrax",z:"Marine",t:"30–90 cm",p:"0.3–10 kg",r:"Épique",mult:4,eco:"epi",peche:"Leurres, popper",em:"🐬"},
+  {n:"Daurade royale",s:"Sparus aurata",z:"Méditerranée",t:"30–70 cm",p:"0.3–8 kg",r:"Épique",mult:4,eco:"epi",peche:"Drop-shot, vifs",em:"🌟"},
+  {n:"Turbot",s:"Scophthalmus maximus",z:"Marine",t:"40–100 cm",p:"1–15 kg",r:"Épique",mult:4,eco:"epi",peche:"Vifs, posé",em:"🎯"},
+  {n:"Dentex commun",s:"Dentex dentex",z:"Méditerranée",t:"30–100 cm",p:"0.5–10 kg",r:"Épique",mult:4,eco:"epi",peche:"Vifs, jigging",em:"🔵"},
+  {n:"Corb",s:"Sciaena umbra",z:"Méditerranée",t:"30–70 cm",p:"0.5–6 kg",r:"Épique",mult:4,eco:"epi",peche:"Posé nocturne",em:"🟤"},
+  {n:"Bonite à dos rayé",s:"Sarda sarda",z:"Marine",t:"40–90 cm",p:"1–8 kg",r:"Épique",mult:4,eco:"epi",peche:"Leurres, traîne",em:"🏃"},
+  {n:"Truite fario",s:"Salmo trutta fario",z:"Eau douce",t:"20–70 cm",p:"0.2–5 kg",r:"Rare",mult:3,eco:"rar",peche:"Mouche, toc",em:"🎣"},
+  {n:"Truite de mer",s:"Salmo trutta trutta",z:"Eau douce",t:"30–90 cm",p:"0.5–12 kg",r:"Rare",mult:3,eco:"rar",peche:"Cuillère, mouche",em:"🎣"},
+  {n:"Perche fluviatile",s:"Perca fluviatilis",z:"Eau douce",t:"20–50 cm",p:"0.1–3 kg",r:"Rare",mult:3,eco:"rar",peche:"Jigging léger",em:"🐠"},
+  {n:"Carpe commune",s:"Cyprinus carpio",z:"Eau douce",t:"40–120 cm",p:"1–30 kg",r:"Rare",mult:3,eco:"rar",peche:"Bouillettes, feeder",em:"🐡"},
+  {n:"Barbeau fluviatile",s:"Barbus barbus",z:"Eau douce",t:"40–90 cm",p:"0.5–8 kg",r:"Rare",mult:3,eco:"rar",peche:"Feeder, toc",em:"🟠"},
+  {n:"Ombre commun",s:"Thymallus thymallus",z:"Eau douce",t:"25–60 cm",p:"0.2–3 kg",r:"Rare",mult:3,eco:"rar",peche:"Mouche sèche",em:"🪁"},
+  {n:"Maquereau commun",s:"Scomber scombrus",z:"Marine",t:"20–45 cm",p:"0.1–1 kg",r:"Rare",mult:3,eco:"rar",peche:"Turlutte, plume",em:"💨"},
+  {n:"Lieu jaune",s:"Pollachius pollachius",z:"Marine",t:"40–110 cm",p:"0.5–10 kg",r:"Rare",mult:3,eco:"rar",peche:"Jigging, leurres",em:"💛"},
+  {n:"Cabillaud",s:"Gadus morhua",z:"Marine",t:"40–150 cm",p:"1–40 kg",r:"Rare",mult:3,eco:"rar",peche:"Pilker, posé",em:"⚪"},
+  {n:"Pageot commun",s:"Pagellus erythrinus",z:"Méditerranée",t:"20–50 cm",p:"0.2–2.5 kg",r:"Rare",mult:3,eco:"rar",peche:"Posé, drop-shot",em:"🔴"},
+  {n:"Sar",s:"Diplodus sargus",z:"Méditerranée",t:"15–45 cm",p:"0.1–2.5 kg",r:"Rare",mult:3,eco:"rar",peche:"Posé, feeder mer",em:"⚫"},
+  {n:"Brème commune",s:"Abramis brama",z:"Eau douce",t:"25–70 cm",p:"0.3–6 kg",r:"Peu commun",mult:2.5,eco:"unc",peche:"Feeder, coup",em:"🟡"},
+  {n:"Chevesne",s:"Squalius cephalus",z:"Eau douce",t:"20–60 cm",p:"0.2–4 kg",r:"Peu commun",mult:2.5,eco:"unc",peche:"Mouche, surface",em:"🟤"},
+  {n:"Tanche",s:"Tinca tinca",z:"Eau douce",t:"20–50 cm",p:"0.3–4 kg",r:"Peu commun",mult:2.5,eco:"unc",peche:"Vers, bouillette",em:"🟢"},
+  {n:"Asp",s:"Leuciscus aspius",z:"Eau douce",t:"30–80 cm",p:"0.5–8 kg",r:"Peu commun",mult:2.5,eco:"unc",peche:"Lancer, popper",em:"🔷"},
+  {n:"Black-bass",s:"Micropterus salmoides",z:"Eau douce",t:"20–55 cm",p:"0.3–5 kg",r:"Peu commun",mult:2.5,eco:"unc",peche:"Leurres souples",em:"🖤"},
+  {n:"Mulet",s:"Mugil cephalus",z:"Marine",t:"20–60 cm",p:"0.2–4 kg",r:"Peu commun",mult:2.5,eco:"unc",peche:"Coup, pain",em:"⚫"},
+  {n:"Saint-Pierre",s:"Zeus faber",z:"Marine",t:"20–60 cm",p:"0.2–5 kg",r:"Peu commun",mult:2.5,eco:"unc",peche:"Vifs, posé",em:"🟡"},
+  {n:"Denti",s:"Dentex gibbosus",z:"Méditerranée",t:"30–80 cm",p:"0.5–8 kg",r:"Peu commun",mult:2.5,eco:"unc",peche:"Jigging, vifs",em:"🔵"},
+  {n:"Gardon",s:"Rutilus rutilus",z:"Eau douce",t:"10–35 cm",p:"0.05–1 kg",r:"Commun",mult:2,eco:"com",peche:"Coup, feeder",em:"⚪"},
+  {n:"Ablette",s:"Alburnus alburnus",z:"Eau douce",t:"8–20 cm",p:"0.01–0.1 kg",r:"Commun",mult:2,eco:"com",peche:"Coup surface",em:"✨"},
+  {n:"Goujon",s:"Gobio gobio",z:"Eau douce",t:"8–18 cm",p:"0.01–0.1 kg",r:"Commun",mult:2,eco:"com",peche:"Toc fond",em:"🟤"},
+  {n:"Grémille",s:"Gymnocephalus cernua",z:"Eau douce",t:"8–25 cm",p:"0.02–0.2 kg",r:"Commun",mult:2,eco:"com",peche:"Vers fond",em:"🟠"},
+  {n:"Vairon",s:"Phoxinus phoxinus",z:"Eau douce",t:"5–10 cm",p:"0.005–0.02 kg",r:"Commun",mult:2,eco:"com",peche:"Mouche",em:"⚪"},
+  {n:"Rouget barbet",s:"Mullus surmuletus",z:"Méditerranée",t:"15–35 cm",p:"0.1–0.8 kg",r:"Commun",mult:2,eco:"com",peche:"Posé fond",em:"🔴"},
+];
+
+var SPECIES_CATS=[
+  {label:'🏆 Trophée ×6',items:FISH_DB.filter(function(f){return f.eco==='tro';})},
+  {label:'🟣 Légendaire ×5',items:FISH_DB.filter(function(f){return f.eco==='leg';})},
+  {label:'🟠 Épique ×4',items:FISH_DB.filter(function(f){return f.eco==='epi';})},
+  {label:'🔵 Rare ×3',items:FISH_DB.filter(function(f){return f.eco==='rar';})},
+  {label:'🟢 Peu commun ×2.5',items:FISH_DB.filter(function(f){return f.eco==='unc';})},
+  {label:'⚪ Commun ×2',items:FISH_DB.filter(function(f){return f.eco==='com';})},
+];
+
+function getBadge(e){return{tro:'b-tro',leg:'b-leg',epi:'b-epi',rar:'b-rar',unc:'b-unc',com:'b-com'}[e]||'b-com';}
+function getTcgClass(e){return{tro:'tcg-tro',leg:'tcg-leg',epi:'tcg-epi',rar:'tcg-rar',unc:'tcg-unc',com:'tcg-com'}[e]||'tcg-com';}
+function getRarLabel(e){return{tro:'TROPHÉE',leg:'LÉGEND.',epi:'ÉPIQUE',rar:'RARE',unc:'P.COM.',com:'COMMUN'}[e]||'COMMUN';}
+function getRarColor(e){return{tro:'var(--gold)',leg:'var(--purple)',epi:'var(--amber)',rar:'var(--teal)',unc:'var(--blue)',com:'var(--text2)'}[e]||'var(--text2)';}
+function getXpUpload(e){return{tro:180,leg:110,epi:65,rar:35,unc:25,com:15}[e]||15;}
+
+/* Build dropdown espèces */
+(function(){
+  var dd=document.getElementById('species-dd');if(!dd)return;
+  var html='';
+  SPECIES_CATS.forEach(function(cat){
+    html+='<div class="csel-cat">'+cat.label+'</div>';
+    cat.items.forEach(function(f){
+      html+='<div class="csel-opt" onclick="pickSpecies(this,\''+f.n+'\','+f.mult+',\''+f.eco+'\',\''+f.s+'\')">'+f.em+' '+f.n+'</div>';
+    });
+  });
+  dd.innerHTML=html;
+})();
+
+/* ── USER PROFILE (hashtags) ── */
+var userProfile={tags:{},species:{},zones:{},totalPosts:0};
+
+function extractHashtags(text){
+  if(!text)return[];
+  var m=text.match(/#[\wàâäéèêëîïôöùûüç]+/gi)||[];
+  return m.map(function(t){return t.toLowerCase().replace('#','');});
+}
+
+function updateUserProfile(post){
+  userProfile.totalPosts++;
+  extractHashtags(post.desc).forEach(function(t){userProfile.tags[t]=(userProfile.tags[t]||0)+1;});
+  var sp=post.species.toLowerCase();userProfile.species[sp]=(userProfile.species[sp]||0)+1;
+  var fish=FISH_DB.find(function(f){return f.n===post.species;});
+  if(fish){var z=fish.z.toLowerCase();userProfile.zones[z]=(userProfile.zones[z]||0)+1;}
+}
+
+function topItems(obj,n){return Object.keys(obj).sort(function(a,b){return obj[b]-obj[a];}).slice(0,n);}
+
+function getSmartReply(msg){
+  var m=msg.toLowerCase();
+  var topTags=topItems(userProfile.tags,5);
+  var topSp=topItems(userProfile.species,3);
+  if(m.includes('stat')||m.includes('profil')||m.includes('moi')){
+    if(userProfile.totalPosts>0){
+      var parts=[];
+      if(topSp.length)parts.push('espèces : '+topSp.join(', '));
+      if(topTags.length)parts.push('tags : #'+topTags.slice(0,3).join(', #'));
+      return'Ton profil ('+userProfile.totalPosts+' prise·s) → '+parts.join(' · ')+'. Continue à publier pour affiner le matching !';
+    }
+    return'Publie ta première prise pour que je construise ton profil pêcheur !';
+  }
+  if(m.includes('conseil')||m.includes('tip')||m.includes('améliorer')){
+    if(topSp.length){
+      var tips={brochet:'Pêche le brochet tôt le matin avec des leurres de 15–20 cm.',sandre:'Le drop-shot en eaux calmes est redoutable.',carpe:'Préfère les bouillettes fruités en automne.',truite:'La mouche sèche est imbattable en rivière.',bar:'Pêche le bar à marée montante sur les zones de casse.'};
+      return'Basé sur tes prises de '+topSp[0]+' : '+(tips[topSp[0]]||'Continue à publier pour des conseils personnalisés !');
+    }
+    return'Publie des prises avec des hashtags (#espèce, #lieu, #technique) pour recevoir des conseils personnalisés !';
+  }
+  if(m.includes('hashtag')||m.includes('tag')){
+    if(topTags.length)return'Tes hashtags dominants : '+topTags.map(function(t){return'#'+t+' (×'+userProfile.tags[t]+')';}).join(', ')+'. L\'algo les utilise pour ton matching !';
+    return'Ajoute des hashtags dans tes descriptions (#brochet, #loire, #spinning...) — l\'algo les analyse !';
+  }
+  if(m.includes('algo')||m.includes('match')){
+    if(topTags.length)return'L\'algo analyse tes hashtags ('+topTags.slice(0,3).map(function(t){return'#'+t;}).join(', ')+') pour te matcher avec des pêcheurs similaires !';
+    return'L\'algo analyse tes espèces, hashtags, zone et XP pour te proposer les meilleurs adversaires.';
+  }
+  if(m.includes('trophée'))return'Les 4 espèces Trophée ×6 : Thon rouge, Sériole, Marlin bleu, Liche. +180 XP upload + 500 XP bonus à la 1ère capture !';
+  if(m.includes('score')||m.includes('max'))return'Score = poids × multiplicateur × 20. Max : Thon rouge 600 kg × ×6 × 20 = 72 000 pts 🎯';
+  if(m.includes('battle')||m.includes('règle'))return'Victoire = +90 XP, défaite = +20 XP. Trophée ×6 en battle = +200 XP bonus. Enchaîne les séries !';
+  var generic=['Publie une prise avec des hashtags pour personnaliser mes conseils !','Pour max score : Thon rouge ×6 ou Liche ×6.','Sandre = meilleur rapport effort/score en eau douce (×4).','Les cartes Trophée ont un cadre doré holographique en battle 🏆'];
+  return generic[Math.floor(Math.random()*generic.length)];
+}
+
+/* ── POSTS ── */
+var POSTS=[];
+var POST_ID=0;
+var lastCatch=null;
+var catchPhotoData=null;
+
+function postHTML(p,inProfile){
+  var col=getRarColor(p.eco);
+  var imgZone=p.photo
+    ?'<div class="post-img" style="padding:0;cursor:pointer" onclick="openPostDetail('+p.id+')"><img src="'+p.photo+'" style="width:100%;height:100%;object-fit:cover;border-radius:var(--r)"></div>'
+    :'<div class="post-img" style="cursor:pointer" onclick="openPostDetail('+p.id+')">'+p.em+'</div>';
+  var tags=extractHashtags(p.desc);
+  var tagsHtml=tags.length?'<div style="margin-bottom:8px">'+tags.map(function(t){return'<span class="tag" style="cursor:pointer" onclick="filterFeedByTag(\''+t+'\')">#'+t+'</span>';}).join('')+'</div>':'';
+  var descClean=p.desc?p.desc.replace(/#[\wàâäéèêëîïôöùûüç]+/gi,function(m){return'<span style="color:var(--blue)">'+m+'</span>';}):'';
+  var ts=timeSince(p.ts);
+  return '<div class="post" id="post-'+p.id+'" style="'+(p.isTro?'border-color:rgba(255,215,0,.3)':'')+'">'
+    +'<div style="display:flex;align-items:center;gap:9px;margin-bottom:10px">'
+    +'<div class="ava" style="width:34px;height:34px;background:var(--blue2);color:#fff;font-size:12px">F</div>'
+    +'<div style="flex:1"><div style="font-weight:700;font-size:13px">@fabfishing <span class="badge b-epi" style="margin-left:3px">Épique</span></div>'
+    +'<div style="font-size:10px;color:var(--text2)">'+ts+(p.loc?' · '+p.loc:'')+'</div></div>'
+    +(inProfile?'<button onclick="deletePost('+p.id+')" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:var(--red);border-radius:8px;padding:4px 8px;font-size:10px;cursor:pointer;font-family:Inter,sans-serif">🗑</button>':'')
+    +'</div>'
+    +imgZone
+    +(p.isTro?'<div style="background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.2);border-radius:8px;padding:7px 10px;font-size:11px;color:var(--gold);font-weight:700;margin-bottom:7px">🏆 CAPTURE TROPHÉE · +500 XP bonus !</div>':'')
+    +'<div style="margin-bottom:5px"><strong style="color:'+col+'">'+p.species+' — '+p.weight+' kg</strong> <span class="badge '+getBadge(p.eco)+'" style="margin-left:3px">'+getRarLabel(p.eco)+'</span></div>'
+    +(descClean?'<div style="font-size:12px;color:var(--text2);margin-bottom:6px">'+descClean+'</div>':'')
+    +tagsHtml
+    +'<div style="font-size:12px;color:var(--text2);margin-bottom:8px">Score : <strong style="color:'+col+'">'+p.score+' pts</strong> · <span style="color:var(--green)">+'+getXpUpload(p.eco)+' XP</span></div>'
+    +'<div class="post-acts">'
+    +'<button class="act-btn'+(p.liked?' liked':'')+'" id="like-btn-'+p.id+'" onclick="toggleLike('+p.id+')">❤️ <span id="like-count-'+p.id+'">'+p.likes+'</span></button>'
+    +'<button class="act-btn" onclick="openComments('+p.id+')">💬 <span id="comment-count-'+p.id+'">'+p.comments.length+'</span></button>'
+    +'<button class="act-btn" onclick="sharePost('+p.id+')">↗</button>'
+    +'<button class="act-btn" onclick="reportPost('+p.id+')" title="Signaler" style="color:rgba(239,68,68,.5)">🚩</button>'
+    +'<button class="act-btn" style="margin-left:auto" onclick="openBattle()">⚔️</button>'
+    +'</div></div>';
+}
+
+function renderFeedPosts(){
+  var feed=document.getElementById('feed-posts');
+  var myPosts=POSTS.map(function(p){return postHTML(p,false);}).join('');
+  var demo='<div class="post"><div style="display:flex;align-items:center;gap:9px;margin-bottom:11px"><div class="ava" style="width:36px;height:36px;background:#170d38;color:#a78bfa;font-size:13px">S</div><div style="flex:1"><div style="font-weight:700;font-size:13px">@saumonberet <span class="badge b-leg" style="margin-left:3px">Légend.</span></div><div style="font-size:10px;color:var(--text2)">il y a 23 min · Loire</div></div><button class="btn btn-g" style="font-size:11px;padding:4px 9px">+ Suivre</button></div><div class="post-img">🐊</div><div style="margin-bottom:6px"><strong style="color:var(--amber)">Brochet — 8.4 kg · 98 cm</strong> <span class="badge b-leg" style="margin-left:3px">×5</span></div><div style="font-size:12px;color:var(--text2);margin-bottom:8px">Belle session ce matin. Score : <strong style="color:var(--amber)">840 pts</strong></div><div style="margin-bottom:9px"><span class="tag">#brochet</span><span class="tag">#loire</span></div><div class="post-acts"><button class="act-btn" onclick="this.classList.toggle(\'liked\');this.querySelector(\'span\').textContent=this.classList.contains(\'liked\')?48:47">❤️ <span>47</span></button><button class="act-btn">💬 12</button><button class="act-btn">↗</button><button class="act-btn" style="margin-left:auto" onclick="openBattle()">⚔️</button></div></div>';
+  feed.innerHTML=myPosts+demo;
+}
+
+function renderProfilePosts(){
+  var el=document.getElementById('profile-gallery');if(!el)return;
+  if(!POSTS.length){el.innerHTML='<div style="text-align:center;padding:24px;color:var(--text2);font-size:12px">📸 Aucune prise publiée.<br>Upload ta première prise !</div>';return;}
+  el.innerHTML=POSTS.map(function(p){return postHTML(p,true);}).join('');
+}
+
+function renderHashtagInsights(){
+  var el=document.getElementById('hashtag-insights');if(!el)return;
+  if(!userProfile.totalPosts){el.innerHTML='<div style="font-size:11px;color:var(--text2);font-style:italic">Publie des prises avec des hashtags pour voir tes statistiques ici.</div>';return;}
+  var topTags=topItems(userProfile.tags,8);
+  var topSp=topItems(userProfile.species,3);
+  var maxC=userProfile.tags[topTags[0]]||1;
+  var html='';
+  if(topTags.length){
+    html+='<div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em;font-weight:700">Hashtags les plus utilisés</div>';
+    html+=topTags.map(function(t){
+      var pct=Math.round(userProfile.tags[t]/maxC*100);
+      return'<div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--blue);font-weight:600">#'+t+'</span><span style="color:var(--text2)">×'+userProfile.tags[t]+'</span></div><div style="background:rgba(255,255,255,.06);border-radius:20px;height:4px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,var(--blue2),var(--blue));border-radius:20px;transition:.5s"></div></div></div>';
+    }).join('');
+  }
+  if(topSp.length){
+    html+='<div style="font-size:10px;color:var(--text3);margin-top:12px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em;font-weight:700">Espèces favorites</div>';
+    html+='<div style="display:flex;gap:6px;flex-wrap:wrap">'+topSp.map(function(s){return'<span style="background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.25);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--blue)">'+s+' ×'+userProfile.species[s]+'</span>';}).join('')+'</div>';
+  }
+  html+='<div style="margin-top:12px;font-size:10px;color:var(--text3);font-style:italic">🤖 Ces données alimentent l\'algo de matching et le Coach IA.</div>';
+  el.innerHTML=html;
+}
+
+function timeSince(ts){var s=Math.floor((Date.now()-ts)/1000);if(s<60)return'À l\'instant';if(s<3600)return Math.floor(s/60)+' min';if(s<86400)return Math.floor(s/3600)+'h';return Math.floor(s/86400)+'j';}
+
+function toggleLike(id){
+  var p=POSTS.find(function(x){return x.id===id;});if(!p)return;
+  var rate=ModerationEngine.checkRate('like');if(!rate.ok){ModerationEngine.showAlert(rate.reason,'low');return;}
+  p.liked=!p.liked;p.likes+=p.liked?1:-1;
+  document.querySelectorAll('#like-btn-'+id).forEach(function(b){b.classList.toggle('liked',p.liked);});
+  document.querySelectorAll('#like-count-'+id).forEach(function(el){el.textContent=p.likes;});
+}
+
+function openComments(id){
+  var p=POSTS.find(function(x){return x.id===id;});if(!p)return;
+  document.getElementById('comment-post-id').value=id;
+  document.getElementById('comment-list').innerHTML=p.comments.length
+    ?p.comments.map(function(c){return'<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)"><div style="font-size:11px;font-weight:700;color:var(--blue);margin-bottom:2px">'+c.user+'</div><div style="font-size:12px;color:var(--text)">'+c.text+'</div></div>';}).join('')
+    :'<div style="text-align:center;padding:16px;color:var(--text2);font-size:12px">Pas encore de commentaire.</div>';
+  document.getElementById('comment-modal').classList.add('open');
+}
+
+function addComment(){
+  var id=parseInt(document.getElementById('comment-post-id').value);
+  var inp=document.getElementById('comment-inp');var text=inp.value.trim();if(!text)return;
+  var rate=ModerationEngine.checkRate('comment');if(!rate.ok){ModerationEngine.showAlert(rate.reason,'low');return;}
+  var check=ModerationEngine.checkText(text,'le commentaire');if(!check.ok){ModerationEngine.log('COMMENT',text,check.reason);ModerationEngine.showAlert(check.reason,check.severity);return;}
+  var p=POSTS.find(function(x){return x.id===id;});if(!p)return;
+  p.comments.push({user:'@fabfishing',text:text});
+  inp.value='';openComments(id);
+  document.querySelectorAll('#comment-count-'+id).forEach(function(el){el.textContent=p.comments.length;});
+}
+
+function closeComments(){document.getElementById('comment-modal').classList.remove('open');}
+
+function sharePost(id){
+  var p=POSTS.find(function(x){return x.id===id;});if(!p)return;
+  var txt='🎣 '+p.species+' · '+p.weight+' kg · '+p.score+' pts sur BattleFish !';
+  if(navigator.share){navigator.share({title:'BattleFish',text:txt}).catch(function(){});}
+  else{if(navigator.clipboard)navigator.clipboard.writeText(txt);ModerationEngine.showAlert('Lien copié !','low');}
+}
+
+function reportPost(id){
+  var reason=window.prompt('Raison du signalement :\n1. Contenu inapproprié\n2. Harcèlement\n3. Contenu adulte\n4. Spam\n5. Autre\n\nTape le numéro ou décris le problème :');
+  if(!reason)return;
+  var res=ModerationEngine.report(id,reason);
+  ModerationEngine.showAlert(res.msg,'low');
+}
+
+function deletePost(id){
+  if(!confirm('Supprimer cette prise de ton profil ?'))return;
+  POSTS=POSTS.filter(function(p){return p.id!==id;});
+  if(!POSTS.length)lastCatch=null;
+  renderFeedPosts();renderProfilePosts();
+}
+
+function openPostDetail(id){
+  var p=POSTS.find(function(x){return x.id===id;});if(!p||!p.photo)return;
+  document.getElementById('photo-modal-img').src=p.photo;
+  document.getElementById('photo-modal-caption').textContent=p.species+' · '+p.weight+' kg · '+p.score+' pts';
+  document.getElementById('photo-modal').classList.add('open');
+}
+function closePhotoModal(){document.getElementById('photo-modal').classList.remove('open');}
+
+function filterFeedByTag(tag){
+  show('feed');
+  var filtered=POSTS.filter(function(p){return extractHashtags(p.desc).includes(tag);});
+  var banner='<div style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:var(--r);padding:9px 13px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;color:var(--blue);font-weight:700">#'+tag+' · '+filtered.length+' prise(s)</span><button onclick="renderFeedPosts()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:11px;font-family:Inter,sans-serif">✕ Tout voir</button></div>';
+  var demo='<div class="post"><div style="display:flex;align-items:center;gap:9px;margin-bottom:11px"><div class="ava" style="width:36px;height:36px;background:#170d38;color:#a78bfa;font-size:13px">S</div><div style="flex:1"><div style="font-weight:700;font-size:13px">@saumonberet <span class="badge b-leg" style="margin-left:3px">Légend.</span></div><div style="font-size:10px;color:var(--text2)">il y a 23 min · Loire</div></div></div><div class="post-img">🐊</div><div style="font-size:12px;color:var(--text2);margin-bottom:8px">Brochet — 8.4 kg · 840 pts</div></div>';
+  document.getElementById('feed-posts').innerHTML=banner+(filtered.length?filtered.map(function(p){return postHTML(p,false);}).join(''):demo);
+}
+
+/* ── SUBMIT CATCH ── */
+function submitCatch(){
+  var sp=window._curSpecies;var w=parseFloat(document.getElementById('w-inp').value)||0;
+  if(!sp||!w){ModerationEngine.showAlert('Espèce et poids requis.','low');return;}
+  var rate=ModerationEngine.checkRate('post');if(!rate.ok){ModerationEngine.showAlert(rate.reason,'low');return;}
+  var desc=document.getElementById('desc-inp').value||'';
+  var dc=ModerationEngine.checkText(desc,'la description');if(!dc.ok){ModerationEngine.log('DESC',desc,dc.reason);ModerationEngine.showAlert(dc.reason,dc.severity);return;}
+  var loc=document.getElementById('loc-inp').value||'';
+  var lc=ModerationEngine.checkText(loc,'le lieu');if(!lc.ok){ModerationEngine.showAlert(lc.reason,lc.severity);return;}
+  var tags=extractHashtags(desc);
+  for(var i=0;i<tags.length;i++){var tc=ModerationEngine.checkText(tags[i],'un hashtag');if(!tc.ok){ModerationEngine.showAlert('Hashtag inapproprié : #'+tags[i],'high');return;}}
+  var score=Math.round(w*sp.mult*20);
+  var fish=FISH_DB.find(function(f){return f.n===sp.name;});
+  var em=fish?fish.em:'🐟';var isTro=sp.eco==='tro';var id=++POST_ID;
+  var p={id:id,photo:catchPhotoData,species:sp.name,scientName:sp.scientName||'',weight:w,score:score,eco:sp.eco,em:em,loc:loc,desc:desc,likes:0,liked:false,comments:[],ts:Date.now(),isTro:isTro};
+  POSTS.unshift(p);
+  updateUserProfile(p);
+  lastCatch={photo:catchPhotoData,species:sp.name,scientName:sp.scientName||'',weight:w,score:score,eco:sp.eco,em:em,mult:sp.mult};
+  closeUpload();show('feed');renderFeedPosts();renderProfilePosts();renderHashtagInsights();
+  window._curSpecies=null;catchPhotoData=null;
+  document.getElementById('w-inp').value='';document.getElementById('s-inp').value='';
+  document.getElementById('loc-inp').value='';document.getElementById('desc-inp').value='';
+  document.getElementById('sc-prev').style.display='none';
+  document.getElementById('species-btn').querySelector('span').textContent='Choisir une espèce...';
+  document.getElementById('upload-placeholder').style.display='block';
+  document.getElementById('upload-preview').style.display='none';
+  document.getElementById('upload-preview-img').src='';
+}
+
+/* ── REGISTER ── */
+function doRegister(){
+  if(!document.getElementById('age-check').checked){ModerationEngine.showAlert('Tu dois confirmer avoir 18 ans ou plus.','low');return;}
+  if(!document.getElementById('cgu-check').checked){ModerationEngine.showAlert('Tu dois accepter les CGU.','low');return;}
+  if(!document.getElementById('rgpd-check').checked){ModerationEngine.showAlert('Tu dois accepter le traitement RGPD.','low');return;}
+  var pseudo=document.getElementById('reg-pseudo').value.trim();
+  if(!pseudo){ModerationEngine.showAlert('Choisis un pseudo.','low');return;}
+  var pc=ModerationEngine.checkText(pseudo,'le pseudo');if(!pc.ok){ModerationEngine.showAlert(pc.reason,pc.severity);return;}
+  var email=document.getElementById('reg-email').value.trim();
+  if(!email||!email.includes('@')){ModerationEngine.showAlert('Email invalide.','low');return;}
+  doLogin();
+}
+
+/* ── AUTH ── */
+function switchAuth(m){
+  document.getElementById('form-login').style.display=m==='login'?'block':'none';
+  document.getElementById('form-reg').style.display=m==='register'?'block':'none';
+  document.getElementById('tab-login').classList.toggle('active',m==='login');
+  document.getElementById('tab-reg').classList.toggle('active',m==='register');
+}
+function togglePw(){var i=document.getElementById('pw-inp'),t=document.getElementById('pw-toggle');i.type=i.type==='password'?'text':'password';t.textContent=i.type==='password'?'Afficher':'Masquer';}
+function doLogin(){
+  document.getElementById('landing').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('app').style.flexDirection='column';
+  document.getElementById('chat-fab').style.display='flex';
+  renderFeedPosts();
+  setTimeout(function(){initChart();initRank();},100);
+}
+function doLogout(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('chat-fab').style.display='none';
+  document.getElementById('landing').style.display='flex';
+}
+
+/* ── RULES ── */
+function toggleRules(){
+  var d=document.getElementById('rules-dropdown'),a=document.getElementById('rules-arrow');if(!d||!a)return;
+  var open=d.style.display==='none'||d.style.display==='';
+  a.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+  if(open){d.style.display='block';d.style.opacity='0';d.style.transition='opacity .3s ease';d.offsetHeight;d.style.opacity='1';}
+  else{d.style.transition='opacity .25s ease';d.style.opacity='0';setTimeout(function(){d.style.display='none';},260);}
+}
+document.getElementById('rules-btn').addEventListener('click',toggleRules);
+
+/* ── LEGAL ── */
+var LC={
+  mentions:{t:'Mentions légales',b:'<strong>Éditeur :</strong> BattleFish — FabFishing<br><strong>Directeur de publication :</strong> Fabien Haller<br><strong>Hébergeur :</strong> À définir<br><strong>Contact :</strong> dpo@battlefish.com'},
+  cgu:{t:'CGU',b:'En utilisant BattleFish, vous acceptez les présentes CGU. L\'application est réservée aux personnes majeures (+18 ans). Tout contenu inapproprié entraîne une suspension immédiate.'},
+  confidentialite:{t:'Confidentialité',b:'BattleFish collecte uniquement les données nécessaires. Vos données ne sont jamais vendues à des tiers. Droit d\'accès, rectification et suppression disponibles.'},
+  cookies:{t:'Cookies',b:'Cookies techniques essentiels uniquement. Aucun cookie publicitaire sans consentement explicite.'},
+  rgpd:{t:'RGPD',b:'Droits d\'accès, rectification, effacement, portabilité. Contact : dpo@battlefish.com. Délai : 30 jours.'},
+  dpo:{t:'DPO',b:'Délégué à la Protection des Données :<br>Email : dpo@battlefish.com<br>Délai de traitement : 30 jours.'},
+  suppression:{t:'Supprimer mon compte',b:'Envoyez un email à dpo@battlefish.com avec l\'objet "Suppression compte". Traitement sous 30 jours. Action irréversible.'},
+  signalement:{t:'Signaler un contenu',b:'Utilisez le bouton 🚩 sur chaque publication ou contactez moderation@battlefish.com. Traitement sous 48h.'}
+};
+function openLegal(k){var c=LC[k];if(!c)return;document.getElementById('legal-title').textContent=c.t;document.getElementById('legal-body').innerHTML=c.b;document.getElementById('legal-modal').style.display='flex';}
+function closeLegal(){document.getElementById('legal-modal').style.display='none';}
+
+/* ── NAV ── */
+function show(id){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});var el=document.getElementById(id);if(el){el.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}}
+function setTab(btn){document.querySelectorAll('#bottomnav .tab-btn').forEach(function(b){b.classList.remove('active')});btn.classList.add('active');}
+var lang='FR',langs=['FR','ES','EN'],li=0;
+function toggleLang(){li=(li+1)%langs.length;lang=langs[li];document.getElementById('lang-btn').textContent=lang;}
+
+/* ── CUSTOM SELECT ── */
+function toggleCsel(btn){var dd=btn.nextElementSibling;var isOpen=dd.classList.contains('open');document.querySelectorAll('.csel-dd.open').forEach(function(d){d.classList.remove('open')});if(!isOpen)dd.classList.add('open');}
+function pickCsel(opt){var dd=opt.closest('.csel-dd');var btn=dd.previousElementSibling;var sp=btn.querySelector('span');if(sp)sp.textContent=opt.textContent;dd.querySelectorAll('.csel-opt').forEach(function(o){o.classList.remove('sel')});opt.classList.add('sel');dd.classList.remove('open');}
+var zoneFilter='';
+function pickCselZone(opt,val){pickCsel(opt);zoneFilter=val;filterFish(document.getElementById('fish-search').value);}
+window._curSpecies=null;
+function pickSpecies(opt,name,mult,eco,scientName){
+  var dd=opt.closest('.csel-dd');var btn=dd.previousElementSibling;var sp=btn.querySelector('span');
+  if(sp)sp.textContent=opt.textContent;dd.querySelectorAll('.csel-opt').forEach(function(o){o.classList.remove('sel')});opt.classList.add('sel');dd.classList.remove('open');
+  window._curSpecies={name:name,mult:parseFloat(mult),eco:eco,scientName:scientName||''};calcPrev();
+}
+document.addEventListener('click',function(e){if(!e.target.closest('.csel-wrap'))document.querySelectorAll('.csel-dd.open').forEach(function(d){d.classList.remove('open')});});
+
+/* ── PROFILE ── */
+function toggleEditProfile(){var v=document.getElementById('profile-view'),e=document.getElementById('profile-edit'),b=document.getElementById('edit-toggle-btn');var ed=e.style.display==='none'||e.style.display==='';v.style.display=ed?'none':'block';e.style.display=ed?'block':'none';b.textContent=ed?'✕ Annuler':'✏️ Modifier';}
+function saveProfile(){document.getElementById('profile-view').style.display='block';document.getElementById('profile-edit').style.display='none';document.getElementById('edit-toggle-btn').textContent='✏️ Modifier';}
+
+/* ── MODALS ── */
+function openUpload(){document.getElementById('upload-modal').classList.add('open');}
+function closeUpload(){document.getElementById('upload-modal').classList.remove('open');}
+document.getElementById('upload-modal').addEventListener('click',function(e){if(e.target===this)closeUpload();});
+document.getElementById('comment-modal').addEventListener('click',function(e){if(e.target===this)closeComments();});
+function openBattle(){updateMyCard();document.getElementById('battle-modal').classList.add('open');}
+function closeBattle(){document.getElementById('battle-modal').classList.remove('open');}
+document.getElementById('battle-modal').addEventListener('click',function(e){if(e.target===this)closeBattle();});
+
+/* ── PHOTO CATCH ── */
+function handleCatchPhoto(input){
+  if(!input.files||!input.files[0])return;
+  var file=input.files[0];
+  var check=ModerationEngine.checkPhoto(file);
+  if(!check.ok){ModerationEngine.log('PHOTO',file.name,check.reason);ModerationEngine.showAlert(check.reason,check.severity||'high');input.value='';return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    catchPhotoData=e.target.result;
+    document.getElementById('upload-placeholder').style.display='none';
+    document.getElementById('upload-preview-img').src=catchPhotoData;
+    document.getElementById('upload-preview').style.display='block';
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ── SCORE PREVIEW ── */
+function calcPrev(){
+  var sp=window._curSpecies;var w=parseFloat(document.getElementById('w-inp').value)||0;
+  if(!sp||!w){document.getElementById('sc-prev').style.display='none';return;}
+  var score=Math.round(w*sp.mult*20);var isTro=sp.eco==='tro';var col=getRarColor(sp.eco);
+  var prev=document.getElementById('sc-prev');prev.style.display='block';
+  prev.style.background=isTro?'rgba(255,215,0,.07)':'rgba(245,158,11,.06)';
+  prev.style.border='1px solid '+(isTro?'rgba(255,215,0,.3)':'rgba(245,158,11,.2)');
+  document.getElementById('sc-val').style.color=col;document.getElementById('sc-val').textContent=score+' pts';
+  document.getElementById('sc-badge').innerHTML='<span class="badge '+getBadge(sp.eco)+'">'+getRarLabel(sp.eco)+'</span>';
+  document.getElementById('sc-xp').textContent='+'+getXpUpload(sp.eco)+' XP'+(isTro?' 🏆 +500 XP bonus 1ère capture !':'');
+}
+
+/* ── AVATAR ── */
+function handleAvatar(input){
+  if(!input.files||!input.files[0])return;
+  var check=ModerationEngine.checkPhoto(input.files[0]);if(!check.ok){ModerationEngine.showAlert(check.reason,'high');return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var src=e.target.result;
+    ['avatar-display','card-avatar'].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML='<img src="'+src+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';});
+    var nav=document.querySelector('.ava-btn');if(nav)nav.innerHTML='<img src="'+src+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+  };reader.readAsDataURL(input.files[0]);
+}
+
+/* ── BATTLE ── */
+function updateMyCard(){
+  var card=document.getElementById('my-card');
+  if(!lastCatch){document.getElementById('my-card-label').textContent='Aucune prise active';document.getElementById('my-card-species').textContent='Publie une prise pour l\'activer';document.getElementById('my-card-score').textContent='— pts';return;}
+  card.className='tcg-card tcg-me '+getTcgClass(lastCatch.eco);
+  var ph=document.getElementById('my-card-placeholder'),img=document.getElementById('my-card-img');
+  if(lastCatch.photo){ph.style.display='none';img.style.display='block';img.src=lastCatch.photo;}
+  else{ph.style.display='flex';ph.textContent=lastCatch.em;img.style.display='none';}
+  document.getElementById('my-card-label').textContent=lastCatch.species+' · '+lastCatch.weight+' kg';
+  document.getElementById('my-card-species').textContent=lastCatch.scientName||lastCatch.species;
+  document.getElementById('my-card-score').textContent=lastCatch.score+' pts';
+  document.getElementById('my-card-badge').textContent=getRarLabel(lastCatch.eco);
+  document.getElementById('my-card-badge').className='badge '+getBadge(lastCatch.eco)+' tcg-badge-sm';
+}
+
+function selOpp(btn,name,eco,em,species,a,e,s,h,score){
+  var card=document.getElementById('opp-card');card.className='tcg-card '+getTcgClass(eco);
+  document.getElementById('opp-card-name').textContent=name;document.getElementById('opp-card-species').textContent=species;
+  document.getElementById('opp-card-score').textContent=score+' pts';
+  document.getElementById('opp-badge').textContent=getRarLabel(eco);document.getElementById('opp-badge').className='badge '+getBadge(eco)+' tcg-badge-sm';
+  document.getElementById('opp-card-photo').innerHTML='<div class="tcg-photo-placeholder">'+em+'</div><div class="tcg-photo-label">'+species+'</div>';
+  document.getElementById('oa').style.width=a+'%';document.getElementById('ova').textContent=a;
+  document.getElementById('oe').style.width=e+'%';document.getElementById('ove').textContent=e;
+  document.getElementById('os').style.width=s+'%';document.getElementById('ovs').textContent=s;
+  document.getElementById('oh').style.width=h+'%';document.getElementById('ovh').textContent=h;
+  document.getElementById('battle-res').style.display='none';
+}
+
+function setBattleMode(mode){
+  var a=document.getElementById('btn-algo-match'),m=document.getElementById('btn-manual-match');
+  if(mode==='algo'){a.style.background='rgba(29,110,245,.2)';a.style.borderColor='var(--blue)';a.style.color='var(--blue)';m.style.background='rgba(255,255,255,.04)';m.style.borderColor='var(--border2)';m.style.color='var(--text2)';}
+  else{m.style.background='rgba(29,110,245,.2)';m.style.borderColor='var(--blue)';m.style.color='var(--blue)';a.style.background='rgba(255,255,255,.04)';a.style.borderColor='var(--border2)';a.style.color='var(--text2)';}
+}
+
+function launchDuel(){
+  var myCard=document.getElementById('my-card'),oppCard=document.getElementById('opp-card');
+  myCard.style.transition='transform .3s ease';oppCard.style.transition='transform .3s ease';
+  myCard.style.transform='translateX(8px) scale(1.04)';oppCard.style.transform='translateX(-8px) scale(1.04)';
+  setTimeout(function(){myCard.style.transform='';oppCard.style.transform='';},500);
+  var myScore=lastCatch?lastCatch.score:320;
+  var oppScore=parseInt(document.getElementById('opp-card-score').textContent)||300;
+  var v=(Math.random()-.5)*60;var win=(myScore+v)>oppScore;var isTroWin=win&&lastCatch&&lastCatch.eco==='tro';
+  var res=document.getElementById('battle-res');res.style.display='block';
+  res.innerHTML='<div class="res-box '+(win?'rw':'rl')+'">'
+    +'<div style="font-size:34px;margin-bottom:6px">'+(win?'🏆':'😤')+'</div>'
+    +'<div style="font-size:20px;font-weight:800;color:'+(win?'var(--green)':'var(--red)')+'\">'+(win?'Victoire !':'Défaite')+'</div>'
+    +'<div style="font-size:12px;color:var(--text2);margin:8px 0">Ta carte : <strong>'+Math.round(myScore+v)+'</strong> · Adversaire : <strong>'+oppScore+'</strong></div>'
+    +(isTroWin?'<div style="background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.3);border-radius:10px;padding:7px;font-size:11px;color:var(--gold);font-weight:700;margin-bottom:8px">🏆 Victoire Trophée · +200 XP bonus !</div>':'')
+    +'<div style="font-size:12px;color:'+(win?'var(--green)':'var(--text2)')+';margin-bottom:10px">'+(win?'+100 XP · badge Duel remporté 🎖️':'Prochaine fois ! +20 XP participation')+'</div>'
+    +'<button class="btn btn-g" style="width:100%;justify-content:center" onclick="document.getElementById(\'battle-res\').style.display=\'none\'">Rejouer</button></div>';
+  res.scrollIntoView({behavior:'smooth'});
+}
+
+/* ── RANKING ── */
+var RANK_DATA=[
+  {data:[{p:'@FishKing42',lv:52,xp:'+1 240',me:false},{p:'@PêcheurPro',lv:47,xp:'+890',me:false},{p:'@AnglerMarie',lv:45,xp:'+750',me:false},{p:'@BrochetMaster',lv:43,xp:'+680',me:false},{p:'@fabfishing',lv:12,xp:'+648',me:true}]},
+  {data:[{p:'@FishKing42',lv:52,xp:'+8 450',me:false},{p:'@PêcheurPro',lv:47,xp:'+6 230',me:false},{p:'@AnglerMarie',lv:45,xp:'+5 890',me:false},{p:'@SilureBeast',lv:44,xp:'+5 120',me:false},{p:'@fabfishing',lv:12,xp:'+4 100',me:true}]},
+  {data:[{p:'@FishKing42',lv:52,xp:'+32 450',me:false},{p:'@PêcheurPro',lv:47,xp:'+28 120',me:false},{p:'@AnglerMarie',lv:45,xp:'+24 890',me:false},{p:'@SilureBeast',lv:44,xp:'+21 340',me:false},{p:'@fabfishing',lv:12,xp:'+18 200',me:true}]},
+  {data:[{p:'@FishKing42',lv:52,xp:'456 780',me:false},{p:'@PêcheurPro',lv:47,xp:'389 450',me:false},{p:'@AnglerMarie',lv:45,xp:'342 120',me:false},{p:'@SilureBeast',lv:44,xp:'298 000',me:false},{p:'@fabfishing',lv:12,xp:'124 500',me:true}]},
+];
+var MEDALS=['🥇','🥈','🥉','4','5'];
+function initRank(){switchRank(0);}
+function switchRank(i){
+  document.querySelectorAll('#ranking .tab').forEach(function(t,j){t.classList.toggle('active',j===i)});
+  document.getElementById('rank-content').innerHTML=RANK_DATA[i].data.map(function(r,j){
+    return'<div class="lb-row '+(r.me?'lb-me':'')+'"><span style="font-size:'+(j<3?'18':'12')+'px;width:22px;text-align:center">'+MEDALS[j]+'</span><div class="ava" style="width:28px;height:28px;background:'+(r.me?'var(--blue2)':'rgba(255,255,255,.06)')+';color:'+(r.me?'#fff':'var(--text2)')+';font-size:10px">'+r.p[1].toUpperCase()+'</div><div style="flex:1"><div style="font-weight:700;font-size:12px;color:'+(r.me?'var(--blue)':'var(--text)')+'">'+r.p+(r.me?' <span style="font-size:10px;color:var(--text2);font-weight:400">← toi</span>':'')+'</div><div style="font-size:10px;color:var(--text2)">Niv. '+r.lv+'</div></div><span style="font-size:11px;font-weight:700;color:'+(r.me?'var(--blue)':'var(--amber)')+'">'+r.xp+' XP</span></div>';
+  }).join('');
+}
+
+/* ── FISH DB ── */
+var rarityFilter='';
+function renderFish(list){
+  var el=document.getElementById('fish-list');
+  if(!list.length){el.innerHTML='<div style="padding:18px;text-align:center;color:var(--text2)">Aucune espèce trouvée</div>';return;}
+  el.innerHTML=list.map(function(f){
+    return'<div class="fish-db-row" onclick="showFishDetail('+FISH_DB.indexOf(f)+')" style="'+(f.eco==='tro'?'border-left:3px solid var(--gold)':'')+'"><div style="font-size:20px;width:28px;text-align:center">'+f.em+'</div><div style="flex:1"><div style="font-weight:700;font-size:12px;color:'+(f.eco==='tro'?'var(--gold)':'var(--text)')+'">'+f.n+'</div><div style="font-size:10px;color:var(--text2);font-style:italic">'+f.s+'</div></div><div style="text-align:right"><span class="badge '+getBadge(f.eco)+'">'+getRarLabel(f.eco)+'</span><div style="font-size:10px;color:var(--text2);margin-top:2px">'+f.t+'</div></div></div>';
+  }).join('');
+}
+function filterFish(q){
+  renderFish(FISH_DB.filter(function(f){
+    var mq=!q||f.n.toLowerCase().includes(q.toLowerCase())||f.s.toLowerCase().includes(q.toLowerCase());
+    var mz=!zoneFilter||f.z===zoneFilter;var mr=!rarityFilter||f.r===rarityFilter;return mq&&mz&&mr;
+  }));document.getElementById('fish-detail').innerHTML='';
+}
+function filterRarity(r){
+  rarityFilter=r;
+  var order=['','Trophée','Légendaire','Épique','Rare','Peu commun','Commun'];
+  document.querySelectorAll('#fishdb .tabs .tab').forEach(function(t,i){t.classList.toggle('active',order[i]===r);});
+  filterFish(document.getElementById('fish-search').value);
+}
+function showFishDetail(idx){
+  var f=FISH_DB[idx];var det=document.getElementById('fish-detail');var isTro=f.eco==='tro';
+  det.innerHTML='<div class="card" style="margin-top:10px'+(isTro?';border-color:rgba(255,215,0,.3)':'')+'"><div style="display:flex;gap:10px;margin-bottom:10px"><div style="font-size:30px">'+f.em+'</div><div style="flex:1"><div style="font-size:15px;font-weight:800;color:'+(isTro?'var(--gold)':'var(--text)')+'">'+f.n+'</div><div style="font-size:11px;color:var(--text2);font-style:italic;margin:2px 0">'+f.s+'</div><span class="badge '+getBadge(f.eco)+'">'+f.r+' · ×'+f.mult+'</span></div></div>'+(isTro?'<div style="background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.2);border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:11px;color:var(--gold)">🏆 Espèce Trophée · +180 XP upload · +500 XP bonus 1ère capture</div>':'')+'<div class="g2" style="margin-bottom:10px"><div class="card-sm"><div style="font-size:10px;color:var(--text2)">Taille</div><div style="font-weight:700;margin-top:2px">'+f.t+'</div></div><div class="card-sm"><div style="font-size:10px;color:var(--text2)">Poids</div><div style="font-weight:700;margin-top:2px">'+f.p+'</div></div><div class="card-sm"><div style="font-size:10px;color:var(--text2)">Zone</div><div style="font-weight:700;margin-top:2px">'+f.z+'</div></div><div class="card-sm"><div style="font-size:10px;color:var(--text2)">Technique</div><div style="font-weight:700;margin-top:2px;font-size:11px">'+f.peche+'</div></div></div><div style="display:flex;gap:7px"><button class="btn btn-p" style="flex:1;justify-content:center" onclick="openUpload()">📸 J\'ai pêché cette espèce</button><button class="btn btn-g" style="flex:1;justify-content:center" onclick="openBattle()">⚔️ Battle</button></div></div>';
+  det.scrollIntoView({behavior:'smooth'});
+}
+renderFish(FISH_DB);
+
+/* ── CHART ── */
+var MONTHLY=[3,5,4,7,9,6,8,11,10,9,12,5];
+var LBLS=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+var XP26=[8,14,22,31,45,60,80,105,130,152,178,200],XP25=[5,10,16,24,35,48,62,82,100,120,140,160];
+var chartMode='monthly';
+function buildCumul(){var c=0;return MONTHLY.map(function(v){c+=v;return c;});}
+function initChart(){var c=document.getElementById('prof-canvas');if(!c)return;drawChart(c,chartMode);}
+function hexToRgb(h){var r=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);return r?{r:parseInt(r[1],16),g:parseInt(r[2],16),b:parseInt(r[3],16)}:{r:59,g:130,b:246};}
+function drawChart(canvas,mode){
+  var W=canvas.parentElement?canvas.parentElement.clientWidth-2:320,H=148;
+  canvas.width=W*2;canvas.height=H*2;canvas.style.width=W+'px';canvas.style.height=H+'px';
+  var ctx=canvas.getContext('2d');ctx.scale(2,2);ctx.clearRect(0,0,W,H);
+  var pl=34,pr=10,pt=12,pb=24,cw=W-pl-pr,ch=H-pt-pb;
+  var data1,data2,c1,has2=false;
+  if(mode==='monthly'){data1=MONTHLY;c1='#4f8ef7';}else if(mode==='cumul'){data1=buildCumul();c1='#22c55e';}else{data1=XP26;data2=XP25;c1='#4f8ef7';has2=true;}
+  var allVals=data1.concat(data2||[]);var maxV=Math.max.apply(null,allVals);var step=cw/(data1.length-1);
+  [0,.5,1].forEach(function(t){var y=pt+ch*(1-t);ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(pl,y);ctx.lineTo(W-pr,y);ctx.stroke();ctx.fillStyle='rgba(168,189,212,.4)';ctx.font='8px Inter,sans-serif';ctx.textAlign='right';ctx.fillText(Math.round(maxV*t),pl-3,y+3);});
+  function line(data,color,filled){
+    var pts=data.map(function(v,i){return{x:pl+i*step,y:pt+ch*(1-v/maxV)};});
+    if(filled){ctx.beginPath();ctx.moveTo(pts[0].x,pt+ch);pts.forEach(function(p){ctx.lineTo(p.x,p.y);});ctx.lineTo(pts[pts.length-1].x,pt+ch);ctx.closePath();var g=ctx.createLinearGradient(0,pt,0,pt+ch);var rgb=hexToRgb(color);g.addColorStop(0,'rgba('+rgb.r+','+rgb.g+','+rgb.b+',0.25)');g.addColorStop(1,'rgba('+rgb.r+','+rgb.g+','+rgb.b+',0.01)');ctx.fillStyle=g;ctx.fill();}
+    ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
+    for(var i=1;i<pts.length;i++){var mx=(pts[i-1].x+pts[i].x)/2;ctx.bezierCurveTo(mx,pts[i-1].y,mx,pts[i].y,pts[i].x,pts[i].y);}
+    ctx.strokeStyle=color;ctx.lineWidth=1.8;ctx.stroke();
+    pts.forEach(function(p){ctx.beginPath();ctx.arc(p.x,p.y,2.2,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.fillStyle='#04080f';ctx.beginPath();ctx.arc(p.x,p.y,1,0,Math.PI*2);ctx.fill();});
+  }
+  if(has2)line(data2,'rgba(168,189,212,.5)',false);line(data1,c1,true);
+  var xl=document.getElementById('chart-x');if(xl)xl.innerHTML=LBLS.filter(function(_,i){return i%2===0;}).map(function(l){return'<span>'+l+'</span>';}).join('');
+}
+function switchChart(mode){
+  chartMode=mode;
+  ['btn-m','btn-c','btn-xp'].forEach(function(id){var b=document.getElementById(id);var isA=(id==='btn-m'&&mode==='monthly')||(id==='btn-c'&&mode==='cumul')||(id==='btn-xp'&&mode==='xp');b.className=isA?'btn btn-p':'btn btn-g';b.style.fontSize='10px';b.style.padding='4px 9px';});
+  var c=document.getElementById('prof-canvas');if(c)drawChart(c,mode);
+  if(mode==='monthly'){document.getElementById('chart-total').textContent='89';document.getElementById('chart-right').textContent='+12 ce mois';}
+  else if(mode==='cumul'){document.getElementById('chart-total').textContent='89';document.getElementById('chart-right').textContent='↗ +8%/mois';}
+  else{document.getElementById('chart-total').textContent='XP';document.getElementById('chart-right').textContent='+23% vs 2025';}
+}
+
+/* ── BUBBLES ── */
+(function(){
+  var bc=document.getElementById('bubble-container');if(!bc)return;
+  for(var i=0;i<32;i++){
+    var b=document.createElement('div');b.className='bubble';
+    var sz=Math.random()*14+5,dur=Math.random()*8+8,delay=-(Math.random()*dur);
+    var left=Math.random()*92+4,bot=Math.random()*80,dx=(Math.random()-.5)*50,dx2=(Math.random()-.5)*50;
+    b.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+left+'%;bottom:'+bot+'%;animation-duration:'+dur+'s;animation-delay:'+delay+'s;--dx:'+dx+'px;--dx2:'+dx2+'px';
+    bc.appendChild(b);
+  }
+})();
+
+/* ── CHAT ── */
+var chatOpen=false;
+function toggleChat(){chatOpen=!chatOpen;document.getElementById('chat-panel').classList.toggle('open',chatOpen);}
+function sendChat(){
+  var inp=document.getElementById('chat-inp');var msg=inp.value.trim();if(!msg)return;
+  var box=document.getElementById('chat-msgs');
+  box.innerHTML+='<div class="cmsg-u">'+msg+'</div>';inp.value='';box.scrollTop=9999;
+  setTimeout(function(){box.innerHTML+='<div class="cmsg-b">'+getSmartReply(msg)+'</div>';box.scrollTop=9999;},700);
+}
+function qMsg(t){document.getElementById('chat-inp').value=t;sendChat();}
+
+/* ── INIT ── */
+document.getElementById('chat-fab').style.display='none';
+</script>
+</body>
+</html>
