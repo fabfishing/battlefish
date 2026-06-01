@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>BattleFish</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
+<style>
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+.land-logo,.logo-sm,.vs-sep{font-family:'Bebas Neue','Arial Black',Impact,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+:root{
+--bg:#04080f;--bg2:#080f1c;--bg3:#0e1828;--bg4:#162234;
+--border:#2a4060;--border2:#3a5578;
+--text:#f0f6ff;--text2:#a8bdd4;--text3:#5a7a9e;
+--blue:#4f8ef7;--blue2:#1d6ef5;--blue3:#0f3d9e;
+--green:#22c55e;--green2:#16a34a;
+--amber:#f59e0b;--red:#ef4444;--red2:#b91c1c;
+--teal:#14b8a6;--purple:#a78bfa;--gold:#ffd700;
+--r:12px;--rl:18px;--rxl:24px;--t:.18s cubic-bezier(.4,0,.2,1)}
+body{background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;overflow-x:hidden;max-width:430px;margin:0 auto}
+@media(min-width:500px){
+body{background:linear-gradient(135deg,#010a18,#011830 40%,#021540);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:24px 0 40px}
+#landing,#app{width:430px;min-height:calc(100vh - 64px);border-radius:24px;border:1px solid rgba(59,130,246,.25);box-shadow:0 0 0 1px rgba(59,130,246,.08),0 8px 32px rgba(0,0,0,.6),0 0 60px rgba(29,110,245,.08);overflow:hidden;position:relative}
+#landing{background:linear-gradient(180deg,#010a18,#011830 30%,#02284f 60%,#021530)}
+#app{background:var(--bg);display:flex;flex-direction:column}
+#bottomnav{border-radius:0 0 24px 24px;width:430px;left:50%;transform:translateX(-50%)}
+#chat-fab{position:fixed;bottom:32px;right:calc(50% - 215px - 60px)}}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+#landing{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:0 22px 50px}
+#ocean-bg{position:absolute;inset:0;background:linear-gradient(180deg,#010a18,#011830 30%,#02284f 60%,#021530);z-index:0}
+#ocean-glow{position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:500px;height:500px;background:radial-gradient(ellipse,rgba(59,130,246,.12),transparent 65%);z-index:0;pointer-events:none}
+#bubble-container{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.bubble{position:absolute;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(160,210,255,.55),rgba(80,160,230,.08));border:1.5px solid rgba(140,200,255,.65);box-shadow:0 0 5px rgba(100,180,255,.25),inset 0 0 4px rgba(255,255,255,.18);animation:bubRise linear infinite;pointer-events:none}
+@keyframes bubRise{0%{transform:translateY(0) translateX(0);opacity:0}5%{opacity:1}50%{transform:translateY(-50vh) translateX(var(--dx,8px))}95%{opacity:.7}100%{transform:translateY(-105vh) translateX(var(--dx2,-8px));opacity:0}}
+.land-content{position:relative;z-index:2;text-align:center;width:100%;margin-top:20px}
+.land-logo{font-size:72px;color:#fff;letter-spacing:2px;line-height:1;margin-bottom:6px;text-shadow:0 0 60px rgba(59,130,246,.7),0 4px 20px rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;gap:4px}
+.land-logo span{color:#60a5fa}
+.land-slogan{font-size:20px;font-weight:600;color:rgba(255,255,255,.85);margin-bottom:24px;font-style:italic}
+.auth-tabs{display:flex;gap:5px;background:rgba(0,0,0,.4);border:1px solid rgba(80,130,200,.3);border-radius:var(--rxl);padding:4px;margin-bottom:14px;width:100%}
+.auth-tab{flex:1;padding:9px;border:none;background:transparent;color:rgba(255,255,255,.5);border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;transition:var(--t);font-family:'Inter',sans-serif}
+.auth-tab.active{background:var(--blue2);color:#fff;box-shadow:0 4px 15px rgba(29,110,245,.4)}
+.land-card{background:rgba(8,15,28,.75);border:1px solid rgba(80,130,200,.35);border-radius:var(--rxl);padding:20px 18px;backdrop-filter:blur(20px);width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.lf label{font-size:10px;color:rgba(255,255,255,.5);font-weight:700;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.07em}
+.lf input{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(80,130,200,.3);border-radius:var(--r);padding:12px 14px;color:#fff;font-size:14px;outline:none;transition:var(--t);margin-bottom:10px;font-family:'Inter',sans-serif}
+.lf input:focus{border-color:rgba(59,130,246,.6);background:rgba(59,130,246,.06)}
+.btn-join{width:100%;background:var(--blue2);color:#fff;border:none;border-radius:var(--rl);padding:16px;font-size:16px;font-weight:800;cursor:pointer;transition:var(--t);letter-spacing:.04em;margin-bottom:10px;font-family:'Inter',sans-serif}
+.btn-join:hover{background:var(--blue);transform:translateY(-1px);box-shadow:0 10px 30px rgba(29,110,245,.5)}
+.btn-outline{width:100%;background:transparent;color:rgba(255,255,255,.8);border:1px solid rgba(80,140,210,.4);border-radius:var(--rl);padding:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.csel-wrap{position:relative;margin-bottom:10px}
+.csel-btn{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(80,130,200,.3);border-radius:var(--r);padding:12px 14px;color:#fff;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:'Inter',sans-serif;transition:var(--t);text-align:left}
+.csel-btn:hover{border-color:rgba(59,130,246,.5)}
+.csel-dd{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#0a1520;border:1px solid rgba(59,130,246,.4);border-radius:var(--r);z-index:9999;display:none;box-shadow:0 10px 30px rgba(0,0,0,.7);max-height:260px;overflow-y:auto}
+.csel-dd.open{display:block}
+.csel-cat{padding:7px 14px 4px;font-size:9px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.1em;background:rgba(29,110,245,.08);border-bottom:1px solid rgba(59,130,246,.15)}
+.csel-opt{padding:9px 14px;font-size:12px;color:#e0eeff;cursor:pointer;transition:.12s;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:6px}
+.csel-opt:hover{background:rgba(59,130,246,.2);color:#fff}
+.csel-opt.sel{color:var(--blue);font-weight:700}
+.rdrop-section{padding:12px 14px;border-bottom:1px solid rgba(80,130,200,.15)}
+.rdrop-title{font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.rdrop-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:rgba(255,255,255,.82);padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.rdrop-row:last-of-type{border-bottom:none}
+.rdrop-xp{color:var(--amber);font-weight:700;font-size:11px;text-align:right;white-space:nowrap;margin-left:8px}
+#app{display:none;flex-direction:column;min-height:100vh}
+#topnav{background:rgba(4,8,15,.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;height:48px;padding:0 10px;gap:6px;position:sticky;top:0;z-index:200}
+.logo-sm{font-size:22px;color:#fff;letter-spacing:1.5px;display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.logo-sm span{color:var(--blue)}
+.nav-right-top{margin-left:auto;display:flex;align-items:center;gap:5px;flex-shrink:0}
+.pill{display:inline-flex;align-items:center;gap:3px;border-radius:20px;padding:4px 8px;font-size:11px;font-weight:700;white-space:nowrap}
+.pill-fire{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.25);color:var(--amber)}
+.pill-xp{background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);color:var(--blue)}
+.icon-btn{background:none;border:none;color:var(--text2);cursor:pointer;padding:4px;border-radius:7px;font-size:15px;line-height:1;transition:var(--t);width:28px;height:28px;display:flex;align-items:center;justify-content:center}
+.ava-btn{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue2),var(--blue3));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;cursor:pointer;border:2px solid rgba(59,130,246,.3);overflow:hidden}
+.page{display:none;padding:12px 12px 80px;animation:fadeUp .22s ease;overflow-x:hidden;width:100%}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+#bottomnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(8,14,28,.98);border-top:1px solid rgba(60,100,160,.4);display:flex;height:62px;z-index:200;backdrop-filter:blur(20px)}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;color:rgba(255,255,255,.75);cursor:pointer;transition:var(--t);padding:0}
+.tab-btn.active{color:#fff}
+.tab-btn.active .tl{color:var(--blue)}
+.tab-btn .ti{font-size:22px;line-height:1}
+.tab-btn .tl{font-size:10px;font-weight:600;letter-spacing:.02em}
+.tab-upload{flex:1;display:flex;align-items:center;justify-content:center;border:none;background:none;cursor:pointer;padding:0}
+.upload-orb{width:52px;height:52px;background:linear-gradient(145deg,#3b8ef8,#1a5fd4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;margin-top:-18px;box-shadow:0 0 0 3px rgba(8,14,28,1),0 0 0 5px rgba(59,130,246,.35),0 8px 24px rgba(29,110,245,.65),inset 0 2px 4px rgba(255,255,255,.3),inset 0 -2px 4px rgba(0,0,0,.3);transition:var(--t);position:relative;overflow:hidden}
+.upload-orb::before{content:'';position:absolute;top:6px;left:10px;width:32px;height:12px;background:radial-gradient(ellipse,rgba(255,255,255,.35),transparent 80%);border-radius:50%;pointer-events:none}
+.tab-upload:hover .upload-orb{transform:scale(1.07)}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px}
+.card-sm{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:11px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.b-tro{background:#1a1200;color:#ffd700;border:1px solid rgba(255,215,0,.35)}
+.b-leg{background:#170d38;color:#a78bfa;border:1px solid rgba(167,139,250,.2)}
+.b-epi{background:#1a0e00;color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
+.b-rar{background:#012e2c;color:#14b8a6;border:1px solid rgba(20,184,166,.2)}
+.b-unc{background:#0a1f3d;color:#60a5fa;border:1px solid rgba(96,165,250,.2)}
+.b-com{background:var(--bg4);color:var(--text2)}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:9px 16px;border-radius:var(--r);border:none;cursor:pointer;font-size:13px;font-weight:600;transition:var(--t);font-family:'Inter',sans-serif}
+.btn:active{transform:scale(.96)}
+.btn-p{background:var(--blue2);color:#fff}.btn-p:hover{background:var(--blue)}
+.btn-g{background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--border2)}.btn-g:hover{background:rgba(255,255,255,.08)}
+.btn-d{background:rgba(239,68,68,.08);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.btn-big{width:100%;justify-content:center;padding:14px;font-size:15px;font-weight:800;border-radius:var(--rl)}
+.ava{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.post{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px;margin-bottom:10px}
+.post-img{background:var(--bg3);border-radius:var(--r);height:220px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;border:1px solid var(--border);font-size:72px;overflow:hidden}
+.post-img img{width:100%;height:100%;object-fit:cover}
+.post-acts{display:flex;gap:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.05)}
+.act-btn{background:none;border:none;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:4px;font-size:13px;padding:5px 0;transition:var(--t)}
+.act-btn:hover{color:var(--text)}.act-btn.liked{color:var(--red)}
+.tag{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.15);border-radius:20px;padding:2px 9px;font-size:11px;color:var(--blue);display:inline-block;margin:2px}
+.tabs{display:flex;gap:3px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r);padding:3px;margin-bottom:12px}
+.tab{flex:1;padding:7px 4px;border:none;background:none;color:var(--text2);border-radius:9px;cursor:pointer;font-size:11px;font-weight:500;transition:var(--t)}
+.tab.active{background:var(--bg4);color:var(--text);font-weight:700;border:1px solid var(--border2)}
+.fld{margin-bottom:10px}
+.fld label{font-size:10px;color:var(--text2);margin-bottom:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.fld input,.fld textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:var(--r);padding:10px 12px;color:var(--text);font-size:13px;outline:none;transition:var(--t);font-family:'Inter',sans-serif}
+.fld input:focus{border-color:rgba(59,130,246,.5)}
+.fish-db-row{display:flex;align-items:center;gap:9px;padding:10px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:var(--t)}
+.fish-db-row:hover{background:rgba(255,255,255,.03)}
+.fish-db-row:last-child{border-bottom:none}
+.modal-overlay{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--bg2);border:1px solid rgba(255,255,255,.08);border-radius:var(--rxl);width:100%;max-width:400px;padding:20px;max-height:88vh;overflow-y:auto;animation:scaleIn .22s ease;box-shadow:0 30px 80px rgba(0,0,0,.7)}
+@keyframes scaleIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-head h2{font-size:16px;font-weight:800}
+.modal-close{background:rgba(255,255,255,.06);border:none;color:var(--text2);font-size:18px;cursor:pointer;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.stat-ctab{flex:1;min-width:0;padding:4px 6px;background:rgba(29,110,245,.08);border:1px solid rgba(59,130,246,.2);color:rgba(255,255,255,.5);border-radius:20px;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-family:'Inter',sans-serif;transition:transform .15s,background .15s,color .15s,border-color .15s;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat-ctab:hover{transform:scale(1.05)}
+.stat-ctab.active{background:rgba(29,110,245,.22);border-color:rgba(79,142,247,.6);color:#fff}
+.battle-arena{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:16px}
+.tcg-card{border-radius:14px;overflow:hidden;position:relative;transition:transform .3s ease;aspect-ratio:2/3;display:flex;flex-direction:column}
+.tcg-card:hover{transform:scale(1.03) rotate(-1deg)}
+.tcg-card::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.08) 30%,rgba(255,255,255,.18) 38%,rgba(255,255,255,.08) 46%,transparent 56%);background-size:200% 200%;animation:holo 3s ease infinite;pointer-events:none;border-radius:14px}
+@keyframes holo{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.tcg-tro{border:3px solid var(--gold);box-shadow:0 0 20px rgba(255,215,0,.5)}
+.tcg-leg{border:3px solid #a78bfa;box-shadow:0 0 20px rgba(167,139,250,.5)}
+.tcg-epi{border:3px solid #f59e0b;box-shadow:0 0 20px rgba(245,158,11,.5)}
+.tcg-rar{border:3px solid #14b8a6;box-shadow:0 0 18px rgba(20,184,166,.4)}
+.tcg-unc{border:3px solid #60a5fa;box-shadow:0 0 16px rgba(96,165,250,.4)}
+.tcg-com{border:3px solid #4a5568}
+.tcg-me{border:3px solid var(--blue)!important;box-shadow:0 0 20px rgba(29,110,245,.6)!important}
+.tcg-header{padding:6px 8px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.5);flex-shrink:0}
+.tcg-name{font-size:9px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px}
+.tcg-hp{font-size:9px;font-weight:800;color:var(--red)}
+.tcg-photo{flex:1;position:relative;overflow:hidden;background:var(--bg3);min-height:80px}
+.tcg-photo img{width:100%;height:100%;object-fit:cover}
+.tcg-photo-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:44px;background:linear-gradient(135deg,rgba(10,20,40,1),rgba(20,40,80,.8))}
+.tcg-photo-label{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:700;color:rgba(255,255,255,.8);white-space:nowrap}
+.tcg-body{padding:6px 7px;background:rgba(0,0,0,.6);flex-shrink:0}
+.tcg-species{font-size:8px;color:rgba(255,255,255,.55);margin-bottom:4px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tcg-stat-row{display:flex;align-items:center;gap:3px;margin-bottom:3px}
+.tcg-stat-lbl{font-size:7px;font-weight:700;color:rgba(255,255,255,.4);width:20px;flex-shrink:0}
+.tcg-stat-bar{flex:1;height:3px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.tcg-stat-fill{height:100%;border-radius:3px}
+.tcg-stat-val{font-size:7px;font-weight:800;width:14px;text-align:right}
+.tcg-footer{padding:5px 7px;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.tcg-score{font-size:10px;font-weight:900;color:var(--amber)}
+.tcg-badge-sm{font-size:7px;font-weight:700;padding:1px 5px;border-radius:10px}
+.vs-sep{text-align:center;font-size:42px;letter-spacing:4px;color:#fff;text-shadow:0 0 12px rgba(239,68,68,.9),0 0 28px rgba(239,68,68,.6),0 0 50px rgba(239,68,68,.3);animation:vsPulse 1.6s ease-in-out infinite;position:relative;z-index:2}
+@keyframes vsPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.res-box{border-radius:var(--rxl);padding:22px;text-align:center;margin-top:14px}
+.rw{background:rgba(34,197,94,.07);border:2px solid var(--green2)}
+.rl{background:rgba(239,68,68,.07);border:2px solid var(--red2)}
+#chat-fab{position:fixed;bottom:72px;right:14px;z-index:300;display:flex;flex-direction:column;align-items:flex-end}
+#chat-panel{background:rgba(6,10,20,.97);border:1px solid rgba(59,130,246,.25);border-radius:20px;width:280px;display:none;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.7);margin-bottom:10px;overflow:hidden}
+#chat-panel.open{display:flex}
+#chat-head{background:linear-gradient(135deg,rgba(29,110,245,.25),rgba(14,165,233,.15));border-bottom:1px solid rgba(59,130,246,.2);padding:12px 14px;display:flex;align-items:center;gap:8px}
+#chat-msgs{padding:12px 12px 8px;height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.cmsg-u{align-self:flex-end;background:linear-gradient(135deg,var(--blue2),#1a5fd4);color:#fff;border-radius:14px 14px 4px 14px;padding:8px 12px;font-size:12px;max-width:82%}
+.cmsg-b{align-self:flex-start;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:14px 14px 14px 4px;padding:8px 12px;font-size:12px;max-width:82%;color:var(--text)}
+#chat-qrow{display:flex;gap:5px;padding:8px 10px;border-top:1px solid rgba(255,255,255,.07);flex-wrap:wrap;background:rgba(255,255,255,.02)}
+.cq{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:20px;padding:4px 10px;color:rgba(255,255,255,.7);cursor:pointer;font-size:10px;transition:var(--t);font-family:'Inter',sans-serif}
+.cq:hover{background:rgba(59,130,246,.2);color:#fff}
+#chat-irow{border-top:1px solid rgba(255,255,255,.07);padding:8px 10px;display:flex;gap:6px;background:rgba(255,255,255,.02)}
+#chat-inp{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:7px 12px;color:var(--text);font-size:12px;outline:none;font-family:'Inter',sans-serif}
+#chat-inp:focus{border-color:rgba(59,130,246,.5)}
+.csend{background:var(--blue2);border:none;border-radius:50%;width:30px;height:30px;color:#fff;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#chat-fab-btn{width:54px;height:54px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--t)}
+#chat-fab-btn:hover{transform:scale(1.08)}
+#chat-fab-btn svg{width:38px;height:38px;filter:drop-shadow(0 4px 14px rgba(0,0,0,.4))}
+.grade-card{border-radius:var(--rl);padding:12px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;overflow:hidden;transform-style:preserve-3d;transition:transform .25s ease,box-shadow .25s ease;cursor:default}
+.grade-card:hover{transform:perspective(400px) rotateY(-8deg) rotateX(4deg) scale(1.06)}
+.grade-card::before{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.18) 38%,rgba(255,255,255,.06) 55%,transparent 70%);background-size:200% 200%;animation:gradeHolo 3s ease infinite;pointer-events:none;z-index:1;border-radius:inherit}
+@keyframes gradeHolo{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.grade-card>*{position:relative;z-index:2}
+.grade-icon{width:52px;height:52px;display:flex;align-items:center;justify-content:center;border-radius:50%;margin-bottom:4px}
+.grade-nm{font-size:12px;font-weight:800;letter-spacing:.02em;line-height:1.2}
+.grade-rg{font-size:10px;font-weight:600;opacity:.9;line-height:1.3}
+.grade-xp{font-size:9px;font-weight:700;line-height:1.3}
+.grade-lv{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;line-height:1.2}
+.g-ama{background:linear-gradient(145deg,#1e2530,#2d3748,#1a2035);border:1px solid rgba(148,163,184,.5);box-shadow:0 4px 18px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)}
+.g-ama .grade-icon{background:rgba(148,163,184,.15);box-shadow:0 0 12px rgba(148,163,184,.3)}
+.g-ama .grade-nm{color:#94a3b8}.g-ama .grade-rg,.g-ama .grade-xp,.g-ama .grade-lv{color:#64748b}
+.g-con{background:linear-gradient(145deg,#0d2218,#163a28,#0a1a12);border:1px solid rgba(52,211,153,.5);box-shadow:0 4px 18px rgba(16,185,129,.25),inset 0 1px 0 rgba(52,211,153,.15)}
+.g-con .grade-icon{background:rgba(52,211,153,.12);box-shadow:0 0 14px rgba(52,211,153,.4)}
+.g-con .grade-nm{color:#34d399}.g-con .grade-rg,.g-con .grade-xp,.g-con .grade-lv{color:#10b981}
+.g-exp{background:linear-gradient(145deg,#0a1628,#0f2545,#071020);border:1px solid rgba(96,165,250,.55);box-shadow:0 4px 18px rgba(59,130,246,.3),inset 0 1px 0 rgba(96,165,250,.2)}
+.g-exp .grade-icon{background:rgba(96,165,250,.12);box-shadow:0 0 14px rgba(96,165,250,.45)}
+.g-exp .grade-nm{color:#60a5fa}.g-exp .grade-rg,.g-exp .grade-xp,.g-exp .grade-lv{color:#3b82f6}
+.g-cha{background:linear-gradient(145deg,#160d2e,#231050,#120830);border:1px solid rgba(167,139,250,.55);box-shadow:0 4px 18px rgba(139,92,246,.35),inset 0 1px 0 rgba(167,139,250,.2)}
+.g-cha .grade-icon{background:rgba(167,139,250,.12);box-shadow:0 0 14px rgba(167,139,250,.5)}
+.g-cha .grade-nm{color:#a78bfa}.g-cha .grade-rg,.g-cha .grade-xp,.g-cha .grade-lv{color:#8b5cf6}
+.g-leg{background:linear-gradient(145deg,#1e1200,#2d1f00,#180f00);border:1px solid rgba(251,191,36,.55);box-shadow:0 4px 20px rgba(245,158,11,.35),inset 0 1px 0 rgba(251,191,36,.2)}
+.g-leg .grade-icon{background:rgba(251,191,36,.12);box-shadow:0 0 16px rgba(251,191,36,.5)}
+.g-leg .grade-nm{color:#fbbf24}.g-leg .grade-rg,.g-leg .grade-xp,.g-leg .grade-lv{color:#d97706}
+.g-dieu{background:linear-gradient(145deg,#1a1000,#2e1f00,#3a2500,#1a1000);border:2px solid rgba(255,215,0,.7);box-shadow:0 0 0 1px rgba(255,215,0,.15),0 6px 28px rgba(255,180,0,.55),0 0 50px rgba(255,200,0,.2),inset 0 1px 0 rgba(255,220,60,.3);animation:dieuPulse 2.5s ease-in-out infinite}
+@keyframes dieuPulse{0%,100%{box-shadow:0 0 0 1px rgba(255,215,0,.15),0 6px 28px rgba(255,180,0,.55),0 0 50px rgba(255,200,0,.2),inset 0 1px 0 rgba(255,220,60,.3)}50%{box-shadow:0 0 0 2px rgba(255,215,0,.25),0 8px 36px rgba(255,180,0,.7),0 0 70px rgba(255,200,0,.35),inset 0 1px 0 rgba(255,220,60,.4)}}
+.g-dieu .grade-icon{background:rgba(255,215,0,.14);box-shadow:0 0 20px rgba(255,215,0,.65),0 0 40px rgba(255,180,0,.3)}
+.g-dieu .grade-nm{color:#ffd700;text-shadow:0 0 10px rgba(255,215,0,.6)}
+.g-dieu .grade-rg,.g-dieu .grade-xp,.g-dieu .grade-lv{color:#f59e0b}
+</style>
+</head>
+<body>
+<div id="landing">
+<div id="ocean-bg"></div><div id="ocean-glow"></div><div id="bubble-container"></div>
+<div class="land-content">
+<div class="land-logo">Battle<span>Fish</span></div>
+<div class="land-slogan">Your catch, their crush!</div>
+<div class="auth-tabs">
+<button class="auth-tab active" id="tab-login" onclick="switchAuth('login')">Connexion</button>
+<button class="auth-tab" id="tab-reg" onclick="switchAuth('register')">Inscription</button>
+</div>
+<div class="land-card" id="form-login">
+<div class="lf">
+<label>Email</label><input type="email" id="login-email" placeholder="ton@email.com" autocomplete="email">
+<label>Mot de passe <span id="pw-toggle" onclick="togglePw()" style="color:var(--blue);cursor:pointer;font-size:10px;float:right;font-weight:400;text-transform:none">Afficher</span></label>
+<input type="password" id="pw-inp" placeholder="••••••••" autocomplete="current-password">
+</div>
+<button class="btn-join" onclick="doLogin()">JOIN THE BATTLE →</button>
+<button class="btn-outline" style="margin-top:6px" onclick="switchAuth('register')">Créer un compte</button>
+</div>
+<div class="land-card" id="form-reg" style="display:none">
+<div class="lf">
+<label>Pseudo <span style="color:var(--blue);font-size:9px;font-weight:600;text-transform:none">visible de tous</span></label>
+<input type="text" id="reg-pseudo" placeholder="@monpseudo" autocomplete="username">
+<label>Email</label><input type="email" id="reg-email" placeholder="ton@email.com" autocomplete="email">
+<label>Mot de passe</label><input type="password" id="reg-pw" placeholder="••••••••" autocomplete="new-password">
+</div>
+<div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:var(--r);padding:12px 14px;margin-bottom:12px">
+<div style="font-size:11px;font-weight:800;color:var(--amber);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">⚠️ Vérification d'âge obligatoire</div>
+<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:8px"><input type="checkbox" id="age-check" style="margin-top:2px;width:16px;height:16px;accent-color:var(--blue);flex-shrink:0"><span style="font-size:12px;color:rgba(255,255,255,.85);line-height:1.5">J'atteste avoir <strong style="color:#fff">18 ans ou plus</strong>. BattleFish est réservé aux adultes.</span></label>
+<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:8px"><input type="checkbox" id="cgu-check" style="margin-top:2px;width:16px;height:16px;accent-color:var(--blue);flex-shrink:0"><span style="font-size:12px;color:rgba(255,255,255,.85);line-height:1.5">J'accepte les <span onclick="openLegal('cgu')" style="color:var(--blue);cursor:pointer;text-decoration:underline">CGU</span> et la <span onclick="openLegal('confidentialite')" style="color:var(--blue);cursor:pointer;text-decoration:underline">politique de confidentialité</span></span></label>
+<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="rgpd-check" style="margin-top:2px;width:16px;height:16px;accent-color:var(--blue);flex-shrink:0"><span style="font-size:12px;color:rgba(255,255,255,.85);line-height:1.5">J'accepte le traitement de mes données conformément au <span onclick="openLegal('rgpd')" style="color:var(--blue);cursor:pointer;text-decoration:underline">RGPD</span></span></label>
+</div>
+<div style="background:rgba(29,110,245,.06);border:1px solid rgba(29,110,245,.15);border-radius:var(--r);padding:10px 12px;margin-bottom:12px;font-size:11px;color:rgba(255,255,255,.55);line-height:1.6">🛡️ BattleFish applique une modération stricte. Tout contenu inapproprié entraîne une suspension immédiate.</div>
+<button class="btn-join" onclick="doRegister()">JOIN THE BATTLE →</button>
+</div>
+<div style="width:100%;margin-top:14px">
+<button id="rules-btn" style="width:100%;background:rgba(30,60,120,.35);border:1px solid rgba(80,130,200,.4);border-radius:50px;padding:12px 20px;color:rgba(255,255,255,.85);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Inter',sans-serif"><span>🎯 Règles du jeu BattleFish</span><span id="rules-arrow" style="font-size:12px;transition:.3s">▼</span></button>
+<div id="rules-dropdown" style="display:none;background:#06090f;border:1px solid rgba(80,130,200,.35);border-radius:18px;margin-top:6px;overflow-y:auto">
+<div class="rdrop-section"><div class="rdrop-title">🎁 Bienvenue</div>
+<div class="rdrop-row"><span>Création de compte</span><span class="rdrop-xp">+50 XP</span></div>
+<div class="rdrop-row"><span>1ère photo uploadée</span><span class="rdrop-xp">+30 XP</span></div>
+<div class="rdrop-row"><span>1er Battle lancé</span><span class="rdrop-xp">+20 XP</span></div></div>
+<div class="rdrop-section"><div class="rdrop-title">📸 Upload — XP par rareté</div>
+<div class="rdrop-row"><span>⚪ Commun ×2</span><span class="rdrop-xp">+15 XP</span></div>
+<div class="rdrop-row"><span>🟢 Peu commun ×2.5</span><span class="rdrop-xp">+25 XP</span></div>
+<div class="rdrop-row"><span>🔵 Rare ×3</span><span class="rdrop-xp">+35 XP</span></div>
+<div class="rdrop-row"><span>🟠 Épique ×4</span><span class="rdrop-xp">+65 XP</span></div>
+<div class="rdrop-row"><span>🟣 Légendaire ×5</span><span class="rdrop-xp">+110 XP</span></div>
+<div class="rdrop-row"><span>🏆 Trophée ×6</span><span class="rdrop-xp">+180 XP + 500 XP bonus</span></div></div>
+<div class="rdrop-section"><div class="rdrop-title">⚔️ Battles</div>
+<div class="rdrop-row"><span>Participer (défaite)</span><span class="rdrop-xp">+20 XP</span></div>
+<div class="rdrop-row"><span>Victoire</span><span class="rdrop-xp">+90 XP</span></div>
+<div class="rdrop-row"><span>Victoire vs niveau sup.</span><span class="rdrop-xp">+130 XP</span></div>
+<div class="rdrop-row"><span>Victoire avec Trophée ×6</span><span class="rdrop-xp">+200 XP bonus</span></div></div>
+<div class="rdrop-section"><div class="rdrop-title">🔥 Combos</div>
+<div class="rdrop-row"><span>3 victoires consécutives</span><span class="rdrop-xp">+50 XP</span></div>
+<div class="rdrop-row"><span>5 victoires consécutives</span><span class="rdrop-xp">+100 XP</span></div>
+<div class="rdrop-row"><span>10 victoires consécutives</span><span class="rdrop-xp">+250 XP · cadre doré</span></div></div>
+<div class="rdrop-section" style="border-bottom:none"><div class="rdrop-title">🏅 Grades</div>
+<div class="rdrop-row"><span style="color:#9ca3af">Niv. 1–10</span><span>Amateur</span></div>
+<div class="rdrop-row"><span style="color:#34d399">Niv. 11–20</span><span>Confirmé</span></div>
+<div class="rdrop-row"><span style="color:#60a5fa">Niv. 21–40</span><span>Expert</span></div>
+<div class="rdrop-row"><span style="color:#a78bfa">Niv. 41–50</span><span>Chasseur</span></div>
+<div class="rdrop-row"><span style="color:#fbbf24">Niv. 51–90</span><span>Légende</span></div>
+<div class="rdrop-row"><span style="color:#ffd700;font-weight:800">Niv. 91–100</span><span>👑 DIEU</span></div></div>
+</div></div>
+<div style="margin-top:28px;padding-bottom:10px;text-align:center">
+<div style="display:flex;justify-content:center;align-items:center;gap:36px;margin-bottom:14px">
+<a href="https://www.youtube.com/@fabfishing" target="_blank" style="text-decoration:none"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="4" fill="#FF0000"/><path d="M8.3 12.2V7.8L12.5 10l-4.2 2.2z" fill="white"/></svg></a>
+<a href="https://www.tiktok.com/@fabfishing" target="_blank" style="text-decoration:none"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="4" fill="#010101"/><path d="M13.8 4.2a3.8 3.8 0 01-.9-2.5H10v11c0 1-.9 1.9-1.9 1.9s-1.9-.9-1.9-1.9.9-1.9 1.9-1.9c.2 0 .4 0 .5.1V8c-.2 0-.4 0-.5 0C5.5 8 3.3 10.2 3.3 13s2.2 5 4.8 5 4.8-2.2 4.8-5V8.2c1 .6 2.1 1 3.3 1V6.4c-.9 0-1.8-.8-2.4-2.2z" fill="white"/></svg></a>
+<a href="https://www.instagram.com/fabfishing.officiel" target="_blank" style="text-decoration:none"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><defs><linearGradient id="ig2" x1="0" y1="20" x2="20" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#f09433"/><stop offset="50%" stop-color="#dc2743"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs><rect width="20" height="20" rx="4" fill="url(#ig2)"/><rect x="4" y="4" width="12" height="12" rx="3.5" stroke="white" stroke-width="1.5"/><circle cx="10" cy="10" r="3" stroke="white" stroke-width="1.5"/><circle cx="14" cy="6" r="1" fill="white"/></svg></a>
+</div>
+<div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.88);margin-bottom:4px">FabFishing</div>
+<div style="font-size:11px;color:rgba(255,255,255,.45)">Fondateur de BattleFish</div>
+</div>
+</div>
+</div>
+
+<div id="app">
+<div id="topnav">
+<div class="logo-sm" onclick="show('home')">
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;margin-right:-4px"><line x1="1" y1="4" x2="19" y2="4" stroke="white" stroke-width="1.5" stroke-linecap="round"/><line x1="5" y1="8" x2="19" y2="8" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round" opacity=".85"/><line x1="8" y1="12" x2="19" y2="12" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity=".65"/><line x1="11" y1="16" x2="19" y2="16" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round" opacity=".45"/></svg>
+Battle<span>Fish</span></div>
+<div class="nav-right-top">
+<div class="pill pill-fire">🔥 <span id="nav-streak">0</span></div>
+<div class="pill pill-xp">⚡ <span id="nav-xp">0</span></div>
+<button class="icon-btn" onclick="show('notifs')">🔔</button>
+<button class="icon-btn" id="lang-btn" onclick="toggleLang()" style="font-size:9px;font-weight:700;border:1px solid var(--border);border-radius:6px;width:auto;padding:3px 6px;height:22px">FR</button>
+<div class="ava-btn" id="nav-avatar" onclick="show('profile')"></div>
+</div></div>
+
+<div id="home" class="page active">
+<div style="background:linear-gradient(135deg,rgba(11,30,69,.9),rgba(17,45,110,.85));border:1px solid rgba(59,130,246,.2);border-radius:var(--rxl);padding:20px 16px;margin-bottom:14px;display:flex;align-items:center;gap:14px">
+<div style="flex:1">
+<div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px" id="home-grade">Amateur · Rang —</div>
+<div style="font-size:20px;font-weight:800;margin-bottom:3px">Bienvenue, <span id="home-pseudo">Pêcheur</span> 👋</div>
+<div style="color:var(--text2);font-size:12px;margin-bottom:10px">Lance ton premier battle pour débloquer ton rang !</div>
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+<div style="flex:1;background:rgba(255,255,255,.06);border-radius:20px;height:6px;overflow:hidden"><div id="home-xpbar" style="width:0%;height:100%;background:linear-gradient(90deg,var(--blue2),#60a5fa);border-radius:20px;transition:.6s"></div></div>
+<span style="font-size:11px;font-weight:700;color:var(--blue)"><span id="home-xp">0</span>/800 XP</span>
+</div>
+<div style="display:flex;gap:7px">
+<button class="btn btn-p" style="font-size:12px" onclick="openBattle()">⚔️ Battle</button>
+<button class="btn btn-g" style="font-size:12px" onclick="openUpload()">📸 Upload</button>
+</div></div>
+<div style="font-size:50px;opacity:.65">🎣</div>
+</div>
+<div class="g4" style="margin-bottom:14px">
+<div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:800;color:var(--green)" id="stat-wins">0</div><div style="font-size:10px;color:var(--text2)">Victoires</div></div>
+<div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:800;color:var(--amber)" id="stat-catches">0</div><div style="font-size:10px;color:var(--text2)">Prises</div></div>
+<div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:800;color:var(--amber)" id="stat-streak">🔥0</div><div style="font-size:10px;color:var(--text2)">Série</div></div>
+<div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:800;color:var(--purple)" id="stat-rank">—</div><div style="font-size:10px;color:var(--text2)">Rang</div></div>
+</div>
+<div class="card" style="text-align:center;padding:28px 20px;border-style:dashed">
+<div style="font-size:40px;margin-bottom:12px">🎣</div>
+<div style="font-size:15px;font-weight:800;margin-bottom:6px">Bienvenue sur BattleFish !</div>
+<div style="font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.7">Commence par uploader ta première prise pour<br>activer ta carte TCG et rejoindre l'arène.</div>
+<div style="display:flex;gap:8px;justify-content:center">
+<button class="btn btn-p" onclick="openUpload()">📸 Ma première prise</button>
+<button class="btn btn-g" onclick="show('fishdb')">📖 Base espèces</button>
+</div></div>
+</div>
+
+<div id="feed" class="page">
+<div class="tabs"><button class="tab active">Pour toi</button><button class="tab">Abonnés</button><button class="tab">Battles live</button></div>
+<div id="feed-posts"><div style="text-align:center;padding:40px 20px;color:var(--text2)"><div style="font-size:36px;margin-bottom:12px">📭</div><div style="font-size:14px;font-weight:700;margin-bottom:6px">Aucune publication pour l'instant</div><div style="font-size:12px;margin-bottom:16px">Sois le premier à partager une prise !</div><button class="btn btn-p" onclick="openUpload()">📸 Publier une prise</button></div></div>
+</div>
+
+<div id="ranking" class="page">
+<div class="tabs">
+<button class="tab active" onclick="switchRank(0,this)">Jour</button>
+<button class="tab" onclick="switchRank(1,this)">Semaine</button>
+<button class="tab" onclick="switchRank(2,this)">Mois</button>
+<button class="tab" onclick="switchRank(3,this)">Global</button>
+</div>
+<div id="rank-content" class="card" style="padding:20px;text-align:center;color:var(--text2)">
+<div style="font-size:32px;margin-bottom:10px">🏆</div>
+<div style="font-size:14px;font-weight:700;margin-bottom:6px">Classement en cours de construction</div>
+<div style="font-size:12px">Lance des battles pour apparaître ici !</div>
+</div></div>
+
+<div id="fishdb" class="page">
+<div style="display:flex;gap:7px;margin-bottom:10px">
+<input id="fish-search" style="flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:var(--r);padding:10px 13px;color:var(--text);font-size:13px;outline:none;font-family:'Inter',sans-serif" placeholder="Rechercher..." oninput="filterFish(this.value)">
+<div class="csel-wrap" style="margin-bottom:0;min-width:100px">
+<div class="csel-btn" onclick="toggleCsel(this)" style="padding:10px 12px;font-size:12px"><span>Zone</span><span style="font-size:10px;opacity:.5">▼</span></div>
+<div class="csel-dd">
+<div class="csel-opt sel" onclick="pickCselZone(this,'')">Tout</div>
+<div class="csel-opt" onclick="pickCselZone(this,'Eau douce')">🏞️ Eau douce</div>
+<div class="csel-opt" onclick="pickCselZone(this,'Marine')">🌊 Marine</div>
+<div class="csel-opt" onclick="pickCselZone(this,'Méditerranée')">☀️ Méditerranée</div>
+</div></div></div>
+<div class="tabs" style="flex-wrap:wrap;gap:2px">
+<button class="tab active" style="font-size:10px" onclick="filterRarity('')">Tout</button>
+<button class="tab" style="font-size:10px" onclick="filterRarity('Trophée')">🏆</button>
+<button class="tab" style="font-size:10px" onclick="filterRarity('Légendaire')">Légend.</button>
+<button class="tab" style="font-size:10px" onclick="filterRarity('Épique')">Épique</button>
+<button class="tab" style="font-size:10px" onclick="filterRarity('Rare')">Rare</button>
+<button class="tab" style="font-size:10px" onclick="filterRarity('Peu commun')">P.Com.</button>
+<button class="tab" style="font-size:10px" onclick="filterRarity('Commun')">Commun</button>
+</div>
+<div class="card" style="padding:0;overflow:hidden"><div id="fish-list"></div></div>
+<div id="fish-detail"></div>
+</div>
+
+<div id="profile" class="page">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+<div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(245,158,11,.5),transparent)"></div>
+<div style="display:flex;align-items:center;gap:7px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:20px;padding:5px 14px"><span style="font-size:14px">🃏</span><span style="font-size:11px;font-weight:800;color:var(--amber);text-transform:uppercase;letter-spacing:.08em">Ma carte publique</span></div>
+<div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(245,158,11,.5))"></div>
+</div>
+<div class="card" style="margin-bottom:12px;background:linear-gradient(135deg,rgba(11,30,69,.95),rgba(17,45,110,.85));border:1px solid rgba(59,130,246,.25)">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+<div id="card-avatar" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--blue2),#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;border:2px solid rgba(59,130,246,.4);flex-shrink:0;overflow:hidden"></div>
+<div style="flex:1"><div style="font-size:16px;font-weight:800" id="profile-pseudo">—</div><div style="font-size:11px;color:var(--text2)" id="profile-grade">Amateur · Niveau 1</div><span class="badge b-com" style="margin-top:4px;display:inline-flex">COMMUN</span></div>
+<div style="text-align:right"><div style="font-size:10px;color:var(--text3)">Rang global</div><div style="font-size:20px;font-weight:900;color:var(--purple)">—</div></div>
+</div>
+<div class="g4" style="margin-bottom:10px">
+<div style="background:rgba(0,0,0,.2);border-radius:var(--r);padding:7px;text-align:center"><div style="font-size:15px;font-weight:800;color:var(--green)" id="pub-wins">0</div><div style="font-size:9px;color:var(--text2)">Victoires</div></div>
+<div style="background:rgba(0,0,0,.2);border-radius:var(--r);padding:7px;text-align:center"><div style="font-size:15px;font-weight:800;color:var(--blue)" id="pub-winrate">—%</div><div style="font-size:9px;color:var(--text2)">Win Rate</div></div>
+<div style="background:rgba(0,0,0,.2);border-radius:var(--r);padding:7px;text-align:center"><div style="font-size:15px;font-weight:800;color:var(--amber)" id="pub-catches">0</div><div style="font-size:9px;color:var(--text2)">Prises</div></div>
+<div style="background:rgba(0,0,0,.2);border-radius:var(--r);padding:7px;text-align:center"><div style="font-size:15px;font-weight:800;color:var(--amber)" id="pub-streak">🔥0</div><div style="font-size:9px;color:var(--text2)">Série</div></div>
+</div>
+<div style="display:flex;gap:7px;margin-top:10px">
+<button class="btn btn-p" style="flex:1;justify-content:center;font-size:12px" onclick="openBattle()">⚔️ Défier</button>
+<button class="btn btn-g" style="flex:1;justify-content:center;font-size:12px">+ Suivre</button>
+</div></div>
+
+<div style="display:flex;align-items:center;gap:10px;margin-top:20px;margin-bottom:10px">
+<div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(167,139,250,.5),transparent)"></div>
+<div style="display:flex;align-items:center;gap:7px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:20px;padding:5px 14px"><span style="font-size:14px">🏅</span><span style="font-size:11px;font-weight:800;color:var(--purple);text-transform:uppercase;letter-spacing:.08em">Grades</span></div>
+<div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(167,139,250,.5))"></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+<div class="grade-card g-ama"><div class="grade-lv">Niv. 1–10</div><div class="grade-icon"><svg viewBox="0 0 670 1280" xmlns="http://www.w3.org/2000/svg" style="width:22px;height:auto;filter:drop-shadow(0 0 6px rgba(148,163,184,.5))"><g transform="translate(0,1280) scale(0.1,-0.1)" fill="#94a3b8"><path d="M3683 12658 c-107 -131 -110 -133 -163 -145 -291 -64 -629 -60 -772 11 l-48 23 0 -241 c0 -274 -6 -312 -70 -441 -46 -93 -149 -233 -236 -320 -67 -67 -158 -117 -244 -136 -55 -12 -230 -7 -279 7 -21 6 -23 5 -17 -12 5 -10 11 -74 13 -140 8 -182 -17 -267 -101 -341 -92 -81 -217 -83 -397 -9 -14 6 -14 -1 2 -61 32 -120 19 -275 -30 -372 -61 -118 -310 -292 -703 -488 -210 -105 -197 -92 -219 -232 -22 -146 25 -265 126 -322 53 -30 185 -62 325 -79 346 -42 725 61 1005 274 84 64 127 87 219 115 143 44 325 37 480 -18 45 -16 121 -43 169 -60 135 -48 273 -81 367 -87 101 -7 161 6 405 91 180 62 226 67 379 40 274 -48 397 -194 341 -404 -32 -121 -127 -254 -203 -284 -124 -49 -301 -18 -522 91 -52 26 -98 48 -101 50 -3 1 -9 -35 -13 -80 -17 -206 -82 -353 -210 -479 -45 -44 -101 -89 -126 -101 -67 -33 -192 -36 -349 -9 -68 12 -125 20 -126 19 -2 -2 10 -43 27 -91 74 -222 38 -407 -106 -546 -86 -82 -139 -105 -236 -104 -41 1 -110 8 -153 16 -72 13 -78 13 -74 -2 3 -9 17 -56 33 -106 25 -80 28 -106 28 -230 1 -137 0 -141 -31 -207 -44 -93 -95 -139 -201 -181 -163 -65 -255 -71 -374 -23 -34 14 -63 24 -65 22 -2 -2 5 -24 16 -49 33 -77 53 -194 46 -265 -14 -129 -80 -214 -229 -293 -62 -33 -78 -34 -223 -13 l-41 6 25 -68 c48 -132 40 -285 -20 -384 -52 -85 -174 -191 -274 -238 -48 -22 -72 -27 -139 -27 l-81 0 17 -41 c10 -22 23 -66 30 -96 18 -78 8 -292 -17 -383 -54 -196 -200 -355 -368 -400 -36 -10 -65 -20 -65 -23 0 -2 21 -27 46 -55 68 -76 94 -134 94 -209 -1 -178 -84 -357 -202 -434 l-44 -28 56 -56 c137 -134 160 -318 73 -592 -4 -13 11 -25 64 -51 112 -57 152 -110 189 -252 25 -98 23 -180 -5 -238 -24 -50 -82 -106 -137 -132 -19 -9 -34 -17 -34 -19 0 -2 46 -50 103 -107 118 -119 170 -193 204 -290 52 -150 37 -296 -50 -468 -23 -47 -43 -87 -44 -90 -2 -3 30 -6 70 -6 92 -1 161 -25 235 -80 103 -77 115 -103 162 -336 22 -112 45 -224 51 -249 l10 -45 107 0 c108 -1 188 -18 282 -63 l35 -17 37 -184 c20 -101 38 -185 40 -187 2 -1 78 -10 168 -18 266 -25 448 -55 513 -84 86 -37 170 -133 239 -269 29 -60 59 -123 65 -142 l12 -33 49 35 c97 72 224 104 364 94 72 -6 89 -12 256 -96 l180 -90 37 63 c69 119 182 205 325 250 146 46 163 45 357 -23 94 -34 173 -61 176 -61 2 0 7 31 10 69 8 95 45 171 121 246 66 65 178 133 284 173 85 32 218 37 271 9 19 -9 37 -17 41 -17 4 0 10 62 14 138 3 75 9 169 13 208 l6 72 184 158 184 159 -8 60 c-12 93 -9 302 6 380 18 95 63 230 100 304 l31 60 -174 150 c-95 82 -176 158 -180 168 -4 10 -10 56 -13 103 -8 122 10 216 62 316 l42 82 -74 6 c-91 8 -213 43 -314 89 -85 39 -104 62 -140 170 -16 47 -20 80 -17 139 l3 77 -25 -7 c-14 -4 -83 -7 -155 -6 -113 1 -141 5 -215 28 -56 18 -97 39 -119 59 -44 42 -123 161 -152 232 -12 30 -25 55 -29 55 -3 0 -14 -17 -25 -37 -29 -55 -147 -175 -239 -245 l-80 -60 -66 6 c-100 10 -178 34 -259 77 -55 30 -71 35 -66 22 43 -103 41 -184 -5 -281 -48 -101 -138 -147 -292 -147 l-87 0 25 -33 c57 -74 114 -254 114 -360 0 -112 -84 -218 -196 -247 l-43 -11 130 -97 c79 -60 141 -116 160 -143 65 -95 108 -245 109 -384 0 -53 6 -74 29 -116 67 -117 201 -184 310 -154 62 16 125 79 151 148 31 81 28 132 -10 237 -60 162 -52 345 20 458 58 92 204 128 350 88 41 -12 98 -27 125 -34 95 -25 152 -71 195 -156 25 -51 50 -158 50 -221 0 -39 -4 -48 -27 -61 -16 -9 -83 -48 -149 -87 l-122 -71 28 -84 c95 -280 62 -496 -88 -584 -43 -26 -55 -28 -152 -28 -116 0 -187 19 -312 81 -37 19 -70 34 -72 34 -3 0 -14 -20 -25 -45 -29 -66 -102 -138 -169 -169 -76 -33 -191 -50 -286 -41 l-75 7 -75 127 -76 127 -186 24 -186 24 6 105 c4 58 9 126 12 151 l6 45 -151 75 -151 74 -17 51 c-13 36 -17 80 -16 155 1 127 24 222 86 353 l42 90 -72 73 c-123 126 -187 296 -165 444 14 94 45 153 122 230 71 71 181 136 283 165 32 9 57 20 55 23 -93 178 -117 269 -99 367 18 98 75 186 141 220 133 69 272 72 342 8 16 -15 17 -14 8 18 -24 83 -2 225 55 362 47 110 81 164 107 170 13 3 111 22 218 42 107 20 196 38 197 39 2 1 -2 29 -8 62 -15 78 -6 217 21 331 20 85 25 96 63 129 99 84 243 123 337 90 24 -8 45 -14 47 -12 2 1 8 182 14 402 7 257 15 408 23 423 6 13 28 35 48 49 44 29 77 25 114 -15 22 -24 24 -34 24 -134 0 -296 61 -542 180 -722 50 -77 150 -178 214 -217 39 -23 40 -23 165 -11 446 42 761 224 914 526 26 53 60 156 53 163 -3 2 -42 12 -89 23 -266 59 -511 174 -663 312 -29 26 -73 78 -99 116 -45 66 -47 73 -52 152 -5 75 5 182 23 247 l7 24 -42 -21 c-92 -47 -211 -47 -333 0 -88 33 -101 48 -106 117 -5 68 9 122 45 170 23 31 27 32 91 32 214 0 490 -140 677 -342 66 -71 148 -180 190 -251 15 -26 29 -47 30 -45 2 2 25 62 51 133 25 72 52 133 58 137 36 24 237 -1 309 -39 l29 -15 -6 39 c-15 104 -17 157 -6 253 l11 105 46 47 c58 58 124 95 194 105 62 10 147 0 189 -22 l28 -15 -33 56 c-47 77 -59 144 -52 294 7 179 20 229 71 281 22 23 70 55 105 72 53 25 77 30 140 31 42 0 89 -3 105 -7 28 -8 27 -6 -13 27 -165 138 -221 326 -177 596 34 211 121 300 328 334 l36 7 -55 52 c-67 63 -119 137 -178 254 -60 119 -125 290 -125 327 0 78 100 220 213 303 l49 36 -79 27 c-43 14 -100 39 -127 55 -68 40 -146 122 -183 192 -39 73 -73 207 -73 288 0 119 57 280 149 423 23 34 41 64 41 66 0 2 -44 6 -97 9 -103 6 -203 32 -285 73 -52 26 -113 76 -128 105 -7 12 1 88 25 247 19 127 35 237 35 245 0 12 -27 15 -157 20 -168 5 -239 18 -330 63 -82 40 -129 92 -144 161 -21 93 -16 282 9 387 12 49 21 90 20 91 -2 1 -129 7 -282 13 -153 7 -281 13 -283 15 -2 2 -12 71 -23 153 -11 82 -23 164 -26 182 l-5 32 -44 -30 c-134 -92 -341 -122 -547 -79 l-57 12 -97 158 c-53 88 -101 159 -105 159 -4 0 -56 -60 -116 -132z"/></g></svg></div>
+<div class="grade-nm">Amateur</div><div class="grade-rg">Niv. 1–10</div><div class="grade-xp">0–800 XP</div></div>
+
+<div class="grade-card g-con"><div class="grade-lv">Niv. 11–20</div><div class="grade-icon"><svg viewBox="0 0 1273 1280" xmlns="http://www.w3.org/2000/svg" style="width:42px;height:auto;filter:drop-shadow(0 0 8px rgba(52,211,153,.5))"><g transform="translate(0,1280) scale(0.1,-0.1)" fill="#34d399"><path d="M3225 12752 c-64 -58 -156 -102 -287 -137 -193 -52 -302 -87 -363 -117 -74 -38 -148 -113 -240 -243 -100 -143 -156 -207 -211 -243 -26 -18 -51 -32 -55 -32 -18 0 6 71 61 180 106 211 115 323 39 516 l-43 109 -13 -50 c-27 -102 -70 -168 -198 -305 -194 -207 -212 -265 -185 -567 16 -168 8 -233 -40 -330 -33 -66 -70 -103 -102 -103 -36 0 -84 60 -97 120 -21 92 -23 275 -8 470 8 102 14 186 13 187 -3 3 -111 -145 -164 -223 -56 -83 -115 -204 -146 -295 -57 -170 -58 -316 -5 -559 26 -115 33 -169 33 -260 1 -104 -2 -120 -25 -170 l-27 -55 -15 35 c-8 19 -20 79 -26 133 -14 121 -24 152 -94 274 -31 54 -59 111 -63 126 -5 21 -12 27 -27 25 -17 -2 -21 -11 -23 -44 -2 -45 -24 -92 -88 -193 -24 -36 -53 -92 -65 -124 -44 -120 -45 -324 -1 -482 87 -312 88 -350 26 -497 l-45 -103 -15 36 c-9 22 -18 97 -25 202 -14 243 -39 287 -180 311 -29 5 -32 4 -26 -12 4 -9 10 -42 13 -74 4 -54 1 -62 -56 -170 -79 -148 -105 -236 -106 -353 -1 -132 23 -215 97 -332 76 -122 90 -165 76 -241 -13 -68 -37 -163 -43 -170 -3 -2 -21 6 -40 17 -93 58 -184 212 -215 367 l-18 89 -36 -57 c-20 -31 -48 -92 -63 -135 -24 -72 -26 -87 -21 -203 6 -155 32 -245 120 -410 96 -183 98 -186 113 -242 7 -29 14 -73 14 -97 l0 -45 -31 30 c-54 51 -99 163 -99 247 0 43 -3 44 -62 18 -97 -42 -133 -102 -133 -221 1 -119 29 -199 195 -540 144 -298 170 -361 170 -417 l0 -34 -31 18 c-68 40 -161 177 -171 253 -3 28 -15 40 -38 40 -28 0 -73 -133 -78 -232 -9 -166 45 -271 257 -506 65 -72 135 -154 155 -181 41 -55 91 -159 101 -209 7 -32 6 -33 -14 -23 -11 7 -57 64 -102 127 -45 64 -100 129 -122 145 -42 30 -133 63 -148 53 -19 -11 -8 -44 22 -65 44 -31 74 -105 98 -241 50 -282 172 -495 378 -663 173 -140 369 -342 351 -360 -7 -8 -239 61 -303 90 -32 14 -74 37 -92 51 -26 20 -37 23 -52 14 -20 -10 -20 -11 -1 -65 67 -194 193 -330 418 -451 165 -89 227 -127 287 -177 64 -52 337 -318 332 -323 -2 -2 -54 15 -117 37 -110 39 -122 41 -267 46 l-153 6 0 -27 c0 -23 4 -26 34 -26 49 0 88 -37 144 -138 59 -107 146 -196 233 -239 95 -47 180 -63 332 -63 73 0 148 -5 167 -10 24 -7 71 -44 145 -115 60 -57 106 -107 103 -110 -3 -3 -68 9 -144 26 -111 26 -162 32 -254 33 -109 0 -119 -1 -205 -35 l-90 -36 60 -12 c148 -29 192 -53 401 -213 182 -139 336 -193 622 -218 146 -13 245 -28 297 -47 46 -16 129 -63 122 -69 -2 -2 -53 8 -113 22 -89 22 -146 28 -309 35 -110 4 -212 11 -227 15 -25 6 -28 4 -28 -19 0 -19 6 -26 31 -31 59 -12 115 -44 254 -147 190 -141 227 -157 424 -178 l156 -17 -117 -14 c-65 -7 -118 -16 -118 -20 0 -15 188 -89 265 -105 66 -14 130 -16 360 -14 355 2 425 1 425 -9 0 -15 -74 -43 -186 -70 -105 -26 -109 -28 -106 -52 2 -14 5 -26 6 -27 7 -7 303 -44 401 -49 l120 -7 153 -146 153 -146 -128 -69 c-277 -150 -585 -345 -813 -515 -388 -289 -734 -641 -955 -972 -35 -52 -62 -95 -60 -97 2 -2 27 16 57 40 80 65 238 170 476 317 118 72 225 139 238 148 19 12 13 -2 -29 -69 -87 -139 -132 -263 -213 -588 -65 -259 -85 -327 -119 -415 -10 -26 -15 -31 102 110 274 328 637 631 1264 1055 104 71 189 127 189 125 0 -1 -7 -19 -15 -38 -8 -20 -15 -41 -15 -47 0 -5 37 10 83 34 88 47 204 92 213 83 3 -3 -41 -288 -99 -634 -57 -345 -103 -630 -102 -631 2 -2 361 186 798 417 437 232 801 421 807 421 7 0 370 -185 807 -411 437 -226 796 -409 798 -407 1 2 -39 257 -91 568 -51 310 -91 566 -89 569 7 6 242 -198 411 -357 88 -82 341 -328 564 -548 382 -375 565 -548 545 -514 -5 8 -18 31 -30 50 -33 53 -99 223 -129 330 -54 196 -71 389 -42 473 32 90 120 153 228 164 122 12 272 -36 593 -192 235 -114 286 -137 292 -131 3 2 -10 12 -29 22 -60 31 -251 162 -359 246 -147 114 -299 249 -604 533 -556 518 -725 653 -1134 909 l-43 28 33 35 c19 19 95 92 169 163 l135 128 180 11 c160 10 229 17 343 36 26 5 32 11 32 30 0 25 -9 29 -150 65 -65 17 -140 51 -140 63 0 7 79 7 253 1 469 -17 565 -8 730 68 81 38 80 39 -73 61 l-95 14 100 7 c248 19 292 34 475 166 132 96 229 150 269 150 33 0 40 6 34 28 -4 16 -23 17 -211 14 -170 -2 -230 -7 -333 -27 -151 -30 -152 -30 -114 -5 75 52 173 75 360 85 152 9 319 37 414 69 97 34 172 77 310 180 142 105 199 133 315 155 l91 17 -77 32 c-149 62 -242 66 -481 17 -71 -15 -130 -25 -133 -23 -9 9 162 181 200 201 37 20 57 22 196 23 85 1 180 6 210 12 180 34 300 126 400 304 41 74 81 108 126 108 30 0 34 3 34 25 l0 25 -151 0 c-145 0 -154 -1 -256 -35 -132 -44 -149 -44 -98 -3 22 18 90 80 151 139 155 147 206 184 393 283 90 47 191 106 226 130 117 84 209 204 264 343 20 51 20 53 2 63 -15 8 -31 2 -75 -24 -31 -18 -93 -45 -138 -59 -125 -39 -268 -75 -268 -68 0 16 256 256 366 343 139 110 198 174 271 294 69 113 109 219 144 382 31 146 60 210 109 239 23 13 28 22 24 38 -9 29 -9 29 -61 16 -88 -23 -134 -65 -252 -229 -24 -34 -55 -69 -69 -78 l-25 -16 6 31 c21 102 88 200 268 391 168 179 212 241 249 351 34 99 26 204 -22 327 -17 42 -25 52 -41 50 -14 -2 -24 -17 -34 -52 -26 -87 -118 -206 -192 -245 -18 -10 -21 -9 -21 7 0 49 44 150 180 417 163 318 209 433 217 541 5 58 2 79 -16 119 -12 27 -29 58 -39 68 -17 19 -103 67 -121 67 -5 0 -14 -30 -21 -67 -13 -78 -45 -154 -84 -200 -36 -43 -46 -41 -46 5 0 83 22 135 143 344 111 193 153 420 109 588 -15 57 -88 207 -97 198 -2 -2 -13 -41 -24 -87 -40 -161 -132 -304 -230 -359 -22 -13 -41 -22 -41 -20 0 2 -9 53 -20 114 -27 144 -22 164 80 320 130 200 131 388 3 656 -67 143 -73 170 -48 246 7 20 4 22 -26 22 -18 0 -52 -9 -75 -20 -75 -37 -90 -79 -109 -297 -17 -209 -35 -256 -70 -185 -76 159 -75 236 8 517 83 278 73 466 -32 640 -79 130 -93 164 -89 206 3 31 0 40 -14 45 -23 7 -38 -3 -38 -25 0 -10 -25 -60 -57 -112 -79 -132 -91 -163 -108 -284 -8 -58 -23 -121 -32 -138 l-16 -32 -21 45 c-18 38 -21 64 -20 170 0 110 5 144 39 285 36 146 39 172 39 295 0 188 -35 309 -141 494 -48 84 -186 287 -191 281 -2 -1 2 -91 8 -199 20 -343 -10 -523 -93 -568 -48 -25 -111 44 -147 161 -25 78 -25 146 -3 325 29 241 5 310 -183 521 -133 149 -158 186 -178 274 -8 35 -17 65 -19 67 -5 5 -52 -99 -78 -174 -46 -134 -31 -251 56 -430 30 -63 58 -132 61 -154 l7 -40 -33 17 c-55 29 -130 113 -220 245 -169 251 -220 286 -548 380 -172 48 -270 92 -334 149 -66 59 -78 56 -78 -22 0 -132 50 -249 157 -366 82 -90 160 -153 397 -322 170 -121 352 -266 344 -274 -2 -2 -30 3 -63 10 -33 8 -122 21 -197 30 -213 23 -281 45 -366 115 l-37 31 -13 -53 c-42 -174 60 -349 264 -455 131 -68 200 -83 429 -93 272 -11 309 -23 374 -121 23 -34 41 -62 41 -63 0 -2 -24 -1 -52 2 -32 2 -93 -5 -153 -18 -285 -62 -382 -48 -549 79 -37 29 -70 50 -73 47 -8 -8 35 -166 61 -222 88 -193 283 -378 454 -433 55 -18 88 -22 145 -19 68 3 86 9 202 67 88 43 144 64 179 68 l51 5 67 -118 68 -119 -78 -6 c-42 -4 -131 -18 -198 -32 -286 -62 -491 -53 -562 23 -20 22 -52 18 -52 -5 0 -20 79 -199 130 -295 60 -114 162 -218 254 -261 52 -25 85 -32 151 -36 110 -7 149 3 329 89 108 52 163 73 200 76 l52 4 47 -108 c26 -60 47 -115 47 -121 0 -7 -9 -13 -19 -13 -32 0 -101 -34 -223 -109 -127 -78 -170 -96 -264 -111 -121 -20 -246 19 -342 105 -28 25 -53 45 -56 45 -13 0 -5 -81 13 -139 40 -130 229 -354 351 -416 76 -40 185 -45 333 -16 59 12 130 21 157 21 61 0 169 -22 243 -50 52 -20 57 -24 67 -63 6 -23 15 -55 21 -80 6 -23 9 -45 7 -47 -2 -2 -21 3 -43 12 -61 26 -204 29 -435 9 -171 -15 -225 -16 -294 -7 -80 10 -150 36 -188 70 -16 14 -19 14 -34 -1 -15 -15 -15 -18 -1 -34 9 -10 41 -73 71 -141 30 -67 67 -139 82 -158 49 -65 141 -120 300 -182 44 -17 145 -56 224 -87 199 -77 289 -126 370 -201 64 -59 69 -68 73 -112 3 -26 3 -49 2 -51 -2 -1 -18 8 -36 22 -120 89 -284 152 -468 178 -206 29 -268 54 -335 131 -19 23 -36 40 -38 37 -11 -14 -52 -212 -52 -250 0 -61 41 -121 178 -260 151 -164 204 -197 444 -279 152 -52 200 -77 254 -131 36 -36 37 -44 9 -208 l-11 -65 -29 36 c-60 75 -237 201 -328 233 -25 9 -97 27 -161 40 -165 33 -208 58 -260 154 l-24 43 -13 -53 c-19 -77 -18 -231 2 -313 22 -91 69 -178 124 -226 24 -22 111 -87 193 -146 168 -120 264 -215 309 -304 l30 -60 -37 -100 c-20 -55 -39 -100 -43 -100 -3 0 -13 22 -23 48 -22 63 -87 136 -147 167 -25 13 -105 40 -176 60 -71 20 -151 48 -178 63 -57 31 -102 87 -116 146 -22 87 -21 87 -81 26 -60 -62 -105 -140 -140 -245 -34 -101 -34 -268 -1 -340 50 -109 95 -135 265 -151 116 -10 133 -15 170 -41 123 -86 163 -308 85 -468 -18 -36 -35 -65 -39 -65 -3 0 -9 20 -12 45 -9 62 -48 134 -96 178 -94 85 -190 107 -362 83 -166 -23 -221 -22 -256 8 -26 23 -28 29 -28 103 0 73 -1 78 -22 81 -18 3 -27 -7 -52 -55 -66 -132 -81 -261 -41 -368 34 -89 143 -194 274 -260 173 -88 231 -160 229 -285 -1 -84 -7 -98 -91 -203 -67 -84 -72 -87 -78 -63 -9 36 -53 71 -116 91 -143 47 -222 111 -276 226 -39 83 -60 173 -68 286 l-7 92 -60 -41 c-166 -113 -251 -269 -251 -463 1 -199 75 -361 236 -514 l78 -75 0 -55 c0 -56 0 -56 -66 -118 -69 -65 -84 -74 -84 -48 0 24 -60 85 -142 142 -98 69 -161 139 -187 208 -17 46 -41 215 -41 292 0 32 -65 51 -118 35 -117 -35 -242 -235 -242 -389 0 -68 21 -151 65 -257 76 -185 116 -359 101 -439 -5 -29 -16 -43 -47 -63 -63 -39 -66 -39 -61 2 3 20 -1 62 -8 93 -21 96 -66 171 -204 341 -33 41 -79 103 -102 138 l-42 63 -101 -203 c-122 -246 -137 -298 -125 -443 15 -173 11 -265 -11 -309 -18 -36 -30 -43 -139 -88 -65 -27 -120 -47 -123 -45 -2 3 3 39 12 81 20 99 20 254 0 329 -8 31 -26 80 -40 108 l-26 50 -29 -21 c-71 -51 -106 -116 -180 -341 -28 -85 -54 -160 -59 -168 -8 -13 -24 -13 -116 2 -59 8 -108 17 -109 19 0 2 -21 44 -45 93 l-45 90 -6 -42 c-8 -54 -53 -123 -77 -117 -10 2 -198 31 -418 64 -464 70 -445 66 -445 84 0 8 -4 16 -9 18 -6 2 -386 746 -419 820 -2 4 12 9 30 12 321 49 509 91 718 159 489 161 977 448 1329 782 330 312 553 612 754 1015 427 852 501 1795 212 2690 -109 337 -281 685 -478 965 -353 503 -808 889 -1372 1161 -507 244 -1000 358 -1555 358 -574 0 -1087 -123 -1610 -385 -692 -347 -1224 -876 -1570 -1560 -270 -534 -395 -1047 -395 -1629 0 -582 125 -1097 395 -1630 343 -675 875 -1206 1555 -1550 346 -175 699 -291 1068 -351 75 -13 137 -26 137 -30 0 -7 -418 -838 -427 -848 -2 -3 -38 -10 -81 -17 -42 -7 -219 -35 -392 -63 -173 -29 -324 -53 -334 -54 -16 -2 -22 7 -30 48 l-11 49 -18 -39 c-33 -74 -35 -74 -179 -99 l-134 -22 -57 176 c-59 185 -94 252 -154 297 l-32 25 -31 -61 c-57 -114 -74 -257 -49 -412 7 -38 9 -72 6 -75 -16 -17 -96 -5 -152 22 -111 54 -137 131 -110 332 28 207 15 268 -119 544 -42 86 -76 161 -76 167 0 22 -16 10 -42 -32 -15 -23 -64 -87 -110 -142 -190 -230 -236 -321 -225 -451 l5 -63 -40 22 c-58 32 -73 67 -72 162 0 100 26 194 104 380 70 168 88 250 70 337 -26 134 -114 268 -207 317 -29 15 -105 14 -125 -2 -11 -8 -18 -45 -26 -127 -6 -67 -19 -139 -31 -171 -38 -100 -68 -130 -251 -257 -64 -44 -100 -93 -100 -136 l-1 -31 -51 55 c-59 63 -87 119 -88 172 0 58 14 82 80 134 154 121 250 321 250 519 0 198 -79 348 -247 467 l-52 37 -6 -67 c-27 -293 -117 -444 -303 -512 -31 -11 -76 -27 -100 -36 -54 -20 -75 -52 -76 -114 l-1 -48 -27 31 c-43 50 -117 206 -129 270 -21 117 26 220 128 284 26 17 82 47 123 67 230 111 327 284 274 489 -22 86 -74 189 -92 182 -7 -3 -17 -5 -21 -5 -5 0 -8 -33 -7 -74 1 -60 -3 -78 -18 -95 -32 -36 -81 -42 -186 -25 -162 25 -249 28 -311 11 -139 -41 -235 -159 -242 -298 -3 -59 -11 -51 -44 37 -34 93 -43 239 -19 328 21 76 76 151 131 180 31 16 67 22 162 27 106 5 127 10 166 32 108 64 151 223 112 412 -21 100 -92 239 -154 299 l-50 49 -6 -29 c-23 -102 -60 -157 -131 -196 -27 -14 -105 -41 -174 -58 -245 -62 -301 -105 -360 -281 l-27 -81 -38 102 -37 103 18 60 c37 124 137 237 319 362 222 152 258 180 292 230 42 63 82 186 90 280 6 76 -13 235 -28 235 -5 0 -9 -4 -9 -8 0 -5 -14 -30 -31 -55 -46 -70 -92 -92 -254 -121 -111 -20 -157 -34 -220 -65 -102 -51 -193 -120 -278 -211 -37 -40 -67 -69 -67 -64 -1 5 -7 54 -14 109 -15 112 -13 120 47 190 53 61 128 100 282 146 211 62 278 100 412 235 130 130 173 191 173 246 0 39 -37 223 -50 247 -5 10 -14 4 -34 -22 -60 -78 -133 -106 -346 -132 -182 -22 -338 -78 -467 -167 l-43 -29 0 34 c0 24 10 47 32 74 87 104 212 172 528 283 366 128 421 167 505 355 27 61 59 124 72 142 26 36 28 46 10 61 -10 9 -22 5 -49 -14 -80 -57 -246 -70 -493 -38 -188 24 -335 23 -407 -2 l-58 -21 7 26 c28 113 35 125 100 157 63 31 165 58 260 69 38 4 89 -2 180 -21 73 -16 161 -27 205 -27 69 -1 85 3 150 36 174 86 361 329 375 488 l6 62 -69 -53 c-108 -83 -140 -94 -269 -94 -137 0 -174 13 -346 124 -111 72 -217 120 -266 120 -19 0 -12 22 43 132 29 57 51 89 65 93 52 17 128 -6 285 -85 86 -43 179 -84 206 -89 206 -45 393 52 522 269 50 84 146 285 146 306 0 26 -33 23 -65 -5 -48 -41 -123 -55 -260 -47 -60 3 -162 17 -225 31 -210 47 -271 57 -335 53 -35 -2 -62 -1 -61 2 51 97 125 204 149 217 65 33 117 22 275 -58 l144 -74 82 1 c138 2 251 55 386 181 120 113 206 248 244 384 32 120 35 116 -41 61 -182 -132 -269 -145 -543 -82 -146 34 -177 36 -245 15 -27 -8 -51 -13 -53 -11 -2 2 23 31 55 64 108 110 179 131 459 136 145 2 215 8 259 20 84 23 231 98 286 145 108 93 160 220 141 339 -6 35 -13 67 -16 69 -3 3 -22 -8 -43 -24 -84 -67 -154 -87 -353 -103 -77 -7 -168 -18 -203 -25 -34 -7 -63 -12 -65 -10 -9 8 188 159 373 285 250 170 339 241 409 326 93 113 136 218 136 334 0 81 -8 85 -65 32z"/></g></svg></div>
+<div class="grade-nm">Confirmé</div><div class="grade-rg">Niv. 11–20</div><div class="grade-xp">800–3k XP</div></div>
+
+<div class="grade-card g-exp"><div class="grade-lv">Niv. 21–40</div><div class="grade-icon"><svg viewBox="0 0 1280 1143" xmlns="http://www.w3.org/2000/svg" style="width:44px;height:auto;filter:drop-shadow(0 0 8px rgba(96,165,250,.5))"><g transform="translate(0,1143) scale(0.1,-0.1)" fill="#60a5fa"><path d="M3241 11384 c-60 -61 -161 -107 -321 -149 -362 -96 -408 -124 -578 -362 -105 -147 -170 -217 -232 -252 l-43 -24 5 39 c3 22 33 96 67 164 107 218 113 314 34 512 l-37 92 -22 -72 c-28 -94 -51 -127 -179 -262 -127 -135 -157 -177 -186 -261 -20 -60 -21 -74 -13 -209 17 -314 10 -376 -57 -481 -55 -87 -130 -84 -170 5 -38 87 -44 361 -13 651 l6 60 -49 -65 c-291 -384 -351 -609 -267 -1005 27 -125 37 -197 38 -272 1 -95 -1 -105 -29 -157 -16 -31 -33 -56 -37 -56 -12 0 -27 62 -38 158 -13 117 -24 148 -94 270 -31 54 -56 101 -56 104 0 4 -4 18 -10 32 -15 39 -40 23 -40 -25 0 -44 -27 -103 -94 -207 -76 -117 -90 -173 -90 -347 0 -138 3 -159 33 -270 82 -300 83 -312 17 -463 -48 -110 -50 -113 -63 -89 -8 15 -17 91 -23 187 -5 88 -14 178 -20 199 -19 73 -66 112 -147 126 l-43 7 16 -38 c23 -55 12 -102 -56 -229 -82 -153 -103 -237 -98 -379 5 -135 22 -188 100 -311 84 -134 86 -148 50 -284 -17 -62 -33 -116 -36 -118 -3 -3 -21 5 -40 17 -89 55 -188 228 -211 370 l-18 89 -36 -57 c-20 -31 -48 -92 -63 -135 -24 -72 -26 -87 -21 -203 6 -155 32 -245 120 -410 96 -183 98 -186 113 -242 7 -29 14 -73 14 -97 l0 -45 -31 30 c-54 51 -99 163 -99 247 0 43 -3 44 -62 18 -97 -42 -133 -102 -133 -221 1 -119 29 -199 195 -540 144 -298 170 -361 170 -417 l0 -34 -31 18 c-68 40 -161 177 -171 253 -3 28 -15 40 -38 40 -28 0 -73 -133 -78 -232 -9 -166 45 -271 257 -506 65 -72 135 -154 155 -181 41 -55 91 -159 101 -209 7 -32 6 -33 -14 -23 -11 7 -57 64 -102 127 -45 64 -100 129 -122 145 -42 30 -133 63 -148 53 -19 -11 -8 -44 22 -65 44 -31 74 -105 98 -241 50 -282 172 -495 378 -663 173 -140 369 -342 351 -360 -7 -8 -239 61 -303 90 -32 14 -74 37 -92 51 -26 20 -37 23 -52 14 -20 -10 -20 -11 -1 -65 67 -194 193 -330 418 -451 165 -89 227 -127 287 -177 64 -52 337 -318 332 -323 -2 -2 -54 15 -117 37 -110 39 -122 41 -267 46 l-153 6 0 -27 c0 -23 4 -26 34 -26 49 0 88 -37 144 -138 59 -107 146 -196 233 -239 101 -50 187 -66 351 -66 l137 0 38 -32 c74 -63 234 -211 231 -214 -2 -1 -75 13 -163 33 -142 31 -172 34 -270 31 -94 -4 -121 -9 -185 -35 -81 -34 -80 -35 20 -53 94 -17 154 -49 299 -160 244 -187 365 -232 706 -265 93 -8 196 -22 227 -31 52 -13 184 -82 175 -90 -2 -2 -53 8 -113 22 -89 22 -146 28 -309 35 -110 4 -212 11 -227 15 -25 6 -28 4 -28 -19 0 -19 6 -26 31 -31 59 -12 115 -44 254 -147 190 -141 227 -157 424 -178 l156 -17 -117 -14 c-65 -7 -118 -16 -118 -20 0 -15 188 -89 265 -105 66 -14 130 -16 360 -14 355 2 425 1 425 -9 0 -15 -74 -43 -186 -70 -105 -26 -109 -28 -106 -52 2 -14 5 -26 6 -27 7 -7 303 -44 401 -49 l120 -7 153 -146 153 -146 -128 -69 c-277 -150 -585 -345 -813 -515 -388 -289 -734 -641 -955 -972 -35 -52 -62 -95 -60 -97 2 -2 27 16 57 40 80 65 238 170 476 317 118 72 225 139 238 148 19 12 13 -2 -29 -69 -87 -139 -132 -263 -213 -588 -65 -259 -85 -327 -119 -415 -10 -26 -15 -31 102 110 274 328 637 631 1264 1055 104 71 189 127 189 125 0 -1 -7 -19 -15 -38 -8 -20 -15 -41 -15 -47 0 -5 37 10 83 34 88 47 204 92 213 83 3 -3 -41 -288 -99 -634 -57 -345 -103 -630 -102 -631 2 -2 361 186 798 417 437 232 801 421 807 421 7 0 370 -185 807 -411 437 -226 796 -409 798 -407 1 2 -39 257 -91 568 -51 310 -91 566 -89 569 7 6 242 -198 411 -357 88 -82 341 -328 564 -548 382 -375 565 -548 545 -514 -5 8 -18 31 -30 50 -33 53 -99 223 -129 330 -54 196 -71 389 -42 473 32 90 120 153 228 164 122 12 272 -36 593 -192 235 -114 286 -137 292 -131 3 2 -10 12 -29 22 -60 31 -251 162 -359 246 -147 114 -299 249 -604 533 -556 518 -725 653 -1134 909 l-43 28 33 35 c19 19 95 92 169 163 l135 128 180 11 c160 10 229 17 343 36 26 5 32 11 32 30 0 25 -9 29 -150 65 -65 17 -140 51 -140 63 0 7 79 7 253 1 469 -17 565 -8 730 68 81 38 80 39 -73 61 l-95 14 100 7 c248 19 292 34 475 166 132 96 229 150 269 150 33 0 40 6 34 28 -4 16 -23 17 -211 14 -170 -2 -230 -7 -333 -27 -151 -30 -152 -30 -114 -5 75 52 173 75 360 85 152 9 319 37 414 69 97 34 172 77 310 180 142 105 199 133 315 155 l91 17 -77 32 c-149 62 -242 66 -481 17 -71 -15 -130 -25 -133 -23 -9 9 162 181 200 201 37 20 57 22 196 23 85 1 180 6 210 12 180 34 300 126 400 304 41 74 81 108 126 108 30 0 34 3 34 25 l0 25 -151 0 c-145 0 -154 -1 -256 -35 -132 -44 -149 -44 -98 -3 22 18 90 80 151 139 155 147 206 184 393 283 90 47 191 106 226 130 117 84 209 204 264 343 20 51 20 53 2 63 -15 8 -31 2 -75 -24 -31 -18 -93 -45 -138 -59 -125 -39 -268 -75 -268 -68 0 16 256 256 366 343 139 110 198 174 271 294 69 113 109 219 144 382 31 146 60 210 109 239 23 13 28 22 24 38 -9 29 -9 29 -61 16 -88 -23 -134 -65 -252 -229 -24 -34 -55 -69 -69 -78 l-25 -16 6 31 c21 102 88 200 268 391 168 179 212 241 249 351 34 99 26 204 -22 327 -17 42 -25 52 -41 50 -14 -2 -24 -17 -34 -52 -26 -87 -118 -206 -192 -245 -18 -10 -21 -9 -21 7 0 49 44 150 180 417 163 318 209 433 217 541 5 58 2 79 -16 119 -12 27 -29 58 -39 68 -17 19 -103 67 -121 67 -5 0 -14 -30 -21 -67 -13 -78 -45 -154 -84 -200 -36 -43 -46 -41 -46 5 0 83 22 135 143 344 111 193 153 420 109 588 -15 57 -88 207 -97 198 -2 -2 -13 -41 -24 -87 -40 -161 -132 -304 -230 -359 -22 -13 -41 -22 -41 -20 0 2 -9 53 -20 114 -27 144 -22 164 80 320 130 200 131 388 3 656 -67 143 -73 170 -48 246 7 20 4 22 -26 22 -18 0 -52 -9 -75 -20 -75 -37 -90 -79 -109 -297 -17 -209 -35 -256 -70 -185 -76 159 -75 236 8 517 83 278 73 466 -32 640 -79 130 -93 164 -89 206 3 31 0 40 -14 45 -23 7 -38 -3 -38 -25 0 -10 -25 -60 -57 -112 -79 -132 -91 -163 -108 -284 -8 -58 -23 -121 -32 -138 l-16 -32 -21 45 c-18 38 -21 64 -20 170 0 110 5 144 39 285 36 146 39 172 39 295 0 188 -35 309 -141 494 -48 84 -186 287 -191 281 -2 -1 2 -91 8 -199 20 -343 -10 -523 -93 -568 -48 -25 -111 44 -147 161 -25 78 -25 146 -3 325 29 241 5 310 -183 521 -133 149 -158 186 -178 274 -8 35 -17 65 -19 67 -5 5 -52 -99 -78 -174 -46 -134 -31 -251 56 -430 30 -63 58 -132 61 -154 l7 -40 -33 17 c-55 29 -130 113 -220 245 -169 251 -220 286 -548 380 -172 48 -270 92 -334 149 -66 59 -78 56 -78 -22 0 -132 50 -249 157 -366 82 -90 160 -153 397 -322 170 -121 352 -266 344 -274 -2 -2 -30 3 -63 10 -33 8 -122 21 -197 30 -213 23 -281 45 -366 115 l-37 31 -13 -53 c-42 -174 60 -349 264 -455 131 -68 200 -83 429 -93 272 -11 309 -23 374 -121 23 -34 41 -62 41 -63 0 -2 -24 -1 -52 2 -32 2 -93 -5 -153 -18 -285 -62 -382 -48 -549 79 -37 29 -70 50 -73 47 -8 -8 35 -166 61 -222 88 -193 283 -378 454 -433 55 -18 88 -22 145 -19 68 3 86 9 202 67 88 43 144 64 179 68 l51 5 67 -118 68 -119 -78 -6 c-42 -4 -131 -18 -198 -32 -286 -62 -491 -53 -562 23 -20 22 -52 18 -52 -5 0 -20 79 -199 130 -295 60 -114 162 -218 254 -261 52 -25 85 -32 151 -36 110 -7 149 3 329 89 108 52 163 73 200 76 l52 4 47 -108 c26 -60 47 -115 47 -121 0 -7 -9 -13 -19 -13 -32 0 -101 -34 -223 -109 -127 -78 -170 -96 -264 -111 -121 -20 -246 19 -342 105 -28 25 -53 45 -56 45 -13 0 -5 -81 13 -139 40 -130 229 -354 351 -416 76 -40 185 -45 333 -16 59 12 130 21 157 21 61 0 169 -22 243 -50 52 -20 57 -24 67 -63 6 -23 15 -55 21 -80 6 -23 9 -45 7 -47 -2 -2 -21 3 -43 12 -61 26 -204 29 -435 9 -171 -15 -225 -16 -294 -7 -80 10 -150 36 -188 70 -16 14 -19 14 -34 -1 -15 -15 -15 -18 -1 -34 9 -10 41 -73 71 -141 30 -67 67 -139 82 -158 49 -65 141 -120 300 -182 44 -17 145 -56 224 -87 199 -77 289 -126 370 -201 64 -59 69 -68 73 -112 3 -26 3 -49 2 -51 -2 -1 -18 8 -36 22 -120 89 -284 152 -468 178 -206 29 -268 54 -335 131 -19 23 -36 40 -38 37 -11 -14 -52 -212 -52 -250 0 -61 41 -121 178 -260 151 -164 204 -197 444 -279 152 -52 200 -77 254 -131 36 -36 37 -44 9 -208 l-11 -65 -29 36 c-60 75 -237 201 -328 233 -25 9 -97 27 -161 40 -165 33 -208 58 -260 154 l-24 43 -13 -53 c-19 -77 -18 -231 2 -313 22 -91 69 -178 124 -226 24 -22 111 -87 193 -146 168 -120 264 -215 309 -304 l30 -60 -37 -100 c-20 -55 -39 -100 -43 -100 -3 0 -13 22 -23 48 -22 63 -87 136 -147 167 -25 13 -105 40 -176 60 -71 20 -151 48 -178 63 -57 31 -102 87 -116 146 -22 87 -21 87 -81 26 -60 -62 -105 -140 -140 -245 -34 -101 -34 -268 -1 -340 50 -109 95 -135 265 -151 116 -10 133 -15 170 -41 123 -86 163 -308 85 -468 -18 -36 -35 -65 -39 -65 -3 0 -9 20 -12 45 -9 62 -48 134 -96 178 -94 85 -190 107 -362 83 -166 -23 -221 -22 -256 8 -26 23 -28 29 -28 103 0 73 -1 78 -22 81 -18 3 -27 -7 -52 -55 -66 -132 -81 -261 -41 -368 34 -89 143 -194 274 -260 173 -88 231 -160 229 -285 -1 -84 -7 -98 -91 -203 -67 -84 -72 -87 -78 -63 -9 36 -53 71 -116 91 -143 47 -222 111 -276 226 -39 83 -60 173 -68 286 l-7 92 -60 -41 c-166 -113 -251 -269 -251 -463 1 -199 75 -361 236 -514 l78 -75 0 -55 c0 -56 0 -56 -66 -118 -69 -65 -84 -74 -84 -48 0 24 -60 85 -142 142 -98 69 -161 139 -187 208 -17 46 -41 215 -41 292 0 32 -65 51 -118 35 -117 -35 -242 -235 -242 -389 0 -68 21 -151 65 -257 76 -185 116 -359 101 -439 -5 -29 -16 -43 -47 -63 -63 -39 -66 -39 -61 2 3 20 -1 62 -8 93 -21 96 -66 171 -204 341 -33 41 -79 103 -102 138 l-42 63 -101 -203 c-122 -246 -137 -298 -125 -443 15 -173 11 -265 -11 -309 -18 -36 -30 -43 -139 -88 -65 -27 -120 -47 -123 -45 -2 3 3 39 12 81 20 99 20 254 0 329 -8 31 -26 80 -40 108 l-26 50 -29 -21 c-71 -51 -106 -116 -180 -341 -28 -85 -54 -160 -59 -168 -8 -13 -24 -13 -116 2 -59 8 -108 17 -109 19 0 2 -21 44 -45 93 l-45 90 -6 -42 c-8 -54 -53 -123 -77 -117 -10 2 -198 31 -418 64 -464 70 -445 66 -445 84 0 8 -4 16 -9 18 -6 2 -386 746 -419 820 -2 4 12 9 30 12 321 49 509 91 718 159 489 161 977 448 1329 782 330 312 553 612 754 1015 427 852 501 1795 212 2690 -109 337 -281 685 -478 965 -353 503 -808 889 -1372 1161 -507 244 -1000 358 -1555 358 -574 0 -1087 -123 -1610 -385 -692 -347 -1224 -876 -1570 -1560 -270 -534 -395 -1047 -395 -1629 0 -582 125 -1097 395 -1630 343 -675 875 -1206 1555 -1550 346 -175 699 -291 1068 -351 75 -13 137 -26 137 -30 0 -7 -418 -838 -427 -848 -2 -3 -38 -10 -81 -17 -42 -7 -219 -35 -392 -63 -173 -29 -324 -53 -334 -54 -16 -2 -22 7 -30 48 l-11 49 -18 -39 c-33 -74 -35 -74 -179 -99 l-134 -22 -57 176 c-59 185 -94 252 -154 297 l-32 25 -31 -61 c-57 -114 -74 -257 -49 -412 7 -38 9 -72 6 -75 -16 -17 -96 -5 -152 22 -111 54 -137 131 -110 332 28 207 15 268 -119 544 -42 86 -76 161 -76 167 0 22 -16 10 -42 -32 -15 -23 -64 -87 -110 -142 -190 -230 -236 -321 -225 -451 l5 -63 -40 22 c-58 32 -73 67 -72 162 0 100 26 194 104 380 70 168 88 250 70 337 -26 134 -114 268 -207 317 -29 15 -105 14 -125 -2 -11 -8 -18 -45 -26 -127 -6 -67 -19 -139 -31 -171 -38 -100 -68 -130 -251 -257 -64 -44 -100 -93 -100 -136 l-1 -31 -51 55 c-59 63 -87 119 -88 172 0 58 14 82 80 134 154 121 250 321 250 519 0 198 -79 348 -247 467 l-52 37 -6 -67 c-27 -293 -117 -444 -303 -512 -31 -11 -76 -27 -100 -36 -54 -20 -75 -52 -76 -114 l-1 -48 -27 31 c-43 50 -117 206 -129 270 -21 117 26 220 128 284 26 17 82 47 123 67 230 111 327 284 274 489 -22 86 -74 189 -92 182 -7 -3 -17 -5 -21 -5 -5 0 -8 -33 -7 -74 1 -60 -3 -78 -18 -95 -32 -36 -81 -42 -186 -25 -162 25 -249 28 -311 11 -139 -41 -235 -159 -242 -298 -3 -59 -11 -51 -44 37 -34 93 -43 239 -19 328 21 76 76 151 131 180 31 16 67 22 162 27 106 5 127 10 166 32 108 64 151 223 112 412 -21 100 -92 239 -154 299 l-50 49 -6 -29 c-23 -102 -60 -157 -131 -196 -27 -14 -105 -41 -174 -58 -245 -62 -301 -105 -360 -281 l-27 -81 -38 102 -37 103 18 60 c37 124 137 237 319 362 222 152 258 180 292 230 42 63 82 186 90 280 6 76 -13 235 -28 235 -5 0 -9 -4 -9 -8 0 -5 -14 -30 -31 -55 -46 -70 -92 -92 -254 -121 -111 -20 -157 -34 -220 -65 -102 -51 -193 -120 -278 -211 -37 -40 -67 -69 -67 -64 -1 5 -7 54 -14 109 -15 112 -13 120 47 190 53 61 128 100 282 146 211 62 278 100 412 235 130 130 173 191 173 246 0 39 -37 223 -50 247 -5 10 -14 4 -34 -22 -60 -78 -133 -106 -346 -132 -182 -22 -338 -78 -467 -167 l-43 -29 0 34 c0 24 10 47 32 74 87 104 212 172 528 283 366 128 421 167 505 355 27 61 59 124 72 141 19 26 21 34 10 43 -10 8 -28 4 -72 -19 -109 -55 -194 -61 -459 -30 -219 25 -335 26 -414 1 -34 -10 -61 -18 -61 -17 0 0 11 37 23 81 l23 80 55 27 c68 34 164 58 255 65 54 4 102 -1 205 -22 222 -45 312 -28 449 87 72 60 177 188 220 270 24 44 34 79 38 126 l5 66 -29 -22 c-134 -103 -200 -126 -329 -119 -119 6 -166 26 -345 143 -86 56 -194 104 -235 104 -8 0 -15 3 -15 6 0 4 23 56 52 116 40 85 57 110 75 114 48 12 137 -17 301 -98 l166 -83 111 0 c108 0 113 1 187 37 132 66 234 196 342 436 25 57 46 107 46 112 0 22 -32 16 -58 -10 -39 -39 -95 -52 -226 -51 -112 0 -190 12 -391 57 -62 15 -144 26 -187 27 -43 0 -78 3 -78 6 0 3 31 55 68 116 62 101 70 110 106 119 57 13 127 -7 230 -65 118 -67 154 -79 242 -79 206 0 441 175 571 425 35 69 90 235 77 235 -3 0 -30 -19 -61 -42 -168 -123 -281 -142 -521 -83 -141 34 -197 39 -259 22 -35 -9 -50 -10 -45 -3 64 100 103 133 201 168 47 17 92 22 286 28 214 6 236 9 310 34 171 58 300 157 357 274 30 60 33 75 33 154 -1 102 -12 123 -47 91 -69 -64 -182 -96 -398 -113 -120 -10 -162 -16 -235 -37 -18 -5 -17 -3 5 22 48 51 156 133 365 275 248 168 335 238 410 326 94 111 135 215 135 341 0 40 -3 72 -7 72 -5 -1 -28 -21 -52 -45z"/></g></svg></div>
+<div class="grade-nm">Expert</div><div class="grade-rg">Niv. 21–40</div><div class="grade-xp">3k–8k XP</div></div>
+
+<div class="grade-card g-cha"><div class="grade-lv">Niv. 41–50</div><div class="grade-icon"><svg viewBox="0 0 1280 1086" xmlns="http://www.w3.org/2000/svg" style="width:42px;height:auto;filter:drop-shadow(0 0 8px rgba(167,139,250,.5))"><g transform="translate(0,1086) scale(0.1,-0.1)" fill="#a78bfa"><path d="M4452 10573 c-12 -10 -40 -51 -62 -91 -39 -70 -45 -92 -126 -490 l-86 -417 -116 -118 -117 -118 -315 -159 c-482 -244 -673 -367 -878 -564 -141 -137 -222 -249 -272 -377 -29 -73 -34 -103 -42 -229 -17 -255 6 -700 47 -926 26 -142 82 -281 164 -404 57 -87 146 -175 266 -264 114 -86 225 -195 225 -223 0 -25 -175 -193 -292 -279 -146 -108 -284 -193 -466 -287 -417 -216 -650 -279 -852 -232 -204 48 -438 237 -535 431 -55 111 -71 203 -57 328 12 108 48 239 89 321 100 197 285 368 465 428 51 17 89 21 198 21 l135 1 48 -40 47 -39 0 -101 c0 -125 -13 -206 -50 -320 -37 -113 -54 -223 -46 -297 9 -85 41 -168 77 -202 30 -27 36 -28 94 -23 173 13 314 156 388 392 38 123 51 225 51 405 0 161 0 167 -34 264 -89 262 -307 465 -576 537 -112 31 -314 31 -436 1 -174 -43 -301 -104 -455 -219 -344 -258 -615 -755 -674 -1237 -15 -123 -7 -376 16 -506 34 -193 112 -387 212 -529 65 -92 196 -218 296 -285 264 -176 565 -246 997 -233 347 11 501 37 643 108 33 17 297 179 585 360 470 296 572 353 572 322 0 -4 -11 -18 -24 -32 -54 -59 -230 -300 -256 -352 -49 -96 -64 -170 -64 -319 0 -342 99 -557 475 -1030 200 -252 292 -381 327 -456 103 -224 74 -431 -83 -590 -61 -62 -125 -94 -187 -94 l-28 0 0 83 c0 102 -17 328 -31 422 -62 406 -262 682 -545 752 -93 23 -315 22 -444 -2 -211 -39 -434 -129 -611 -246 -133 -89 -308 -265 -394 -397 -120 -184 -171 -339 -182 -547 -14 -282 67 -485 276 -694 262 -261 619 -413 1061 -452 131 -11 211 -7 295 16 28 7 75 16 105 19 l55 6 23 -137 c31 -182 42 -207 109 -250 68 -43 85 -78 72 -146 -9 -53 -31 -88 -94 -157 -70 -76 -121 -186 -101 -218 10 -17 137 7 219 42 112 47 149 56 244 56 l82 0 28 -36 c53 -69 360 -196 593 -245 152 -33 453 -33 588 -2 310 73 623 274 847 543 141 169 232 328 292 509 38 116 52 243 53 502 1 300 -35 477 -240 1179 -133 456 -170 652 -170 893 1 693 248 1122 630 1095 129 -10 207 -64 261 -184 68 -149 79 -249 95 -824 5 -194 10 -256 31 -355 121 -584 424 -1096 820 -1387 83 -61 220 -130 323 -163 l85 -28 360 -1 c297 -1 393 3 545 19 146 16 253 20 510 20 l325 -1 90 -27 c147 -46 235 -109 282 -205 26 -52 28 -67 28 -167 0 -100 -3 -116 -29 -172 -32 -70 -116 -157 -184 -192 -98 -50 -220 -63 -327 -36 -141 37 -162 79 -130 248 8 43 15 97 15 120 -1 122 -109 211 -252 209 -141 -2 -211 -47 -244 -157 -28 -90 -26 -277 3 -370 76 -240 301 -436 589 -512 84 -21 122 -26 244 -26 172 -1 239 13 376 79 202 96 369 311 451 579 26 86 27 99 27 305 0 190 -3 224 -22 295 -108 394 -445 605 -1087 680 -558 65 -885 144 -1156 281 -223 112 -391 290 -525 556 -124 246 -174 498 -160 803 6 158 16 201 52 245 37 44 63 39 136 -25 265 -233 447 -372 648 -493 245 -147 626 -341 983 -498 94 -41 180 -85 191 -97 15 -18 17 -34 14 -87 -5 -69 -26 -119 -83 -198 -63 -90 -81 -195 -50 -300 18 -61 45 -82 110 -90 35 -3 56 1 98 22 68 33 123 102 212 264 37 67 78 131 92 142 25 19 41 20 579 20 445 0 566 3 621 15 318 67 607 300 753 607 67 141 91 242 97 403 10 283 -57 533 -201 749 -167 250 -408 398 -711 435 -288 35 -533 -12 -723 -139 -194 -130 -338 -333 -450 -635 -40 -106 -119 -354 -142 -443 -18 -69 -60 -69 -132 -2 -24 23 -128 106 -233 187 -243 187 -394 313 -514 429 l-96 92 40 7 c110 19 389 93 545 145 390 130 730 306 975 503 135 109 265 252 313 345 83 160 82 143 82 921 0 655 6 814 31 926 18 80 72 186 123 242 65 72 121 98 216 97 42 0 85 -6 98 -13 28 -15 268 -233 336 -304 139 -147 223 -309 255 -490 18 -100 24 -259 12 -303 -17 -62 -40 -85 -174 -174 -67 -45 -137 -96 -154 -113 -49 -46 -66 -101 -61 -194 6 -133 42 -173 160 -181 163 -10 281 37 403 161 124 127 203 299 241 526 66 406 -116 959 -424 1283 -239 250 -501 361 -821 345 -283 -13 -469 -90 -634 -260 -211 -217 -342 -513 -406 -918 -28 -170 -40 -354 -47 -679 -3 -151 -10 -298 -15 -327 -30 -156 -168 -302 -359 -379 -140 -57 -310 -86 -505 -87 -106 -1 -145 3 -209 21 -168 48 -292 127 -336 212 -25 49 -44 155 -31 177 20 38 105 107 341 278 285 206 379 284 496 409 203 215 306 440 323 705 16 259 -27 434 -145 591 -27 35 -138 155 -246 266 -108 110 -202 213 -208 228 -27 72 0 213 59 305 54 84 197 211 359 320 160 106 184 133 184 198 0 19 -6 48 -12 64 -21 51 -58 62 -215 67 -208 6 -344 -24 -471 -107 -162 -104 -281 -291 -329 -516 -24 -111 -25 -328 -2 -415 21 -81 85 -215 171 -359 134 -226 166 -311 166 -446 0 -172 -57 -293 -210 -445 -124 -124 -227 -195 -410 -284 -260 -125 -519 -193 -772 -203 -81 -3 -154 -3 -162 0 -12 5 6 28 73 94 80 78 92 95 106 147 25 85 18 265 -13 322 -19 37 -125 149 -206 216 l-29 24 28 50 c16 27 39 62 52 77 13 16 23 35 23 42 0 8 6 12 14 9 23 -9 48 25 41 55 -9 37 -22 48 -43 35 -10 -6 -18 -27 -20 -48 l-3 -36 -175 0 c-96 0 -174 2 -174 5 0 3 38 53 85 112 107 135 280 378 328 461 211 364 188 784 -64 1122 -209 281 -598 474 -1034 511 -531 45 -1093 -254 -1321 -703 -135 -266 -123 -601 33 -912 50 -100 177 -314 252 -426 30 -44 51 -86 51 -102 l0 -28 -192 -2 c-230 -4 -227 -2 -148 -116 27 -41 50 -77 50 -81 0 -5 -33 -36 -73 -69 -86 -70 -145 -144 -184 -227 -26 -55 -28 -70 -28 -175 0 -104 3 -120 26 -170 27 -56 82 -118 178 -202 30 -26 50 -51 46 -57 -12 -20 -97 -57 -230 -101 l-130 -44 -320 0 c-336 -1 -475 11 -660 54 -377 88 -611 295 -696 615 -26 101 -37 341 -20 428 26 122 114 253 253 374 64 56 276 200 521 352 332 207 540 428 618 654 55 162 61 342 20 637 -70 505 -59 451 -100 489 -45 42 -91 71 -112 71 -9 0 -26 -8 -37 -17z"/></g></svg></div>
+<div class="grade-nm">Chasseur</div><div class="grade-rg">Niv. 41–50</div><div class="grade-xp">8k–20k XP</div></div>
+
+<div class="grade-card g-leg"><div class="grade-lv">Niv. 51–90</div><div class="grade-icon"><svg viewBox="0 0 849 1280" xmlns="http://www.w3.org/2000/svg" style="width:28px;height:auto;filter:drop-shadow(0 0 8px rgba(251,191,36,.5))"><g transform="translate(0,1280) scale(0.1,-0.1)" fill="#fbbf24"><path d="M4101 12785 c-35 -8 -86 -22 -114 -31 -49 -16 -50 -17 -30 -33 12 -9 37 -29 57 -44 29 -22 66 -81 66 -103 0 -2 -28 -4 -62 -4 -53 0 -70 5 -107 29 -24 16 -49 27 -55 25 -19 -7 -74 -97 -85 -139 -24 -89 -5 -185 57 -292 20 -35 39 -63 42 -63 3 0 20 27 38 60 l33 60 60 0 59 0 0 -38 c0 -50 -18 -73 -87 -112 -132 -75 -213 -186 -213 -292 0 -63 30 -166 61 -209 35 -50 42 -47 -216 -64 -293 -20 -766 -111 -1112 -215 -72 -22 -137 -40 -143 -40 -6 0 -39 21 -73 48 -34 26 -116 79 -181 117 -131 77 -242 172 -284 244 l-27 46 -7 -155 c-5 -114 -15 -193 -37 -300 -17 -80 -31 -171 -31 -202 l0 -58 -62 -31 c-99 -50 -225 -140 -325 -234 l-93 -86 -117 88 c-127 96 -255 172 -372 223 -101 44 -203 82 -207 77 -2 -2 19 -42 47 -88 64 -106 251 -485 319 -647 28 -68 56 -151 61 -185 16 -99 68 -158 159 -180 31 -8 52 -35 210 -268 l128 -189 -729 0 -730 0 4 -1717 c3 -1875 1 -1793 63 -2193 192 -1245 813 -2480 1823 -3624 153 -174 631 -652 806 -808 442 -392 856 -702 1437 -1076 l127 -82 218 151 c317 220 502 354 728 523 864 648 1520 1282 2023 1954 666 891 1069 1869 1206 2927 51 386 49 336 53 2198 l4 1747 -711 0 c-392 0 -710 3 -708 8 2 4 76 115 165 248 l161 241 62 12 c46 9 71 21 98 46 l37 33 1 99 2 99 172 379 c180 397 192 425 185 425 -15 0 -476 -249 -548 -295 l-88 -58 -37 36 c-66 63 -218 171 -320 226 l-99 54 -7 101 c-3 56 -17 153 -30 216 -14 63 -35 165 -47 225 -12 61 -24 116 -25 123 -3 9 -25 -5 -61 -37 -34 -31 -109 -78 -187 -118 -124 -64 -241 -143 -323 -217 l-39 -35 -189 50 c-330 86 -648 141 -1026 179 -111 11 -204 22 -206 24 -2 2 6 36 18 76 27 90 23 199 -11 278 -28 65 -116 149 -198 191 -70 36 -84 55 -80 114 l3 42 53 -1 c44 -2 60 -8 99 -38 25 -20 50 -36 54 -36 14 0 63 66 87 119 44 96 18 213 -69 309 -17 19 -31 32 -33 30 -1 -1 -14 -20 -29 -40 -26 -36 -31 -38 -82 -38 -30 0 -57 5 -60 11 -11 17 3 55 40 103 l35 46 -27 10 c-16 6 -39 15 -53 20 -103 39 -254 49 -369 25z"/></g></svg></div>
+<div class="grade-nm">Légende</div><div class="grade-rg">Niv. 51–90</div><div class="grade-xp">20k–50k XP</div></div>
+
+<div class="grade-card g-dieu" style="position:relative">
+<span style="position:absolute;top:6px;right:6px;font-size:9px;opacity:.35;z-index:5">🔒</span>
+<div class="grade-lv">Niv. 91–100</div>
+<div class="grade-icon"><svg viewBox="0 0 1280 797" xmlns="http://www.w3.org/2000/svg" style="width:58px;height:auto;filter:drop-shadow(0 0 12px rgba(255,215,0,.8))"><g transform="translate(0,797) scale(0.1,-0.1)" fill="#ffd700"><path d="M5563 6627 c-138 -227 -190 -329 -267 -526 -170 -432 -291 -950 -338 -1444 l-12 -127 -35 -9 c-171 -44 -682 -153 -688 -147 -13 12 -9 296 5 376 52 293 177 635 452 1230 149 324 272 608 268 622 -6 18 -79 -70 -148 -181 -39 -63 -103 -150 -142 -195 -179 -206 -390 -512 -534 -776 -114 -207 -160 -325 -234 -589 -100 -357 -136 -451 -212 -536 -38 -44 -106 -65 -206 -65 l-74 0 6 38 c4 20 42 183 86 362 149 615 187 873 161 1074 -37 278 -133 340 -531 340 -173 0 -209 -3 -323 -27 -347 -73 -642 -223 -850 -431 -154 -153 -252 -318 -304 -514 -28 -102 -28 -103 -20 -532 1 -86 -12 -123 -104 -285 -113 -200 -159 -315 -159 -394 0 -34 4 -38 88 -90 113 -71 456 -314 598 -425 135 -105 272 -244 303 -308 46 -95 27 -231 -59 -418 -129 -282 -240 -418 -405 -497 -74 -35 -183 -63 -247 -63 -49 0 -49 -17 -2 -96 104 -173 265 -247 491 -224 171 18 315 65 628 205 91 40 179 72 224 81 41 8 182 19 314 24 365 15 476 41 505 118 35 93 22 153 -70 313 -134 233 -237 499 -273 702 -33 184 -5 367 59 383 40 10 96 -15 142 -63 65 -66 126 -199 206 -447 112 -347 192 -534 320 -747 131 -217 329 -462 534 -659 108 -104 424 -384 424 -375 0 3 -121 200 -269 438 -148 237 -287 469 -310 514 -131 262 -247 652 -306 1029 -26 167 -52 420 -44 428 2 3 146 28 319 57 278 45 320 50 358 40 77 -21 95 -76 111 -336 10 -163 55 -434 107 -640 66 -260 183 -571 319 -843 156 -312 312 -543 506 -746 56 -59 103 -105 105 -103 2 2 -60 140 -137 308 -378 816 -404 906 -459 1253 -15 99 -37 420 -29 429 4 5 588 60 640 61 l30 0 22 -218 c13 -122 31 -250 43 -291 72 -253 230 -521 376 -636 32 -25 61 -45 65 -45 11 0 3 19 -117 270 -209 435 -237 550 -203 838 l12 102 331 0 332 0 28 -107 c57 -223 138 -388 237 -485 102 -101 102 -76 -2 142 -87 184 -110 254 -117 362 l-6 88 36 15 c44 18 97 19 240 3 91 -10 112 -16 123 -33 7 -11 65 -137 129 -279 147 -328 159 -351 244 -477 261 -389 662 -664 1093 -753 136 -28 378 -47 378 -29 0 3 -155 160 -344 347 -421 418 -580 598 -733 829 -109 165 -177 329 -185 442 -3 35 9 60 90 195 131 219 235 354 391 510 179 178 315 278 755 555 l95 61 -18 31 c-42 68 -200 113 -399 113 -148 0 -217 -17 -359 -85 -345 -165 -659 -487 -927 -947 -54 -93 -101 -168 -104 -168 -4 0 -32 9 -62 21 -82 31 -190 49 -296 49 -83 0 -94 2 -94 18 0 9 29 124 63 255 35 130 59 237 54 237 -18 0 -76 -73 -107 -136 -37 -75 -75 -184 -85 -243 -10 -63 -31 -69 -163 -48 -95 16 -543 67 -580 67 -45 0 34 384 153 745 4 11 -18 -6 -49 -38 -97 -100 -198 -338 -227 -531 -6 -39 -12 -86 -15 -103 l-5 -33 -360 0 -361 0 7 78 c26 300 58 599 71 666 9 44 60 218 114 388 53 169 91 303 83 297 -7 -7 -33 -44 -58 -83 -162 -261 -360 -842 -411 -1211 -10 -71 -20 -132 -22 -135 -5 -6 -935 -40 -941 -34 -3 2 82 434 188 960 106 526 190 958 188 960 -8 8 -278 -474 -318 -565 -50 -116 -88 -263 -140 -536 -22 -121 -65 -314 -94 -430 -29 -115 -58 -249 -65 -297 l-13 -86 -106 -6 c-58 -3 -200 -8 -316 -11 -115 -3 -254 -8 -307 -11 l-98 -6 0 98 c0 55 9 155 20 224 12 69 45 294 75 500 89 617 125 786 240 1140 41 124 79 245 85 270 6 25 13 53 16 63 15 49 -22 -3 -133 -186z"/></g></svg></div>
+<div class="grade-nm">Dieu</div><div class="grade-rg">Niv. 91–100</div><div class="grade-xp">50k+ XP</div></div>
+</div>
+
+<div class="card" style="margin-bottom:12px;padding:14px" id="stats-chart-block">
+<div style="display:flex;gap:5px;margin-bottom:12px">
+<button class="stat-ctab active" onclick="switchStatTab('monthly',this)">Mensuel</button>
+<button class="stat-ctab" onclick="switchStatTab('yearly',this)">Annuel</button>
+<button class="stat-ctab" onclick="switchStatTab('xp',this)">XP</button>
+<button class="stat-ctab" onclick="switchStatTab('species',this)">Espèces</button>
+</div>
+<div id="stat-kpi-row" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px"></div>
+<div style="background:rgba(4,8,15,.6);border:1px solid var(--border);border-radius:var(--r);padding:10px 10px 6px">
+<div style="position:relative;width:100%;height:150px"><canvas id="stat-canvas"></canvas></div>
+<div id="stat-legend" style="display:flex;gap:10px;flex-wrap:wrap;font-size:9px;color:var(--text2);padding:6px 2px 2px"></div>
+</div></div>
+
+<div class="card" style="margin-bottom:12px" id="hashtag-insights">
+<div style="font-size:11px;color:var(--text2);font-style:italic">Publie des prises pour voir tes statistiques détaillées ici.</div>
+</div>
+
+<div style="display:flex;align-items:center;gap:10px;margin-top:20px;margin-bottom:10px">
+<div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(167,139,250,.5),transparent)"></div>
+<div style="display:flex;align-items:center;gap:7px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:20px;padding:5px 14px"><span style="font-size:14px">🔒</span><span style="font-size:11px;font-weight:800;color:var(--purple);text-transform:uppercase;letter-spacing:.08em">Informations privées</span></div>
+<div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(167,139,250,.5))"></div>
+</div>
+<div class="card" style="margin-bottom:12px">
+<div style="display:flex;justify-content:space-between;margin-bottom:12px">
+<div style="font-size:13px;font-weight:700">Mon profil</div>
+<div style="display:flex;gap:8px">
+<button id="edit-toggle-btn" class="btn btn-g" style="font-size:11px;padding:5px 12px" onclick="toggleEditProfile()">✏️ Modifier</button>
+<button class="btn btn-d" style="font-size:11px;padding:5px 12px" onclick="doLogout()">Déconnexion</button>
+</div></div>
+<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.06)">
+<div id="avatar-display" style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--blue2),#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;border:2px solid rgba(59,130,246,.3);flex-shrink:0;overflow:hidden"></div>
+<div><div style="font-size:12px;font-weight:600;margin-bottom:5px">Photo de profil</div><label style="cursor:pointer"><input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="handleAvatar(this)"><span class="btn btn-g" style="font-size:11px;padding:5px 12px;cursor:pointer">📷 Choisir</span></label></div>
+</div>
+<div id="profile-view">
+<div style="font-size:12px;color:var(--text2);line-height:2.4">
+<div>Pseudo : <span id="pv-pseudo" style="color:var(--text);font-weight:600">—</span></div>
+<div>Email : <span id="pv-email" style="color:var(--text);font-weight:600">—</span></div>
+<div>Membre depuis : <span id="pv-since" style="color:var(--text);font-weight:600">—</span></div>
+</div>
+<div style="margin-top:10px;font-size:10px;color:var(--text3);font-style:italic">🔒 Informations strictement privées.</div>
+</div>
+<div id="profile-edit" style="display:none">
+<div class="fld"><label>Pseudo public</label><input type="text" id="edit-pseudo" placeholder="@monpseudo"></div>
+<div class="fld"><label>Présentation</label><textarea rows="3" id="edit-bio" style="background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:var(--r);padding:9px 11px;color:var(--text);font-size:13px;outline:none;width:100%;resize:none;font-family:'Inter',sans-serif" placeholder="Présente-toi en quelques mots..."></textarea></div>
+<button class="btn btn-p" style="width:100%;justify-content:center;margin-top:4px" onclick="saveProfile()">💾 Sauvegarder</button>
+</div></div>
+
+<div style="display:flex;align-items:center;gap:10px;margin-top:20px;margin-bottom:10px">
+<div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(34,197,94,.5),transparent)"></div>
+<div style="display:flex;align-items:center;gap:7px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:20px;padding:5px 14px"><span style="font-size:14px">📸</span><span style="font-size:11px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.08em">Mes prises publiées</span></div>
+<div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(34,197,94,.5))"></div>
+</div>
+<div id="profile-gallery" style="margin-bottom:20px">
+<div style="text-align:center;padding:24px;color:var(--text2);font-size:12px;border:1px dashed var(--border);border-radius:var(--rl)">📸 Aucune prise publiée.<br>Upload ta première prise !</div>
+</div>
+
+<div style="border-top:1px solid rgba(255,255,255,.08);margin-top:24px;padding-top:20px;padding-bottom:100px;text-align:center">
+<div style="display:flex;justify-content:center;align-items:center;gap:24px;margin-bottom:14px">
+<a href="https://www.youtube.com/@fabfishing" target="_blank" style="text-decoration:none"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="4" fill="#FF0000"/><path d="M8.3 12.2V7.8L12.5 10l-4.2 2.2z" fill="white"/></svg></a>
+<a href="https://www.tiktok.com/@fabfishing" target="_blank" style="text-decoration:none"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="4" fill="#111"/><path d="M13.8 4.2a3.8 3.8 0 01-.9-2.5H10v11c0 1-.9 1.9-1.9 1.9s-1.9-.9-1.9-1.9.9-1.9 1.9-1.9c.2 0 .4 0 .5.1V8c-.2 0-.4 0-.5 0C5.5 8 3.3 10.2 3.3 13s2.2 5 4.8 5 4.8-2.2 4.8-5V8.2c1 .6 2.1 1 3.3 1V6.4c-.9 0-1.8-.8-2.4-2.2z" fill="white"/></svg></a>
+<a href="https://www.instagram.com/fabfishing.officiel" target="_blank" style="text-decoration:none"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><defs><linearGradient id="igp" x1="0" y1="20" x2="20" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#f09433"/><stop offset="50%" stop-color="#dc2743"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs><rect width="20" height="20" rx="4" fill="url(#igp)"/><rect x="4" y="4" width="12" height="12" rx="3.5" stroke="white" stroke-width="1.5"/><circle cx="10" cy="10" r="3" stroke="white" stroke-width="1.5"/><circle cx="14" cy="6" r="1" fill="white"/></svg></a>
+</div>
+<div style="font-size:14px;font-weight:700;color:rgba(255,255,255,.85);margin-bottom:3px">FabFishing</div>
+<div style="font-size:11px;color:rgba(255,255,255,.85);margin-bottom:18px">Fondateur de BattleFish</div>
+<div style="display:flex;flex-wrap:wrap;justify-content:center;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);padding:10px 0;margin-bottom:12px">
+<a onclick="openLegal('mentions')" style="color:rgba(255,255,255,.85);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">Mentions légales</a>
+<a onclick="openLegal('cgu')" style="color:rgba(255,255,255,.85);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">CGU</a>
+<a onclick="openLegal('confidentialite')" style="color:rgba(255,255,255,.85);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">Confidentialité</a>
+<a onclick="openLegal('cookies')" style="color:rgba(255,255,255,.85);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">Cookies</a>
+<a onclick="openLegal('rgpd')" style="color:rgba(255,255,255,.85);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">RGPD</a>
+<a onclick="openLegal('dpo')" style="color:rgba(255,255,255,.85);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">DPO</a>
+<a onclick="openLegal('suppression')" style="color:rgba(255,255,255,.85);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">Supprimer compte</a>
+<a onclick="openLegal('signalement')" style="color:rgba(255,255,255,.85);font-size:10px;padding:4px 7px;cursor:pointer">Signaler</a>
+</div>
+<div style="font-size:10px;font-weight:600;color:rgba(255,255,255,.4)">BattleFish © 2026 — FabFishing</div>
+</div>
+</div>
+
+<div id="notifs" class="page">
+<div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Notifications</div>
+<div style="text-align:center;padding:40px 20px;color:var(--text2)"><div style="font-size:36px;margin-bottom:12px">🔔</div><div style="font-size:14px;font-weight:700;margin-bottom:6px">Aucune notification</div><div style="font-size:12px">Tes notifications apparaîtront ici.</div></div>
+</div>
+
+<div id="bottomnav">
+<button class="tab-btn active" onclick="show('home');setTab(this)"><span class="ti">🏠</span><span class="tl">Accueil</span></button>
+<button class="tab-btn" onclick="show('feed');setTab(this)"><span class="ti">⚡</span><span class="tl">Feed</span></button>
+<button class="tab-upload" onclick="openUpload()"><div class="upload-orb">📸</div></button>
+<button class="tab-btn" onclick="show('ranking');setTab(this)"><span class="ti">🏆</span><span class="tl">Top</span></button>
+<button class="tab-btn" onclick="show('profile');setTab(this);setTimeout(function(){initChart();renderProfilePosts();renderHashtagInsights();},80)"><span class="ti">👤</span><span class="tl">Profil</span></button>
+</div>
+</div>
+
+<!-- MODALS -->
+<div id="legal-modal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto" onclick="if(event.target===this)closeLegal()">
+<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rxl);width:100%;max-width:420px;margin:auto;box-shadow:0 30px 80px rgba(0,0,0,.7)">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg2);border-radius:var(--rxl) var(--rxl) 0 0;z-index:1">
+<div id="legal-title" style="font-size:15px;font-weight:800"></div>
+<button onclick="closeLegal()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--text2);cursor:pointer;font-size:16px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center">×</button>
+</div>
+<div id="legal-body" style="padding:18px;max-height:75vh;overflow-y:auto;font-size:12px;line-height:1.8;color:rgba(255,255,255,.7)"></div>
+</div></div>
+
+<div id="upload-modal" class="modal-overlay">
+<div class="modal-box">
+<div class="modal-head"><h2>📸 Nouvelle prise</h2><button class="modal-close" onclick="closeUpload()">×</button></div>
+<label style="background:rgba(255,255,255,.03);border:2px dashed rgba(255,255,255,.12);border-radius:var(--rl);padding:0;text-align:center;cursor:pointer;margin-bottom:12px;display:block;overflow:hidden;position:relative;min-height:130px">
+<input type="file" id="catch-photo-inp" accept="image/*" style="display:none" onchange="handleCatchPhoto(this)">
+<div id="upload-placeholder" style="padding:28px 20px"><div style="font-size:28px;margin-bottom:5px">📷</div><div style="font-weight:600;margin-bottom:2px;font-size:13px">Appuyer pour ajouter une photo</div><div style="font-size:11px;color:var(--text2)">JPG, PNG · max 10 Mo</div></div>
+<div id="upload-preview" style="display:none;width:100%;height:160px;position:relative"><img id="upload-preview-img" style="width:100%;height:100%;object-fit:cover"><div style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.6);border-radius:8px;padding:3px 8px;font-size:10px;color:#fff;font-weight:600">✅ Photo ajoutée</div></div>
+</label>
+<div class="g2">
+<div class="fld" style="grid-column:1/-1"><label>Espèce</label><div class="csel-wrap" style="margin-bottom:0"><div class="csel-btn" onclick="toggleCsel(this)" id="species-btn"><span>Choisir une espèce...</span><span style="font-size:10px;opacity:.5">▼</span></div><div class="csel-dd" id="species-dd"></div></div></div>
+<div class="fld"><label>Poids (kg)</label><input type="text" inputmode="decimal" id="w-inp" placeholder="ex : 3.5" oninput="calcPrev()"></div>
+<div class="fld"><label>Taille (cm)</label><input type="text" inputmode="numeric" id="s-inp" placeholder="ex : 65"></div>
+<div class="fld"><label>Lieu</label><input type="text" id="loc-inp" placeholder="Loire, lac..."></div>
+<div class="fld"><label>Technique</label><input type="text" id="tech-inp" placeholder="Leurre, mouche..."></div>
+</div>
+<div class="fld"><label>Description &amp; hashtags</label><textarea rows="2" id="desc-inp" style="background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:var(--r);padding:9px 11px;color:var(--text);font-size:13px;outline:none;width:100%;resize:none;font-family:'Inter',sans-serif" placeholder="#brochet #loire #spinning..."></textarea></div>
+<div id="sc-prev" style="display:none;border-radius:var(--r);padding:12px;text-align:center;margin-bottom:10px">
+<div style="font-size:10px;color:var(--text2);margin-bottom:4px">Score estimé</div>
+<div id="sc-val" style="font-size:28px;font-weight:800">0 pts</div>
+<div id="sc-badge" style="margin-top:4px"></div>
+<div id="sc-xp" style="font-size:11px;color:var(--text2);margin-top:4px"></div>
+</div>
+<div style="display:flex;gap:8px">
+<button class="btn btn-g" style="flex:1;justify-content:center" onclick="closeUpload()">Annuler</button>
+<button class="btn btn-p" style="flex:2;justify-content:center;font-weight:800" onclick="submitCatch()">📤 Publier</button>
+</div></div></div>
+
+<div id="battle-modal" class="modal-overlay">
+<div class="modal-box">
+<div class="modal-head"><h2>⚔️ Battle Arena</h2><button class="modal-close" onclick="closeBattle()">×</button></div>
+<div style="font-size:11px;color:var(--text2);text-align:center;margin-bottom:12px">Tes cartes TCG s'affrontent — la meilleure prise l'emporte !</div>
+<div style="display:flex;gap:6px;margin-bottom:16px">
+<button id="btn-algo-match" onclick="setBattleMode('algo')" style="flex:1;background:rgba(29,110,245,.2);border:1px solid var(--blue);border-radius:20px;padding:8px;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">🤖 Algo</button>
+<button id="btn-manual-match" onclick="setBattleMode('manual')" style="flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:20px;padding:8px;color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">👤 Manuel</button>
+</div>
+<div class="battle-arena">
+<div class="tcg-card tcg-com tcg-me" id="my-card">
+<div class="tcg-header"><span class="tcg-name" id="my-card-name">Moi</span><span class="tcg-hp">HP —</span></div>
+<div class="tcg-photo"><div class="tcg-photo-placeholder" id="my-card-placeholder">🎣</div><img id="my-card-img" style="display:none;width:100%;height:100%;object-fit:cover"><div class="tcg-photo-label" id="my-card-label">Aucune prise active</div></div>
+<div class="tcg-body">
+<div class="tcg-species" id="my-card-species">Publie une prise pour l'activer</div>
+<div class="tcg-stat-row"><span class="tcg-stat-lbl">ATK</span><div class="tcg-stat-bar"><div class="tcg-stat-fill" style="width:0%;background:var(--red)"></div></div><span class="tcg-stat-val" style="color:var(--red)">0</span></div>
+<div class="tcg-stat-row"><span class="tcg-stat-lbl">EF</span><div class="tcg-stat-bar"><div class="tcg-stat-fill" style="width:0%;background:var(--blue)"></div></div><span class="tcg-stat-val" style="color:var(--blue)">0</span></div>
+<div class="tcg-stat-row"><span class="tcg-stat-lbl">SPD</span><div class="tcg-stat-bar"><div class="tcg-stat-fill" style="width:0%;background:var(--amber)"></div></div><span class="tcg-stat-val" style="color:var(--amber)">0</span></div>
+<div class="tcg-stat-row"><span class="tcg-stat-lbl">HP</span><div class="tcg-stat-bar"><div class="tcg-stat-fill" style="width:0%;background:var(--green)"></div></div><span class="tcg-stat-val" style="color:var(--green)">0</span></div>
+</div>
+<div class="tcg-footer"><span class="tcg-score" id="my-card-score">— pts</span><span class="badge b-com tcg-badge-sm" id="my-card-badge">COMMUN</span></div>
+</div>
+<div class="vs-sep">VS</div>
+<div class="tcg-card tcg-epi" id="opp-card">
+<div class="tcg-header"><span class="tcg-name" id="opp-card-name">Adversaire</span><span class="tcg-hp">HP —</span></div>
+<div class="tcg-photo" id="opp-card-photo"><div class="tcg-photo-placeholder">❓</div><div class="tcg-photo-label">En attente</div></div>
+<div class="tcg-body">
+<div class="tcg-species" id="opp-card-species">Recherche en cours...</div>
+<div class="tcg-stat-row"><span class="tcg-stat-lbl">ATK</span><div class="tcg-stat-bar"><div class="tcg-stat-fill" id="oa" style="width:0%;background:var(--red)"></div></div><span class="tcg-stat-val" style="color:var(--red)" id="ova">—</span></div>
+<div class="tcg-stat-row"><span class="tcg-stat-lbl">EF</span><div class="tcg-stat-bar"><div class="tcg-stat-fill" id="oe" style="width:0%;background:var(--blue)"></div></div><span class="tcg-stat-val" style="color:var(--blue)" id="ove">—</span></div>
+<div class="tcg-stat-row"><span class="tcg-stat-lbl">SPD</span><div class="tcg-stat-bar"><div class="tcg-stat-fill" id="os" style="width:0%;background:var(--amber)"></div></div><span class="tcg-stat-val" style="color:var(--amber)" id="ovs">—</span></div>
+<div class="tcg-stat-row"><span class="tcg-stat-lbl">HP</span><div class="tcg-stat-bar"><div class="tcg-stat-fill" id="oh" style="width:0%;background:var(--green)"></div></div><span class="tcg-stat-val" style="color:var(--green)" id="ovh">—</span></div>
+</div>
+<div class="tcg-footer"><span class="tcg-score" id="opp-card-score">— pts</span><span class="badge b-epi tcg-badge-sm" id="opp-badge">—</span></div>
+</div></div>
+<div style="font-size:11px;color:var(--text2);text-align:center;padding:12px;background:rgba(255,255,255,.03);border-radius:var(--r);margin-bottom:12px">🤖 L'algo recherche un adversaire compatible...<br><span style="font-size:10px;color:var(--text3)">Publie une prise pour activer ta carte TCG</span></div>
+<button class="btn btn-p btn-big" onclick="launchDuel()">⚔️ Lancer le Battle</button>
+<div id="battle-res" style="display:none"></div>
+</div></div>
+
+<div id="comment-modal" class="modal-overlay">
+<div class="modal-box">
+<div class="modal-head"><h2>💬 Commentaires</h2><button class="modal-close" onclick="closeComments()">×</button></div>
+<input type="hidden" id="comment-post-id">
+<div id="comment-list" style="max-height:280px;overflow-y:auto;margin-bottom:14px;padding-right:4px"></div>
+<div style="display:flex;gap:8px;align-items:center">
+<input id="comment-inp" type="text" placeholder="Ton commentaire..." style="flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:var(--r);padding:10px 13px;color:var(--text);font-size:13px;outline:none;font-family:Inter,sans-serif" onkeydown="if(event.key==='Enter')addComment()">
+<button class="btn btn-p" style="padding:10px 14px" onclick="addComment()">→</button>
+</div></div></div>
+
+<div id="photo-modal" class="modal-overlay" style="background:rgba(0,0,0,.95)" onclick="closePhotoModal()">
+<div style="width:100%;max-width:420px;padding:16px;text-align:center" onclick="event.stopPropagation()">
+<img id="photo-modal-img" style="width:100%;border-radius:var(--rl);max-height:70vh;object-fit:contain">
+<div id="photo-modal-caption" style="margin-top:12px;font-size:13px;font-weight:600;color:rgba(255,255,255,.8)"></div>
+<div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,.35)">Appuyer pour fermer</div>
+</div></div>
+
+<div id="chat-fab">
+<div id="chat-panel">
+<div id="chat-head">
+<div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--blue2),#0ea5e9);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px">🎣</div>
+<div style="flex:1"><div style="font-weight:700;font-size:12px;color:#fff">Coach BattleFish</div><div style="font-size:10px;color:#4ade80;display:flex;align-items:center;gap:4px"><span style="width:5px;height:5px;border-radius:50%;background:#4ade80;display:inline-block"></span>En ligne</div></div>
+<button style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.6);cursor:pointer;font-size:13px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center" onclick="toggleChat()">×</button>
+</div>
+<div id="chat-msgs"><div class="cmsg-b">Salut ! Publie ta première prise avec des hashtags pour que je personnalise mes conseils 🎣</div></div>
+<div id="chat-qrow">
+<button class="cq" onclick="qMsg('Max score ?')">Max score ?</button>
+<button class="cq" onclick="qMsg('Mes stats ?')">Mes stats ?</button>
+<button class="cq" onclick="qMsg('Conseils ?')">Conseils ?</button>
+</div>
+<div id="chat-irow"><input id="chat-inp" placeholder="Ta question..." onkeydown="if(event.key==='Enter')sendChat()"><button class="csend" onclick="sendChat()">→</button></div>
+</div>
+<button id="chat-fab-btn" onclick="toggleChat()" title="Coach IA">
+<svg viewBox="0 0 28 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="bG" x1="2" y1="0" x2="26" y2="26" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#dbeafe"/></linearGradient><filter id="bS" x="-10%" y="-10%" width="130%" height="150%"><feDropShadow dx="0" dy="3" stdDeviation="2.5" flood-color="rgba(0,0,0,0.35)"/></filter></defs>
+<path d="M2 2.5C2 1.4 2.9 0.5 4 0.5H24C25.1 0.5 26 1.4 26 2.5V16.5C26 17.6 25.1 18.5 24 18.5H16L11 25V18.5H4C2.9 18.5 2 17.6 2 16.5V2.5Z" fill="url(#bG)" filter="url(#bS)"/>
+<path d="M4 2.5C4 2 4.5 1.5 5 1.5H23C23.5 1.5 24 2 24 2.5V6C24 6.5 23.5 7 23 7H5C4.5 7 4 6.5 4 6V2.5Z" fill="rgba(255,255,255,.55)"/>
+<circle cx="9" cy="9.5" r="2" fill="#1d6ef5"><animate attributeName="opacity" values="1;0.2;1" dur="1.4s" begin="0s" repeatCount="indefinite"/></circle>
+<circle cx="14" cy="9.5" r="2" fill="#1d6ef5"><animate attributeName="opacity" values="1;0.2;1" dur="1.4s" begin="0.22s" repeatCount="indefinite"/></circle>
+<circle cx="19" cy="9.5" r="2" fill="#1d6ef5"><animate attributeName="opacity" values="1;0.2;1" dur="1.4s" begin="0.44s" repeatCount="indefinite"/></circle>
+</svg>
+</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+'use strict';
+var currentUser=null;
+function guardApp(){if(!currentUser){document.getElementById('app').style.display='none';document.getElementById('chat-fab').style.display='none';document.getElementById('landing').style.display='flex';return false;}return true;}
+var Mod=(function(){
+var BAN=['connard','connasse','salope','pute','putain','enculé','enculer','fdp','pd','tapette','batard','bâtard','merde','bite','chier','niquer','nique','raclure','ordure','abruti','imbécile','crétin','con','conne','débile','nazi','raciste','nègre','bougnoule','youpin','gouine','bastard','shit','fuck','asshole','bitch','cunt','nigger','faggot','whore','slut','motherfucker','dickhead','wanker','porn','porno','xxx','sex','nude','naked','nsfw','hentai','onlyfans','hitler','terroriste','violer','viol','pédophile','pedophile'];
+function norm(s){return s.toLowerCase().replace(/3/g,'e').replace(/@/g,'a').replace(/0/g,'o').replace(/1/g,'i').replace(/\$/g,'s').replace(/5/g,'s').replace(/[^a-zàâäéèêëîïôöùûüç\s]/g,'');}
+function txt(t,f){if(!t||!t.trim())return{ok:true};var n=norm(t);for(var i=0;i<BAN.length;i++){if(n.includes(norm(BAN[i])))return{ok:false,reason:'Contenu inapproprié dans '+f+'.',severity:'high'};}if(t.length>500)return{ok:false,reason:'Texte trop long (500 car. max).',severity:'low'};return{ok:true};}
+function photo(f){if(!f)return{ok:false,reason:'Aucun fichier.'};if(!['image/jpeg','image/png','image/webp','image/heic','image/heif'].includes(f.type))return{ok:false,reason:'Format non autorisé. JPG, PNG ou WebP.'};if(f.size>10*1024*1024)return{ok:false,reason:'Photo trop lourde. Max 10 Mo.'};if(f.size<1024)return{ok:false,reason:'Photo invalide.'};if(/(nude|naked|porn|xxx|nsfw|sex|explicit|adult|onlyfans|hentai|erotic)/i.test(f.name))return{ok:false,reason:'Photo refusée.',severity:'high'};return{ok:true};}
+var rl={post:{max:10,win:60000,log:[]},comment:{max:20,win:60000,log:[]},like:{max:50,win:60000,log:[]}};
+function rate(a){var r=rl[a];if(!r)return{ok:true};var now=Date.now();r.log=r.log.filter(function(t){return now-t<r.win;});if(r.log.length>=r.max)return{ok:false,reason:'Trop d\'actions rapides.'};r.log.push(now);return{ok:true};}
+var rep=[];
+function report(id,reason){rep.push({id:id,reason:reason,ts:Date.now()});return{ok:true,msg:'Signalement envoyé. Traitement sous 48h. Merci 🛡️'};}
+function alert(msg,sev){var el=document.getElementById('mod-alert');if(!el){el=document.createElement('div');el.id='mod-alert';el.style.cssText='position:fixed;top:56px;left:50%;transform:translateX(-50%);border-radius:12px;padding:11px 16px;font-size:12px;font-weight:600;z-index:2000;max-width:360px;width:90%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.5);transition:opacity .3s';document.body.appendChild(el);}var h=sev==='high';el.style.background=h?'#7f1d1d':'#1e3a5f';el.style.border='1px solid '+(h?'#ef4444':'#3b82f6');el.style.color=h?'#fca5a5':'#93c5fd';el.style.opacity='1';el.style.display='block';el.textContent=(h?'🚫 ':'⚠️ ')+msg;clearTimeout(el._t);el._t=setTimeout(function(){el.style.opacity='0';setTimeout(function(){el.style.display='none';},300);},4500);}
+return{checkText:txt,checkPhoto:photo,checkRate:rate,report:report,showAlert:alert,log:function(t,c,r){console.warn('[BF Mod]'+t+'|'+r);}};
+})();
+
+var _chart=null,_stab='monthly';
+var SD={
+monthly:{labels:['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'],datasets:[{label:'2026',data:[0,0,0,0,0,0,0,0,0,0,0,0],color:'#4f8ef7',dash:[]},{label:'2025',data:[0,0,0,0,0,0,0,0,0,0,0,0],color:'#a78bfa',dash:[5,3]}],kpis:[{val:'0',lbl:'Prises',delta:'Ce mois',pos:true,col:'#4f8ef7'},{val:'—',lbl:'Record',delta:'À battre',pos:true,col:'#f59e0b'},{val:'0',lbl:'Victoires',delta:'Ce mois',pos:true,col:'#22c55e'}]},
+yearly:{labels:['2021','2022','2023','2024','2025','2026'],datasets:[{label:'Prises',data:[0,0,0,0,0,0],color:'#4f8ef7',dash:[]},{label:'Victoires',data:[0,0,0,0,0,0],color:'#22c55e',dash:[5,3]}],kpis:[{val:'0',lbl:'Total prises',delta:'Depuis 2021',pos:true,col:'#4f8ef7'},{val:'0',lbl:'Victoires',delta:'Total',pos:true,col:'#22c55e'},{val:'—',lbl:'Croissance',delta:'En cours',pos:true,col:'#f59e0b'}]},
+xp:{labels:['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'],datasets:[{label:'XP',data:[0,0,0,0,0,0,0,0,0,0,0,0],color:'#ffd700',dash:[]}],kpis:[{val:'0',lbl:'XP total',delta:'Depuis 2026',pos:true,col:'#ffd700'},{val:'Niv.1',lbl:'Grade actuel',delta:'Amateur',pos:true,col:'#a78bfa'},{val:'—',lbl:'Prochain grade',delta:'Confirmé',pos:true,col:'#22c55e'}]},
+species:{labels:['Brochet','Sandre','Carpe','Bar','Truite','Silure','Autres'],type:'bar',datasets:[{label:'Prises',data:[0,0,0,0,0,0,0],color:'#4f8ef7',dash:[]}],kpis:[{val:'—',lbl:'Espèce fav.',delta:'À définir',pos:true,col:'#4f8ef7'},{val:'0',lbl:'Espèces',delta:'différentes',pos:true,col:'#22c55e'},{val:'—%',lbl:'Part principale',delta:'À venir',pos:true,col:'#f59e0b'}]}
+};
+function renderKpis(t){var el=document.getElementById('stat-kpi-row');if(!el)return;el.innerHTML=SD[t].kpis.map(function(k){return'<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r);padding:8px 6px;text-align:center;min-width:0"><div style="font-size:15px;font-weight:800;color:'+k.col+';line-height:1;overflow:hidden;text-overflow:ellipsis">'+k.val+'</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;overflow:hidden;text-overflow:ellipsis">'+k.lbl+'</div><div style="font-size:9px;font-weight:700;color:'+(k.pos?'var(--green)':'var(--red)')+';margin-top:2px">'+k.delta+'</div></div>';}).join('');}
+function renderLegend(t){var el=document.getElementById('stat-legend');if(!el)return;el.innerHTML=SD[t].datasets.map(function(s){return'<span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:'+s.color+';flex-shrink:0"></span><span>'+s.label+'</span></span>';}).join('');}
+function renderChart(t){if(_chart){_chart.destroy();_chart=null;}var c=document.getElementById('stat-canvas');if(!c)return;var d=SD[t],bar=d.type==='bar';_chart=new Chart(c,{type:bar?'bar':'line',data:{labels:d.labels,datasets:d.datasets.map(function(s,i){return{label:s.label,data:s.data,borderColor:s.color,backgroundColor:bar?(s.color+(i===0?'bb':'55')):(s.color+'15'),borderWidth:bar?0:2,borderDash:s.dash,pointBackgroundColor:s.color,pointRadius:bar?0:2.5,pointHoverRadius:5,fill:(!bar&&i===0),tension:0.4};})},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'#0e1828',borderColor:'#2a4060',borderWidth:1,titleColor:'#f0f6ff',bodyColor:'#a8bdd4',padding:8,cornerRadius:8}},scales:{x:{grid:{color:'rgba(255,255,255,.03)'},ticks:{color:'#5a7a9e',font:{size:8}},border:{display:false}},y:{grid:{color:'rgba(255,255,255,.03)'},ticks:{color:'#5a7a9e',font:{size:8},maxTicksLimit:4},border:{display:false},beginAtZero:true}}}});}
+function switchStatTab(t,btn){document.querySelectorAll('.stat-ctab').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');_stab=t;renderKpis(t);renderLegend(t);renderChart(t);}
+function initChart(){renderKpis(_stab);renderLegend(_stab);renderChart(_stab);}
+
+var FDB=[
+{n:"Thon rouge",s:"Thunnus thynnus",z:"Marine",t:"150–300 cm",p:"30–600 kg",r:"Trophée",mult:6,eco:"tro",peche:"Traîne hauturière",em:"🐟"},
+{n:"Sériole",s:"Seriola dumerili",z:"Méditerranée",t:"80–200 cm",p:"5–80 kg",r:"Trophée",mult:6,eco:"tro",peche:"Jigging, vifs, popper",em:"⚡"},
+{n:"Marlin bleu",s:"Makaira nigricans",z:"Marine",t:"150–450 cm",p:"50–600 kg",r:"Trophée",mult:6,eco:"tro",peche:"Traîne hauturière",em:"🐠"},
+{n:"Liche",s:"Lichia amia",z:"Méditerranée",t:"50–200 cm",p:"2–30 kg",r:"Trophée",mult:6,eco:"tro",peche:"Leurres rapides, popper",em:"🌊"},
+{n:"Brochet commun",s:"Esox lucius",z:"Eau douce",t:"60–130 cm",p:"1–20 kg",r:"Légendaire",mult:5,eco:"leg",peche:"Lancer, jigging",em:"🐊"},
+{n:"Silure",s:"Silurus glanis",z:"Eau douce",t:"100–300 cm",p:"10–150 kg",r:"Légendaire",mult:5,eco:"leg",peche:"Ledgering, vifs",em:"🐋"},
+{n:"Saumon atlantique",s:"Salmo salar",z:"Eau douce",t:"60–150 cm",p:"2–35 kg",r:"Légendaire",mult:5,eco:"leg",peche:"Mouche, cuillère",em:"🎣"},
+{n:"Espadon",s:"Xiphias gladius",z:"Marine",t:"150–300 cm",p:"30–250 kg",r:"Légendaire",mult:5,eco:"leg",peche:"Traîne nuit",em:"⚔️"},
+{n:"Thon blanc",s:"Thunnus alalunga",z:"Marine",t:"70–130 cm",p:"5–40 kg",r:"Légendaire",mult:5,eco:"leg",peche:"Traîne, sondeur",em:"🐟"},
+{n:"Anguille",s:"Anguilla anguilla",z:"Eau douce",t:"40–150 cm",p:"0.5–6 kg",r:"Légendaire",mult:5,eco:"leg",peche:"Posé nuit",em:"🐍"},
+{n:"Dorade coryphène",s:"Coryphaena hippurus",z:"Marine",t:"80–200 cm",p:"3–40 kg",r:"Légendaire",mult:5,eco:"leg",peche:"Traîne, popper, leurres",em:"🌈"},
+{n:"Sandre",s:"Sander lucioperca",z:"Eau douce",t:"40–100 cm",p:"0.5–12 kg",r:"Épique",mult:4,eco:"epi",peche:"Jigging, drop-shot",em:"🐟"},
+{n:"Orphie",s:"Belone belone",z:"Marine",t:"40–90 cm",p:"0.1–1 kg",r:"Épique",mult:4,eco:"epi",peche:"Leurres légers, mouche mer",em:"🗡️"},
+{n:"Thonine",s:"Euthynnus alletteratus",z:"Marine",t:"40–100 cm",p:"1–12 kg",r:"Épique",mult:4,eco:"epi",peche:"Leurres, traîne côtière",em:"🔥"},
+{n:"Bar commun",s:"Dicentrarchus labrax",z:"Marine",t:"30–90 cm",p:"0.3–10 kg",r:"Épique",mult:4,eco:"epi",peche:"Leurres, popper",em:"🐬"},
+{n:"Daurade royale",s:"Sparus aurata",z:"Méditerranée",t:"30–70 cm",p:"0.3–8 kg",r:"Épique",mult:4,eco:"epi",peche:"Drop-shot, vifs",em:"🌟"},
+{n:"Turbot",s:"Scophthalmus maximus",z:"Marine",t:"40–100 cm",p:"1–15 kg",r:"Épique",mult:4,eco:"epi",peche:"Vifs, posé",em:"🎯"},
+{n:"Dentex commun",s:"Dentex dentex",z:"Méditerranée",t:"30–100 cm",p:"0.5–10 kg",r:"Épique",mult:4,eco:"epi",peche:"Vifs, jigging",em:"🔵"},
+{n:"Bonite à dos rayé",s:"Sarda sarda",z:"Marine",t:"40–90 cm",p:"1–8 kg",r:"Épique",mult:4,eco:"epi",peche:"Leurres, traîne",em:"🏃"},
+{n:"Tassergal",s:"Pomatomus saltatrix",z:"Marine",t:"40–120 cm",p:"1–12 kg",r:"Épique",mult:4,eco:"epi",peche:"Leurres, popper, traîne",em:"⚡"},
+{n:"Truite fario",s:"Salmo trutta fario",z:"Eau douce",t:"20–70 cm",p:"0.2–5 kg",r:"Rare",mult:3,eco:"rar",peche:"Mouche, toc",em:"🎣"},
+{n:"Truite de mer",s:"Salmo trutta trutta",z:"Eau douce",t:"30–90 cm",p:"0.5–12 kg",r:"Rare",mult:3,eco:"rar",peche:"Cuillère, mouche",em:"🎣"},
+{n:"Carpe commune",s:"Cyprinus carpio",z:"Eau douce",t:"40–120 cm",p:"1–30 kg",r:"Rare",mult:3,eco:"rar",peche:"Bouillettes, feeder",em:"🐡"},
+{n:"Barbeau fluviatile",s:"Barbus barbus",z:"Eau douce",t:"40–90 cm",p:"0.5–8 kg",r:"Rare",mult:3,eco:"rar",peche:"Feeder, toc",em:"🟠"},
+{n:"Ombre commun",s:"Thymallus thymallus",z:"Eau douce",t:"25–60 cm",p:"0.2–3 kg",r:"Rare",mult:3,eco:"rar",peche:"Mouche sèche",em:"🪁"},
+{n:"Maquereau commun",s:"Scomber scombrus",z:"Marine",t:"20–45 cm",p:"0.1–1 kg",r:"Rare",mult:3,eco:"rar",peche:"Turlutte, plume",em:"💨"},
+{n:"Lieu jaune",s:"Pollachius pollachius",z:"Marine",t:"40–110 cm",p:"0.5–10 kg",r:"Rare",mult:3,eco:"rar",peche:"Jigging, leurres",em:"💛"},
+{n:"Cabillaud",s:"Gadus morhua",z:"Marine",t:"40–150 cm",p:"1–40 kg",r:"Rare",mult:3,eco:"rar",peche:"Pilker, posé",em:"⚪"},
+{n:"Pageot commun",s:"Pagellus erythrinus",z:"Méditerranée",t:"20–50 cm",p:"0.2–2.5 kg",r:"Rare",mult:3,eco:"rar",peche:"Posé, drop-shot",em:"🔴"},
+{n:"Sar",s:"Diplodus sargus",z:"Méditerranée",t:"15–45 cm",p:"0.1–2.5 kg",r:"Rare",mult:3,eco:"rar",peche:"Posé, feeder mer",em:"⚫"},
+{n:"Black-bass",s:"Micropterus salmoides",z:"Eau douce",t:"20–55 cm",p:"0.3–5 kg",r:"Rare",mult:3,eco:"rar",peche:"Leurres souples",em:"🖤"},
+{n:"Brème commune",s:"Abramis brama",z:"Eau douce",t:"25–70 cm",p:"0.3–6 kg",r:"Peu commun",mult:2.5,eco:"unc",peche:"Feeder, coup",em:"🟡"},
+{n:"Chevesne",s:"Squalius cephalus",z:"Eau douce",t:"20–60 cm",p:"0.2–4 kg",r:"Peu commun",mult:2.5,eco:"unc",peche:"Mouche, surface",em:"🟤"},
+{n:"Tanche",s:"Tinca tinca",z:"Eau douce",t:"20–50 cm",p:"0.3–4 kg",r:"Peu commun",mult:2.5,eco:"unc",peche:"Vers, bouillette",em:"🟢"},
+{n:"Asp",s:"Leuciscus aspius",z:"Eau douce",t:"30–80 cm",p:"0.5–8 kg",r:"Peu commun",mult:2.5,eco:"unc",peche:"Lancer, popper",em:"🔷"},
+{n:"Dorade grise",s:"Spondyliosoma cantharus",z:"Marine",t:"20–55 cm",p:"0.2–4 kg",r:"Peu commun",mult:2.5,eco:"unc",peche:"Feeder mer, posé",em:"🩶"},
+{n:"Saint-Pierre",s:"Zeus faber",z:"Marine",t:"20–60 cm",p:"0.2–5 kg",r:"Peu commun",mult:2.5,eco:"unc",peche:"Vifs, posé",em:"🟡"},
+{n:"Denti",s:"Dentex gibbosus",z:"Méditerranée",t:"30–80 cm",p:"0.5–8 kg",r:"Peu commun",mult:2.5,eco:"unc",peche:"Jigging, vifs",em:"🔵"},
+{n:"Gardon",s:"Rutilus rutilus",z:"Eau douce",t:"10–35 cm",p:"0.05–1 kg",r:"Commun",mult:2,eco:"com",peche:"Coup, feeder",em:"⚪"},
+{n:"Ablette",s:"Alburnus alburnus",z:"Eau douce",t:"8–20 cm",p:"0.01–0.1 kg",r:"Commun",mult:2,eco:"com",peche:"Coup surface",em:"✨"},
+{n:"Goujon",s:"Gobio gobio",z:"Eau douce",t:"8–18 cm",p:"0.01–0.1 kg",r:"Commun",mult:2,eco:"com",peche:"Toc fond",em:"🟤"},
+{n:"Vairon",s:"Phoxinus phoxinus",z:"Eau douce",t:"5–10 cm",p:"0.005–0.02 kg",r:"Commun",mult:2,eco:"com",peche:"Mouche",em:"⚪"},
+{n:"Rouget barbet",s:"Mullus surmuletus",z:"Méditerranée",t:"15–35 cm",p:"0.1–0.8 kg",r:"Commun",mult:2,eco:"com",peche:"Posé fond",em:"🔴"},
+];
+var CATS=[
+{label:'🏆 Trophée ×6',items:FDB.filter(function(f){return f.eco==='tro';})},
+{label:'🟣 Légendaire ×5',items:FDB.filter(function(f){return f.eco==='leg';})},
+{label:'🟠 Épique ×4',items:FDB.filter(function(f){return f.eco==='epi';})},
+{label:'🔵 Rare ×3',items:FDB.filter(function(f){return f.eco==='rar';})},
+{label:'🟢 Peu commun ×2.5',items:FDB.filter(function(f){return f.eco==='unc';})},
+{label:'⚪ Commun ×2',items:FDB.filter(function(f){return f.eco==='com';})},
+];
+function gb(e){return{tro:'b-tro',leg:'b-leg',epi:'b-epi',rar:'b-rar',unc:'b-unc',com:'b-com'}[e]||'b-com';}
+function gt(e){return{tro:'tcg-tro',leg:'tcg-leg',epi:'tcg-epi',rar:'tcg-rar',unc:'tcg-unc',com:'tcg-com'}[e]||'tcg-com';}
+function rl(e){return{tro:'TROPHÉE',leg:'LÉGEND.',epi:'ÉPIQUE',rar:'RARE',unc:'P.COM.',com:'COMMUN'}[e]||'COMMUN';}
+function rc(e){return{tro:'var(--gold)',leg:'var(--purple)',epi:'var(--amber)',rar:'var(--teal)',unc:'var(--blue)',com:'var(--text2)'}[e]||'var(--text2)';}
+function xpu(e){return{tro:180,leg:110,epi:65,rar:35,unc:25,com:15}[e]||15;}
+
+(function(){var dd=document.getElementById('species-dd');if(!dd)return;var h='';CATS.forEach(function(c){h+='<div class="csel-cat">'+c.label+'</div>';c.items.forEach(function(f){h+='<div class="csel-opt" onclick="pickSpecies(this,\''+f.n+'\','+f.mult+',\''+f.eco+'\',\''+f.s+'\')">'+f.em+' '+f.n+'</div>';});});dd.innerHTML=h;})();
+
+var UP={tags:{},species:{},zones:{},total:0};
+function htags(t){if(!t)return[];var m=t.match(/#[\wàâäéèêëîïôöùûüç]+/gi)||[];return m.map(function(x){return x.toLowerCase().replace('#','');});}
+function updUP(p){UP.total++;htags(p.desc).forEach(function(t){UP.tags[t]=(UP.tags[t]||0)+1;});var sp=p.species.toLowerCase();UP.species[sp]=(UP.species[sp]||0)+1;var f=FDB.find(function(x){return x.n===p.species;});if(f){var z=f.z.toLowerCase();UP.zones[z]=(UP.zones[z]||0)+1;}}
+function topI(o,n){return Object.keys(o).sort(function(a,b){return o[b]-o[a];}).slice(0,n);}
+
+var POSTS=[],PID=0,lastCatch=null,photoData=null;
+function ts(t){var s=Math.floor((Date.now()-t)/1000);if(s<60)return'À l\'instant';if(s<3600)return Math.floor(s/60)+' min';if(s<86400)return Math.floor(s/3600)+'h';return Math.floor(s/86400)+'j';}
+
+function postHTML(p,inP){
+var col=rc(p.eco);
+var imgZ=p.photo?'<div class="post-img" style="padding:0;cursor:pointer" onclick="openPD('+p.id+')"><img src="'+p.photo+'" style="width:100%;height:100%;object-fit:cover;border-radius:var(--r)"></div>':'<div class="post-img">'+p.em+'</div>';
+var tags=htags(p.desc);
+var tH=tags.length?'<div style="margin-bottom:8px">'+tags.map(function(t){return'<span class="tag" style="cursor:pointer" onclick="fFTag(\''+t+'\')">#'+t+'</span>';}).join('')+'</div>':'';
+var dC=p.desc?p.desc.replace(/#[\wàâäéèêëîïôöùûüç]+/gi,function(m){return'<span style="color:var(--blue)">'+m+'</span>':''}):'';
+var ps=currentUser?currentUser.pseudo:'Pêcheur';var ini=ps.replace('@','')[0].toUpperCase();
+return'<div class="post" id="post-'+p.id+'" style="'+(p.isTro?'border-color:rgba(255,215,0,.3)':'')+'">'
++'<div style="display:flex;align-items:center;gap:9px;margin-bottom:10px">'
++'<div class="ava" style="width:34px;height:34px;background:var(--blue2);color:#fff;font-size:12px">'+ini+'</div>'
++'<div style="flex:1"><div style="font-weight:700;font-size:13px">'+ps+'</div>'
++'<div style="font-size:10px;color:var(--text2)">'+ts(p.ts)+(p.loc?' · '+p.loc:'')+'</div></div>'
++(inP?'<button onclick="delPost('+p.id+')" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:var(--red);border-radius:8px;padding:4px 8px;font-size:10px;cursor:pointer;font-family:Inter,sans-serif">🗑</button>':'')
++'</div>'+imgZ
++(p.isTro?'<div style="background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.2);border-radius:8px;padding:7px 10px;font-size:11px;color:var(--gold);font-weight:700;margin-bottom:7px">🏆 CAPTURE TROPHÉE · +500 XP bonus !</div>':'')
++'<div style="margin-bottom:5px"><strong style="color:'+col+'">'+p.species+' — '+p.weight+' kg</strong> <span class="badge '+gb(p.eco)+'" style="margin-left:3px">'+rl(p.eco)+'</span></div>'
++(dC?'<div style="font-size:12px;color:var(--text2);margin-bottom:6px">'+dC+'</div>':'')
++tH
++'<div style="font-size:12px;color:var(--text2);margin-bottom:8px">Score : <strong style="color:'+col+'">'+p.score+' pts</strong> · <span style="color:var(--green)">+'+xpu(p.eco)+' XP</span></div>'
++'<div class="post-acts">'
++'<button class="act-btn'+(p.liked?' liked':'')+'" id="lb-'+p.id+'" onclick="tLike('+p.id+')">❤️ <span id="lc-'+p.id+'">'+p.likes+'</span></button>'
++'<button class="act-btn" onclick="openCom('+p.id+')">💬 <span id="cc-'+p.id+'">'+p.comments.length+'</span></button>'
++'<button class="act-btn" onclick="shareP('+p.id+')">↗</button>'
++'<button class="act-btn" onclick="repPost('+p.id+')" style="color:rgba(239,68,68,.5)">🚩</button>'
++'<button class="act-btn" style="margin-left:auto" onclick="openBattle()">⚔️</button>'
++'</div></div>';
+}
+
+function renderFeed(){var f=document.getElementById('feed-posts');if(!POSTS.length){f.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--text2)"><div style="font-size:36px;margin-bottom:12px">📭</div><div style="font-size:14px;font-weight:700;margin-bottom:6px">Aucune publication pour l\'instant</div><div style="font-size:12px;margin-bottom:16px">Sois le premier !</div><button class="btn btn-p" onclick="openUpload()">📸 Publier</button></div>';return;}f.innerHTML=POSTS.map(function(p){return postHTML(p,false);}).join('');}
+function renderPosts(){var el=document.getElementById('profile-gallery');if(!el)return;if(!POSTS.length){el.innerHTML='<div style="text-align:center;padding:24px;color:var(--text2);font-size:12px;border:1px dashed var(--border);border-radius:var(--rl)">📸 Aucune prise publiée.</div>';return;}el.innerHTML=POSTS.map(function(p){return postHTML(p,true);}).join('');}
+function renderInsights(){
+var el=document.getElementById('hashtag-insights');if(!el)return;
+if(!POSTS.length){el.innerHTML='<div style="font-size:11px;color:var(--text2);font-style:italic">Publie des prises pour voir tes statistiques ici.</div>';return;}
+var tot=POSTS.length,tsc=POSTS.reduce(function(s,p){return s+p.score;},0),avg=Math.round(tsc/tot),best=POSTS.reduce(function(b,p){return p.score>b.score?p:b;},POSTS[0]);
+var rc2={tro:0,leg:0,epi:0,rar:0,unc:0,com:0};POSTS.forEach(function(p){if(rc2[p.eco]!==undefined)rc2[p.eco]++;});
+var rLbl={tro:'Trophée',leg:'Légendaire',epi:'Épique',rar:'Rare',unc:'Peu commun',com:'Commun'};
+var rCol={tro:'var(--gold)',leg:'var(--purple)',epi:'var(--amber)',rar:'var(--teal)',unc:'var(--blue)',com:'var(--text2)'};
+var sc={};POSTS.forEach(function(p){sc[p.species]=(sc[p.species]||0)+1;});
+var top=Object.keys(sc).sort(function(a,b){return sc[b]-sc[a];}).slice(0,5),mx=sc[top[0]]||1;
+var tw=POSTS.reduce(function(s,p){return s+parseFloat(p.weight||0);},0),aw=(tw/tot).toFixed(1);
+var h='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">'
++'<div style="background:rgba(255,255,255,.04);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--blue)">'+tot+'</div><div style="font-size:9px;color:var(--text2);margin-top:2px">Prises</div></div>'
++'<div style="background:rgba(255,255,255,.04);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--amber)">'+avg+'</div><div style="font-size:9px;color:var(--text2);margin-top:2px">Score moy.</div></div>'
++'<div style="background:rgba(255,255,255,.04);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--green)">'+aw+' kg</div><div style="font-size:9px
