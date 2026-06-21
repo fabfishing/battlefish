@@ -94,8 +94,8 @@ body{background:linear-gradient(135deg,#010a18,#011830 40%,#021540);min-height:1
 .btn-big{width:100%;justify-content:center;padding:14px;font-size:15px;font-weight:800;border-radius:var(--rl)}
 .ava{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
 .post{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px;margin-bottom:10px}
-.post-img{background:var(--bg3);border-radius:var(--r);height:220px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:72px;overflow:hidden}
-.post-img img{width:100%;height:100%;object-fit:cover}
+.post-img{background:var(--bg3);border-radius:var(--r);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:72px;overflow:hidden;max-height:420px;min-height:160px}
+.post-img img{width:100%;height:auto;max-height:420px;object-fit:contain;display:block}
 .post-acts{display:flex;gap:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.05)}
 .act-btn{background:none;border:none;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:4px;font-size:13px;padding:5px 0}
 .act-btn.liked{color:var(--red)}
@@ -466,7 +466,7 @@ body{background:linear-gradient(135deg,#010a18,#011830 40%,#021540);min-height:1
 
 <div id="upload-modal" class="modal-ov">
 <div class="modal-box">
-<div class="modal-head"><h2>📸 Nouvelle prise</h2><button class="modal-close" id="close-upload">×</button></div>
+<div class="modal-head"><h2 id="modal-upload-title">📸 Nouvelle prise</h2><button class="modal-close" id="close-upload">×</button></div>
 <label style="background:rgba(255,255,255,.03);border:2px dashed rgba(255,255,255,.12);border-radius:var(--rl);text-align:center;cursor:pointer;margin-bottom:12px;display:block;overflow:hidden;position:relative;min-height:130px">
 <input type="file" id="catch-photo-inp" accept="image/*" style="display:none">
 <div id="upload-placeholder" style="padding:28px 20px"><div style="font-size:28px">📷</div><div style="font-weight:600;font-size:13px">Ajouter une photo</div><div style="font-size:11px;color:var(--text2)">JPG, PNG · max 10 Mo</div></div>
@@ -583,6 +583,7 @@ var FDB=[
 {n:"Bar commun",s:"Dicentrarchus labrax",z:"Marine",t:"30–90 cm",p:"0.3–10 kg",r:"Épique",mult:4,eco:"epi",em:"🐬"},
 {n:"Daurade royale",s:"Sparus aurata",z:"Méditerranée",t:"30–70 cm",p:"0.3–8 kg",r:"Épique",mult:4,eco:"epi",em:"🌟"},
 {n:"Turbot",s:"Scophthalmus maximus",z:"Marine",t:"40–100 cm",p:"1–15 kg",r:"Épique",mult:4,eco:"epi",em:"🎯"},
+{n:"Lieu jaune",s:"Pollachius pollachius",z:"Marine",t:"40–110 cm",p:"0.5–10 kg",r:"Épique",mult:4,eco:"epi",em:"💛"},
 {n:"Truite fario",s:"Salmo trutta fario",z:"Eau douce",t:"20–70 cm",p:"0.2–5 kg",r:"Rare",mult:3,eco:"rar",em:"🎣"},
 {n:"Carpe commune",s:"Cyprinus carpio",z:"Eau douce",t:"40–120 cm",p:"1–30 kg",r:"Rare",mult:3,eco:"rar",em:"🐡"},
 {n:"Black-bass",s:"Micropterus salmoides",z:"Eau douce",t:"20–55 cm",p:"0.3–5 kg",r:"Rare",mult:3,eco:"rar",em:"🖤"},
@@ -614,7 +615,7 @@ speciesDD.innerHTML=html;
 }
 
 var curSpecies=null;
-var POSTS=[],lastCatch=null,photoData=null,photoFile=null;
+var POSTS=[],lastCatch=null,photoData=null,photoFile=null,editingCatchId=null;
 
 function tSince(t){var s=Math.floor((Date.now()-t)/1000);if(s<60)return'À l\'instant';if(s<3600)return Math.floor(s/60)+' min';return Math.floor(s/3600)+'h';}
 
@@ -623,11 +624,11 @@ var col=rc(p.eco);
 var img=p.photo?'<div class="post-img" style="padding:0"><img src="'+p.photo+'"></div>':'<div class="post-img">'+p.em+'</div>';
 var ps=p.pseudo||(currentUser?currentUser.pseudo:'Pêcheur');var ini=ps.replace('@','')[0].toUpperCase();
 var isMine=currentUser&&p.user_id===currentUser.id;
-var delBtn=(inGallery&&isMine)?'<button class="act-btn" data-delete-catch="'+p.id+'" style="margin-left:auto;color:var(--red)">🗑 Supprimer</button>':'';
+var actBtns=isMine?'<button class="act-btn" data-edit-catch="'+p.id+'" style="margin-left:auto;color:var(--blue)">✏️ Modifier</button><button class="act-btn" data-delete-catch="'+p.id+'" style="color:var(--red)">🗑</button>':'';
 return'<div class="post"><div style="display:flex;align-items:center;gap:9px;margin-bottom:10px"><div class="ava" style="width:34px;height:34px;background:var(--blue2);color:#fff;font-size:12px">'+ini+'</div><div style="flex:1"><div style="font-weight:700;font-size:13px">'+ps+'</div><div style="font-size:10px;color:var(--text2)">'+tSince(p.ts)+(p.loc?' · '+p.loc:'')+'</div></div></div>'+img
 +'<div style="margin-bottom:5px"><strong style="color:'+col+'">'+p.species+' — '+p.weight+' kg</strong> <span class="badge '+gb(p.eco)+'">'+rl(p.eco)+'</span></div>'
 +'<div style="font-size:12px;color:var(--text2);margin-bottom:8px">Score : <strong style="color:'+col+'">'+p.score+' pts</strong></div>'
-+'<div class="post-acts"><button class="act-btn">❤️ '+p.likes+'</button><button class="act-btn">💬 0</button>'+delBtn+'</div></div>';
++'<div class="post-acts"><button class="act-btn">❤️ '+p.likes+'</button><button class="act-btn">💬 0</button>'+(inGallery?actBtns:'')+'</div></div>';
 }
 function renderFeed(){var f=$('feed-posts');if(!POSTS.length){f.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--text2)"><div style="font-size:36px;margin-bottom:12px">📭</div><div style="font-size:14px;font-weight:700">Aucune publication</div></div>';return;}f.innerHTML=POSTS.map(function(p){return postHTML(p,false);}).join('');}
 function renderGallery(){
@@ -649,6 +650,36 @@ await loadCatches();
 renderGallery();
 });
 });
+el.querySelectorAll('[data-edit-catch]').forEach(function(b){
+b.addEventListener('click',function(){
+var catchId=this.dataset.editCatch;
+var p=POSTS.find(function(x){return x.id===catchId;});
+if(!p)return;
+openEditCatch(p);
+});
+});
+}
+
+function openEditCatch(p){
+if(!guardApp())return;
+editingCatchId=p.id;
+var f=FDB.find(function(x){return x.n===p.species;});
+curSpecies=f?{name:f.n,mult:f.mult,eco:f.eco,em:f.em}:{name:p.species,mult:1,eco:p.eco,em:p.em};
+$('species-btn').querySelector('span').textContent=curSpecies.em+' '+curSpecies.name;
+$('w-inp').value=p.weight;
+$('s-inp').value='';
+$('loc-inp').value=p.loc||'';
+$('desc-inp').value=p.desc||'';
+if(p.photo){
+photoData=p.photo;
+$('upload-placeholder').style.display='none';
+$('upload-preview-img').src=p.photo;
+$('upload-preview').style.display='block';
+}
+calcPrev();
+$('modal-upload-title').textContent='✏️ Modifier la prise';
+$('submit-catch').textContent='💾 Enregistrer';
+$('upload-modal').classList.add('open');
 }
 function renderInsights(){
 var el=$('hashtag-insights');
@@ -952,7 +983,12 @@ $('btn-upload-nav').addEventListener('click',openUpload);
 function openUpload(){if(!guardApp())return;$('upload-modal').classList.add('open');}
 $('close-upload').addEventListener('click',closeUpload);
 $('cancel-upload').addEventListener('click',closeUpload);
-function closeUpload(){$('upload-modal').classList.remove('open');}
+function closeUpload(){
+$('upload-modal').classList.remove('open');
+editingCatchId=null;
+$('modal-upload-title').textContent='📸 Nouvelle prise';
+$('submit-catch').textContent='📤 Publier';
+}
 $('upload-modal').addEventListener('click',function(e){if(e.target===this)closeUpload();});
 
 $('catch-photo-inp').addEventListener('change',function(){
@@ -978,7 +1014,7 @@ var desc=$('desc-inp').value||'';
 var dc=checkText(desc);if(!dc.ok){showAlert(dc.reason);return;}
 var loc=$('loc-inp').value||'';
 var score=Math.round(w*curSpecies.mult*20);
-var photoUrl=null;
+var photoUrl=editingCatchId?(POSTS.find(function(x){return x.id===editingCatchId;})||{}).photo:null;
 if(photoFile){
 var fileExt=photoFile.name.split('.').pop();
 var fileName=currentUser.id+'-'+Date.now()+'.'+fileExt;
@@ -988,6 +1024,15 @@ var pub=sb.storage.from('catches').getPublicUrl(fileName);
 photoUrl=pub.data.publicUrl;
 }
 }
+
+if(editingCatchId){
+var upd=await sb.from('catches').update({
+species:curSpecies.name,weight:w,score:score,rarity:curSpecies.eco,emoji:curSpecies.em,
+location:loc,description:desc,photo_url:photoUrl,is_trophy:curSpecies.eco==='tro'
+}).eq('id',editingCatchId);
+if(upd.error){showAlert('Erreur lors de la modification.');console.error(upd.error);return;}
+closeUpload();await loadCatches();renderGallery();
+}else{
 var ins=await sb.from('catches').insert({
 user_id:currentUser.id,species:curSpecies.name,weight:w,score:score,
 rarity:curSpecies.eco,emoji:curSpecies.em,location:loc,description:desc,
@@ -1002,12 +1047,16 @@ currentUser.catches=newCatches;currentUser.xp=newXp;
 updateUI();
 lastCatch={photo:photoUrl,species:curSpecies.name,weight:w,score:score,eco:curSpecies.eco,em:curSpecies.em};
 closeUpload();showPage('feed');await loadCatches();
-curSpecies=null;photoFile=null;photoData=null;
+}
+
+curSpecies=null;photoFile=null;photoData=null;editingCatchId=null;
 $('w-inp').value='';$('s-inp').value='';$('loc-inp').value='';$('desc-inp').value='';
 $('sc-prev').style.display='none';
 $('species-btn').querySelector('span').textContent='Choisir une espèce...';
 $('upload-placeholder').style.display='block';
 $('upload-preview').style.display='none';
+$('modal-upload-title').textContent='📸 Nouvelle prise';
+$('submit-catch').textContent='📤 Publier';
 });
 
 $('btn-battle-home').addEventListener('click',openBattle);
