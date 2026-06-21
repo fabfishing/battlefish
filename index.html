@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>BattleFish</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif}
+:root{
+--bg:#04080f;--bg2:#080f1c;--bg3:#0e1828;--bg4:#162234;
+--border:#2a4060;--border2:#3a5578;
+--text:#f0f6ff;--text2:#a8bdd4;--text3:#5a7a9e;
+--blue:#4f8ef7;--blue2:#1d6ef5;--blue3:#0f3d9e;
+--green:#22c55e;--green2:#16a34a;
+--amber:#f59e0b;--red:#ef4444;--red2:#b91c1c;
+--teal:#14b8a6;--purple:#a78bfa;--gold:#ffd700;
+--r:12px;--rl:18px;--rxl:24px;--t:.18s ease}
+body{background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;overflow-x:hidden;max-width:430px;margin:0 auto}
+@media(min-width:500px){
+body{background:linear-gradient(135deg,#010a18,#011830 40%,#021540);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:24px 0 40px}
+#landing,#app{width:430px;min-height:calc(100vh - 64px);border-radius:24px;border:1px solid rgba(59,130,246,.25);box-shadow:0 8px 32px rgba(0,0,0,.6);overflow:hidden;position:relative}
+#landing{background:linear-gradient(180deg,#010a18,#011830 30%,#02284f 60%,#021530)}
+#app{background:var(--bg);display:flex;flex-direction:column}
+#bottomnav{border-radius:0 0 24px 24px;width:430px;left:50%;transform:translateX(-50%)}
+#chat-fab{position:fixed;bottom:32px;right:calc(50% - 215px - 60px)}}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--bg4)}
+#landing{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:0 22px 50px}
+#ocean-bg{position:absolute;inset:0;background:linear-gradient(180deg,#010a18,#011830 30%,#02284f 60%,#021530);z-index:0}
+#bubbles{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.bubble{position:absolute;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(160,210,255,.55),rgba(80,160,230,.08));border:1.5px solid rgba(140,200,255,.65);box-shadow:0 0 5px rgba(100,180,255,.25);animation:bubRise linear infinite;bottom:-50px}
+@keyframes bubRise{0%{transform:translateY(0) translateX(0);opacity:0}5%{opacity:1}50%{transform:translateY(-50vh) translateX(8px)}95%{opacity:.7}100%{transform:translateY(-105vh) translateX(-8px);opacity:0}}
+.land-content{position:relative;z-index:2;text-align:center;width:100%;margin-top:20px}
+.land-logo{font-size:72px;font-weight:900;color:#fff;letter-spacing:2px;line-height:1;margin-bottom:6px;text-shadow:0 0 60px rgba(59,130,246,.7);display:flex;align-items:center;justify-content:center;gap:4px}
+.land-logo span{color:#60a5fa}
+.land-slogan{font-size:20px;font-weight:600;color:rgba(255,255,255,.85);margin-bottom:24px;font-style:italic}
+.auth-tabs{display:flex;gap:5px;background:rgba(0,0,0,.4);border:1px solid rgba(80,130,200,.3);border-radius:var(--rxl);padding:4px;margin-bottom:14px;width:100%}
+.auth-tab{flex:1;padding:9px;border:none;background:transparent;color:rgba(255,255,255,.5);border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;transition:var(--t)}
+.auth-tab.active{background:var(--blue2);color:#fff;box-shadow:0 4px 15px rgba(29,110,245,.4)}
+.land-card{background:rgba(8,15,28,.75);border:1px solid rgba(80,130,200,.35);border-radius:var(--rxl);padding:20px 18px;backdrop-filter:blur(20px);width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.lf label{font-size:10px;color:rgba(255,255,255,.5);font-weight:700;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.07em}
+.lf input{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(80,130,200,.3);border-radius:var(--r);padding:12px 14px;color:#fff;font-size:14px;outline:none;margin-bottom:10px}
+.lf input:focus{border-color:rgba(59,130,246,.6)}
+.btn-join{width:100%;background:var(--blue2);color:#fff;border:none;border-radius:var(--rl);padding:16px;font-size:16px;font-weight:800;cursor:pointer;margin-bottom:10px}
+.btn-join:hover{background:var(--blue)}
+.btn-outline{width:100%;background:transparent;color:rgba(255,255,255,.8);border:1px solid rgba(80,140,210,.4);border-radius:var(--rl);padding:12px;font-size:13px;font-weight:600;cursor:pointer}
+.csel-wrap{position:relative;margin-bottom:10px}
+.csel-btn{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(80,130,200,.3);border-radius:var(--r);padding:12px 14px;color:#fff;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;text-align:left}
+.csel-dd{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#0a1520;border:1px solid rgba(59,130,246,.4);border-radius:var(--r);z-index:9999;display:none;max-height:260px;overflow-y:auto}
+.csel-dd.open{display:block}
+.csel-cat{padding:7px 14px 4px;font-size:9px;font-weight:800;color:var(--blue);text-transform:uppercase;background:rgba(29,110,245,.08)}
+.csel-opt{padding:9px 14px;font-size:12px;color:#e0eeff;cursor:pointer;display:flex;align-items:center;gap:6px}
+.csel-opt:hover{background:rgba(59,130,246,.2);color:#fff}
+.rdrop-section{padding:12px 14px;border-bottom:1px solid rgba(80,130,200,.15)}
+.rdrop-title{font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;margin-bottom:8px}
+.rdrop-row{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.82);padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.rdrop-xp{color:var(--amber);font-weight:700;white-space:nowrap;margin-left:8px}
+#app{display:none;flex-direction:column;min-height:100vh}
+#topnav{background:rgba(4,8,15,.96);border-bottom:1px solid var(--border);display:flex;align-items:center;height:48px;padding:0 10px;gap:6px;position:sticky;top:0;z-index:200}
+.logo-sm{font-size:22px;font-weight:900;color:#fff;display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0}
+.logo-sm span{color:var(--blue)}
+.nav-right-top{margin-left:auto;display:flex;align-items:center;gap:5px}
+.pill{display:inline-flex;align-items:center;gap:3px;border-radius:20px;padding:4px 8px;font-size:11px;font-weight:700;white-space:nowrap}
+.pill-fire{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.25);color:var(--amber)}
+.pill-xp{background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);color:var(--blue)}
+.icon-btn{background:none;border:none;color:var(--text2);cursor:pointer;padding:4px;border-radius:7px;font-size:15px;width:28px;height:28px;display:flex;align-items:center;justify-content:center}
+.ava-btn{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue2),var(--blue3));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;cursor:pointer;overflow:hidden}
+.page{display:none;padding:12px 12px 80px}
+.page.active{display:block;animation:fadeUp .2s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+#bottomnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(8,14,28,.98);border-top:1px solid rgba(60,100,160,.4);display:flex;height:62px;z-index:200}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;color:rgba(255,255,255,.75);cursor:pointer}
+.tab-btn.active{color:#fff}
+.tab-btn.active .tl{color:var(--blue)}
+.tab-btn .ti{font-size:22px}
+.tab-btn .tl{font-size:10px;font-weight:600}
+.tab-upload{flex:1;display:flex;align-items:center;justify-content:center;border:none;background:none;cursor:pointer}
+.upload-orb{width:52px;height:52px;background:linear-gradient(145deg,#3b8ef8,#1a5fd4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;margin-top:-18px;box-shadow:0 0 0 3px #080e1c,0 8px 24px rgba(29,110,245,.65)}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px}
+.card-sm{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:11px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.b-tro{background:#1a1200;color:#ffd700;border:1px solid rgba(255,215,0,.35)}
+.b-leg{background:#170d38;color:#a78bfa;border:1px solid rgba(167,139,250,.2)}
+.b-epi{background:#1a0e00;color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
+.b-rar{background:#012e2c;color:#14b8a6;border:1px solid rgba(20,184,166,.2)}
+.b-unc{background:#0a1f3d;color:#60a5fa;border:1px solid rgba(96,165,250,.2)}
+.b-com{background:var(--bg4);color:var(--text2)}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:9px 16px;border-radius:var(--r);border:none;cursor:pointer;font-size:13px;font-weight:600}
+.btn-p{background:var(--blue2);color:#fff}.btn-p:hover{background:var(--blue)}
+.btn-g{background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--border2)}
+.btn-d{background:rgba(239,68,68,.08);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.btn-big{width:100%;justify-content:center;padding:14px;font-size:15px;font-weight:800;border-radius:var(--rl)}
+.ava{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.post{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px;margin-bottom:10px}
+.post-img{background:var(--bg3);border-radius:var(--r);display:block;margin-bottom:12px;font-size:72px;overflow:hidden;width:100%;text-align:center}
+.post-img img{max-width:100%;height:auto;max-height:600px;width:auto;object-fit:contain;display:inline-block;margin:0 auto}
+.post-acts{display:flex;gap:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.05)}
+.act-btn{background:none;border:none;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:4px;font-size:13px;padding:5px 0}
+.act-btn.liked{color:var(--red)}
+.tag{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.15);border-radius:20px;padding:2px 9px;font-size:11px;color:var(--blue);display:inline-block;margin:2px;cursor:pointer}
+.tabs{display:flex;gap:3px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r);padding:3px;margin-bottom:12px}
+.tab{flex:1;padding:7px 4px;border:none;background:none;color:var(--text2);border-radius:9px;cursor:pointer;font-size:11px;font-weight:500}
+.tab.active{background:var(--bg4);color:var(--text);font-weight:700;border:1px solid var(--border2)}
+.fld{margin-bottom:10px}
+.fld label{font-size:10px;color:var(--text2);margin-bottom:4px;display:block;font-weight:600;text-transform:uppercase}
+.fld input,.fld textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:var(--r);padding:10px 12px;color:var(--text);font-size:13px;outline:none}
+.fish-row{display:flex;align-items:center;gap:9px;padding:10px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer}
+.fish-row:hover{background:rgba(255,255,255,.03)}
+.modal-ov{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);align-items:center;justify-content:center;padding:16px}
+.modal-ov.open{display:flex}
+.modal-box{background:var(--bg2);border:1px solid rgba(255,255,255,.08);border-radius:var(--rxl);width:100%;max-width:400px;padding:20px;max-height:88vh;overflow-y:auto}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-head h2{font-size:16px;font-weight:800}
+.modal-close{background:rgba(255,255,255,.06);border:none;color:var(--text2);font-size:18px;cursor:pointer;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.stat-ctab{flex:1;padding:4px 6px;background:rgba(29,110,245,.08);border:1px solid rgba(59,130,246,.2);color:rgba(255,255,255,.5);border-radius:20px;cursor:pointer;font-size:9px;font-weight:700;text-transform:uppercase;text-align:center}
+.stat-ctab.active{background:rgba(29,110,245,.22);border-color:rgba(79,142,247,.6);color:#fff}
+.chart-bars{display:flex;align-items:flex-end;gap:6px;height:120px;padding:0 4px}
+.chart-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px}
+.chart-bar{width:100%;border-radius:4px 4px 0 0;transition:height .6s ease;min-height:2px}
+.chart-lbl{font-size:8px;color:var(--text3);font-weight:600}
+.battle-arena{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:16px}
+.tcg-card{border-radius:14px;overflow:hidden;position:relative;aspect-ratio:2/3;display:flex;flex-direction:column;transition:transform .3s ease}
+.tcg-card:hover{transform:scale(1.03) rotate(-1deg)}
+.tcg-card::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.08) 30%,rgba(255,255,255,.18) 38%,rgba(255,255,255,.08) 46%,transparent 56%);background-size:200% 200%;animation:holo 3s ease infinite;pointer-events:none}
+@keyframes holo{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.tcg-tro{border:3px solid var(--gold);box-shadow:0 0 20px rgba(255,215,0,.5)}
+.tcg-leg{border:3px solid #a78bfa;box-shadow:0 0 20px rgba(167,139,250,.5)}
+.tcg-epi{border:3px solid #f59e0b;box-shadow:0 0 20px rgba(245,158,11,.5)}
+.tcg-rar{border:3px solid #14b8a6}
+.tcg-unc{border:3px solid #60a5fa}
+.tcg-com{border:3px solid #4a5568}
+.tcg-me{border:3px solid var(--blue)!important;box-shadow:0 0 20px rgba(29,110,245,.6)!important}
+.tcg-header{padding:6px 8px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.5)}
+.tcg-name{font-size:9px;font-weight:800;color:#fff;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tcg-hp{font-size:9px;font-weight:800;color:var(--red)}
+.tcg-photo{flex:1;position:relative;overflow:hidden;background:var(--bg3);min-height:80px}
+.tcg-photo img{width:100%;height:100%;object-fit:cover}
+.tcg-ph-pl{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:44px;background:linear-gradient(135deg,#0a1428,#142850cc)}
+.tcg-ph-lbl{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:700;color:rgba(255,255,255,.8);white-space:nowrap}
+.tcg-body{padding:6px 7px;background:rgba(0,0,0,.6)}
+.tcg-sp{font-size:8px;color:rgba(255,255,255,.55);margin-bottom:4px;font-style:italic;overflow:hidden;white-space:nowrap}
+.tcg-footer{padding:5px 7px;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:space-between}
+.tcg-score{font-size:10px;font-weight:900;color:var(--amber)}
+.tcg-bsm{font-size:7px;font-weight:700;padding:1px 5px;border-radius:10px}
+.vs-sep{text-align:center;font-size:42px;font-weight:900;letter-spacing:4px;color:#fff;text-shadow:0 0 12px rgba(239,68,68,.9);animation:vsPulse 1.6s ease-in-out infinite}
+@keyframes vsPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.res-box{border-radius:var(--rxl);padding:22px;text-align:center;margin-top:14px}
+.rw{background:rgba(34,197,94,.07);border:2px solid var(--green2)}
+.rl{background:rgba(239,68,68,.07);border:2px solid var(--red2)}
+#chat-fab{position:fixed;bottom:72px;right:14px;z-index:300;display:flex;flex-direction:column;align-items:flex-end}
+#chat-panel{background:rgba(6,10,20,.97);border:1px solid rgba(59,130,246,.25);border-radius:20px;width:280px;display:none;flex-direction:column;margin-bottom:10px;overflow:hidden}
+#chat-panel.open{display:flex}
+#chat-head{background:linear-gradient(135deg,rgba(29,110,245,.25),rgba(14,165,233,.15));padding:12px 14px;display:flex;align-items:center;gap:8px}
+#chat-msgs{padding:12px 12px 8px;height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.cmsg-u{align-self:flex-end;background:linear-gradient(135deg,var(--blue2),#1a5fd4);color:#fff;border-radius:14px 14px 4px 14px;padding:8px 12px;font-size:12px;max-width:82%}
+.cmsg-b{align-self:flex-start;background:rgba(255,255,255,.07);border-radius:14px 14px 14px 4px;padding:8px 12px;font-size:12px;max-width:82%}
+#chat-qrow{display:flex;gap:5px;padding:8px 10px;border-top:1px solid rgba(255,255,255,.07);flex-wrap:wrap}
+.cq{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:20px;padding:4px 10px;color:rgba(255,255,255,.7);cursor:pointer;font-size:10px}
+#chat-irow{border-top:1px solid rgba(255,255,255,.07);padding:8px 10px;display:flex;gap:6px}
+#chat-inp{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:7px 12px;color:var(--text);font-size:12px;outline:none}
+.csend{background:var(--blue2);border:none;border-radius:50%;width:30px;height:30px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+#chat-fab-btn{width:54px;height:54px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:30px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.grade-card{border-radius:var(--rl);padding:12px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;overflow:hidden;transition:transform .25s ease}
+.grade-card:hover{transform:scale(1.06)}
+.grade-card::before{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.18) 38%,rgba(255,255,255,.06) 55%,transparent 70%);background-size:200% 200%;animation:gradeHolo 3s ease infinite;pointer-events:none;z-index:1}
+@keyframes gradeHolo{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.grade-card>*{position:relative;z-index:2}
+.grade-icon{width:52px;height:52px;display:flex;align-items:center;justify-content:center;border-radius:50%;margin-bottom:4px}
+.grade-nm{font-size:12px;font-weight:800}
+.grade-rg{font-size:10px;font-weight:600;opacity:.9}
+.grade-xp{font-size:9px;font-weight:700}
+.grade-lv{font-size:9px;font-weight:800;text-transform:uppercase}
+.g-ama{background:linear-gradient(145deg,#1e2530,#2d3748);border:1px solid rgba(148,163,184,.5);box-shadow:0 4px 18px rgba(0,0,0,.5)}
+.g-ama .grade-icon{background:rgba(148,163,184,.15);box-shadow:0 0 12px rgba(148,163,184,.3)}
+.g-ama .grade-nm{color:#94a3b8}.g-ama .grade-rg,.g-ama .grade-xp,.g-ama .grade-lv{color:#64748b}
+.g-con{background:linear-gradient(145deg,#0d2218,#163a28);border:1px solid rgba(52,211,153,.5);box-shadow:0 4px 18px rgba(16,185,129,.25)}
+.g-con .grade-icon{background:rgba(52,211,153,.12);box-shadow:0 0 14px rgba(52,211,153,.4)}
+.g-con .grade-nm{color:#34d399}.g-con .grade-rg,.g-con .grade-xp,.g-con .grade-lv{color:#10b981}
+.g-exp{background:linear-gradient(145deg,#0a1628,#0f2545);border:1px solid rgba(96,165,250,.55);box-shadow:0 4px 18px rgba(59,130,246,.3)}
+.g-exp .grade-icon{background:rgba(96,165,250,.12);box-shadow:0 0 14px rgba(96,165,250,.45)}
+.g-exp .grade-nm{color:#60a5fa}.g-exp .grade-rg,.g-exp .grade-xp,.g-exp .grade-lv{color:#3b82f6}
+.g-cha{background:linear-gradient(145deg,#160d2e,#231050);border:1px solid rgba(167,139,250,.55);box-shadow:0 4px 18px rgba(139,92,246,.35)}
+.g-cha .grade-icon{background:rgba(167,139,250,.12);box-shadow:0 0 14px rgba(167,139,250,.5)}
+.g-cha .grade-nm{color:#a78bfa}.g-cha .grade-rg,.g-cha .grade-xp,.g-cha .grade-lv{color:#8b5cf6}
+.g-leg{background:linear-gradient(145deg,#1e1200,#2d1f00);border:1px solid rgba(251,191,36,.55);box-shadow:0 4px 20px rgba(245,158,11,.35)}
+.g-leg .grade-icon{background:rgba(251,191,36,.12);box-shadow:0 0 16px rgba(251,191,36,.5)}
+.g-leg .grade-nm{color:#fbbf24}.g-leg .grade-rg,.g-leg .grade-xp,.g-leg .grade-lv{color:#d97706}
+.g-dieu{background:linear-gradient(145deg,#1a1000,#2e1f00,#3a2500);border:2px solid rgba(255,215,0,.7);animation:dieuPulse 2.5s ease-in-out infinite}
+@keyframes dieuPulse{0%,100%{box-shadow:0 6px 28px rgba(255,180,0,.55)}50%{box-shadow:0 8px 36px rgba(255,180,0,.75)}}
+.g-dieu .grade-icon{background:rgba(255,215,0,.14);box-shadow:0 0 20px rgba(255,215,0,.65)}
+.g-dieu .grade-nm{color:#ffd700;text-shadow:0 0 10px rgba(255,215,0,.6)}
+.g-dieu .grade-rg,.g-dieu .grade-xp,.g-dieu .grade-lv{color:#f59e0b}
+</style>
+</head>
+<body>
+
+<div id="landing">
+<div id="ocean-bg"></div>
+<div id="bubbles"></div>
+<div class="land-content">
+<div class="land-logo">Battle<span>Fish</span></div>
+<div class="land-slogan">Your catch, their crush!</div>
+<div class="auth-tabs">
+<button class="auth-tab active" data-auth="login">Connexion</button>
+<button class="auth-tab" data-auth="register">Inscription</button>
+</div>
+<div class="land-card" id="form-login">
+<div class="lf">
+<label>Email</label><input type="email" id="login-email" placeholder="ton@email.com">
+<label>Mot de passe <span id="pw-toggle" style="color:var(--blue);cursor:pointer;font-size:10px;float:right;font-weight:400">Afficher</span></label>
+<input type="password" id="pw-inp" placeholder="••••••••">
+</div>
+<button class="btn-join" id="btn-login">JOIN THE BATTLE →</button>
+<button class="btn-outline" data-auth="register">Créer un compte</button>
+</div>
+<div class="land-card" id="form-reg" style="display:none">
+<div class="lf">
+<label>Pseudo</label><input type="text" id="reg-pseudo" placeholder="@monpseudo">
+<label>Email</label><input type="email" id="reg-email" placeholder="ton@email.com">
+<label>Mot de passe</label><input type="password" id="reg-pw" placeholder="••••••••">
+</div>
+<div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:var(--r);padding:12px 14px;margin-bottom:12px">
+<div style="font-size:11px;font-weight:800;color:var(--amber);margin-bottom:10px;text-transform:uppercase">⚠️ Vérification d'âge</div>
+<label style="display:flex;gap:10px;cursor:pointer;margin-bottom:8px"><input type="checkbox" id="age-check"><span style="font-size:12px;color:rgba(255,255,255,.85)">J'ai 18 ans ou plus</span></label>
+<label style="display:flex;gap:10px;cursor:pointer;margin-bottom:8px"><input type="checkbox" id="cgu-check"><span style="font-size:12px;color:rgba(255,255,255,.85)">J'accepte les CGU et la confidentialité</span></label>
+<label style="display:flex;gap:10px;cursor:pointer"><input type="checkbox" id="rgpd-check"><span style="font-size:12px;color:rgba(255,255,255,.85)">J'accepte le traitement RGPD</span></label>
+</div>
+<button class="btn-join" id="btn-register">JOIN THE BATTLE →</button>
+</div>
+<div style="width:100%;margin-top:14px">
+<button id="rules-btn" style="width:100%;background:rgba(30,60,120,.35);border:1px solid rgba(80,130,200,.4);border-radius:50px;padding:12px 20px;color:rgba(255,255,255,.85);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+<span>🎯 Règles du jeu</span><span id="rules-arrow" style="transition:.3s">▼</span></button>
+<div id="rules-dd" style="display:none;background:#06090f;border:1px solid rgba(80,130,200,.35);border-radius:18px;margin-top:6px;max-height:340px;overflow-y:auto">
+<div class="rdrop-section"><div class="rdrop-title">🎁 Bienvenue</div>
+<div class="rdrop-row"><span>Création de compte</span><span class="rdrop-xp">+50 XP</span></div>
+<div class="rdrop-row"><span>1ère photo uploadée</span><span class="rdrop-xp">+30 XP</span></div>
+<div class="rdrop-row"><span>1er Battle lancé</span><span class="rdrop-xp">+20 XP</span></div></div>
+<div class="rdrop-section"><div class="rdrop-title">📸 Upload — XP par rareté</div>
+<div class="rdrop-row"><span>⚪ Commun ×2</span><span class="rdrop-xp">+15 XP</span></div>
+<div class="rdrop-row"><span>🟢 Peu commun ×2.5</span><span class="rdrop-xp">+25 XP</span></div>
+<div class="rdrop-row"><span>🔵 Rare ×3</span><span class="rdrop-xp">+35 XP</span></div>
+<div class="rdrop-row"><span>🟠 Épique ×4</span><span class="rdrop-xp">+65 XP</span></div>
+<div class="rdrop-row"><span>🟣 Légendaire ×5</span><span class="rdrop-xp">+110 XP</span></div>
+<div class="rdrop-row"><span>🏆 Trophée ×6</span><span class="rdrop-xp">+180 XP + 500 XP bonus</span></div></div>
+<div class="rdrop-section"><div class="rdrop-title">⚔️ Battles</div>
+<div class="rdrop-row"><span>Participer (défaite)</span><span class="rdrop-xp">+20 XP</span></div>
+<div class="rdrop-row"><span>Victoire</span><span class="rdrop-xp">+90 XP</span></div>
+<div class="rdrop-row"><span>Victoire vs niveau sup.</span><span class="rdrop-xp">+130 XP</span></div>
+<div class="rdrop-row"><span>Victoire avec Trophée ×6</span><span class="rdrop-xp">+200 XP bonus</span></div></div>
+<div class="rdrop-section"><div class="rdrop-title">🔥 Combos</div>
+<div class="rdrop-row"><span>3 victoires consécutives</span><span class="rdrop-xp">+50 XP</span></div>
+<div class="rdrop-row"><span>5 victoires consécutives</span><span class="rdrop-xp">+100 XP</span></div>
+<div class="rdrop-row"><span>10 victoires consécutives</span><span class="rdrop-xp">+250 XP · cadre doré</span></div></div>
+<div class="rdrop-section" style="border-bottom:none"><div class="rdrop-title">🏅 Grades</div>
+<div class="rdrop-row"><span style="color:#9ca3af">Niv. 1–10</span><span>🪨 Amateur</span></div>
+<div class="rdrop-row"><span style="color:#34d399">Niv. 11–20</span><span>🌿 Confirmé</span></div>
+<div class="rdrop-row"><span style="color:#60a5fa">Niv. 21–40</span><span>💧 Expert</span></div>
+<div class="rdrop-row"><span style="color:#a78bfa">Niv. 41–50</span><span>💜 Chasseur</span></div>
+<div class="rdrop-row"><span style="color:#fbbf24">Niv. 51–90</span><span>🥇 Légende</span></div>
+<div class="rdrop-row"><span style="color:#ffd700;font-weight:800">Niv. 91–100</span><span>👑 DIEU DE LA PÊCHE</span></div></div>
+</div></div>
+<div style="margin-top:28px;text-align:center">
+<div style="display:flex;justify-content:center;align-items:center;gap:36px;margin-bottom:14px">
+<a href="https://www.youtube.com/@fabfishing" target="_blank" style="text-decoration:none"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="4" fill="#FF0000"/><path d="M8.3 12.2V7.8L12.5 10l-4.2 2.2z" fill="white"/></svg></a>
+<a href="https://www.tiktok.com/@fabfishing" target="_blank" style="text-decoration:none"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="4" fill="#010101"/><path d="M13.8 4.2a3.8 3.8 0 01-.9-2.5H10v11c0 1-.9 1.9-1.9 1.9s-1.9-.9-1.9-1.9.9-1.9 1.9-1.9c.2 0 .4 0 .5.1V8c-.2 0-.4 0-.5 0C5.5 8 3.3 10.2 3.3 13s2.2 5 4.8 5 4.8-2.2 4.8-5V8.2c1 .6 2.1 1 3.3 1V6.4c-.9 0-1.8-.8-2.4-2.2z" fill="white"/></svg></a>
+<a href="https://www.instagram.com/fabfishing.officiel" target="_blank" style="text-decoration:none"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><defs><linearGradient id="ig2" x1="0" y1="20" x2="20" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#f09433"/><stop offset="50%" stop-color="#dc2743"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs><rect width="20" height="20" rx="4" fill="url(#ig2)"/><rect x="4" y="4" width="12" height="12" rx="3.5" stroke="white" stroke-width="1.5"/><circle cx="10" cy="10" r="3" stroke="white" stroke-width="1.5"/><circle cx="14" cy="6" r="1" fill="white"/></svg></a>
+</div>
+<div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.88)">FabFishing</div>
+<div style="font-size:11px;color:rgba(255,255,255,.45)">Fondateur de BattleFish</div>
+</div>
+</div></div>
+
+<div id="app">
+<div id="topnav">
+<div class="logo-sm" id="logo-home">Battle<span>Fish</span></div>
+<div class="nav-right-top">
+<div class="pill pill-fire">🔥 <span id="nav-streak">0</span></div>
+<div class="pill pill-xp">⚡ <span id="nav-xp">0</span></div>
+<button class="icon-btn" data-show="notifs">🔔</button>
+<div class="ava-btn" id="nav-avatar" data-show="profile"></div>
+</div></div>
+
+<div id="home" class="page active">
+<div style="background:linear-gradient(135deg,#0b1e45e6,#112d6ed9);border-radius:var(--rxl);padding:20px 16px;margin-bottom:14px;display:flex;align-items:center;gap:14px">
+<div style="flex:1">
+<div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;margin-bottom:4px">Amateur</div>
+<div style="font-size:20px;font-weight:800;margin-bottom:3px">Bienvenue, <span id="home-pseudo">Pêcheur</span> 👋</div>
+<div style="color:var(--text2);font-size:12px;margin-bottom:10px">Lance ton premier battle !</div>
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+<div style="flex:1;background:rgba(255,255,255,.06);border-radius:20px;height:6px"><div id="home-xpbar" style="width:0%;height:100%;background:linear-gradient(90deg,var(--blue2),#60a5fa);border-radius:20px"></div></div>
+<span style="font-size:11px;font-weight:700;color:var(--blue)"><span id="home-xp">0</span>/800</span>
+</div>
+<div style="display:flex;gap:7px">
+<button class="btn btn-p" id="btn-battle-home" style="font-size:12px">⚔️ Battle</button>
+<button class="btn btn-g" id="btn-upload-home" style="font-size:12px">📸 Upload</button>
+</div></div>
+<div style="font-size:50px">🎣</div></div>
+<div class="g4" style="margin-bottom:14px">
+<div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:800;color:var(--green)" id="stat-wins">0</div><div style="font-size:10px;color:var(--text2)">Victoires</div></div>
+<div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:800;color:var(--amber)" id="stat-catches">0</div><div style="font-size:10px;color:var(--text2)">Prises</div></div>
+<div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:800;color:var(--amber)" id="stat-streak">🔥0</div><div style="font-size:10px;color:var(--text2)">Série</div></div>
+<div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:800;color:var(--purple)">—</div><div style="font-size:10px;color:var(--text2)">Rang</div></div>
+</div>
+<div class="card" style="text-align:center;padding:28px 20px;border-style:dashed">
+<div style="font-size:40px;margin-bottom:12px">🎣</div>
+<div style="font-size:15px;font-weight:800;margin-bottom:6px">Bienvenue sur BattleFish !</div>
+<div style="font-size:12px;color:var(--text2);margin-bottom:16px">Upload ta première prise.</div>
+<div style="display:flex;gap:8px;justify-content:center">
+<button class="btn btn-p" id="btn-upload-home2">📸 Ma première prise</button>
+<button class="btn btn-g" data-show="fishdb">📖 Base espèces</button>
+</div></div></div>
+
+<div id="feed" class="page">
+<div class="tabs"><button class="tab active">Pour toi</button><button class="tab">Abonnés</button><button class="tab">Battles</button></div>
+<div id="feed-posts"></div></div>
+
+<div id="ranking" class="page">
+<div class="tabs">
+<button class="tab active" data-rank="0">Jour</button>
+<button class="tab" data-rank="1">Semaine</button>
+<button class="tab" data-rank="2">Mois</button>
+<button class="tab" data-rank="3">Global</button>
+</div>
+<div class="card" style="padding:20px;text-align:center;color:var(--text2)">
+<div style="font-size:32px;margin-bottom:10px">🏆</div>
+<div style="font-size:14px;font-weight:700;margin-bottom:6px">Classement en construction</div>
+<div style="font-size:12px">Lance des battles pour apparaître ici !</div>
+</div></div>
+
+<div id="fishdb" class="page">
+<div style="display:flex;gap:7px;margin-bottom:10px">
+<input id="fish-search" style="flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:var(--r);padding:10px 13px;color:var(--text);font-size:13px;outline:none" placeholder="Rechercher...">
+<div class="csel-wrap" style="margin-bottom:0;min-width:100px">
+<div class="csel-btn" data-csel="zone"><span>Zone</span><span style="opacity:.5">▼</span></div>
+<div class="csel-dd" id="zone-dd">
+<div class="csel-opt" data-zone="">Tout</div>
+<div class="csel-opt" data-zone="Eau douce">🏞️ Eau douce</div>
+<div class="csel-opt" data-zone="Marine">🌊 Marine</div>
+<div class="csel-opt" data-zone="Méditerranée">☀️ Méditerranée</div>
+</div></div></div>
+<div class="tabs" style="flex-wrap:wrap;gap:2px">
+<button class="tab active" data-rar="">Tout</button>
+<button class="tab" data-rar="Trophée">🏆</button>
+<button class="tab" data-rar="Légendaire">Légend.</button>
+<button class="tab" data-rar="Épique">Épique</button>
+<button class="tab" data-rar="Rare">Rare</button>
+<button class="tab" data-rar="Peu commun">P.Com.</button>
+<button class="tab" data-rar="Commun">Commun</button>
+</div>
+<div class="card" style="padding:0;overflow:hidden"><div id="fish-list"></div></div>
+<div id="fish-detail"></div></div>
+
+<div id="profile" class="page">
+<div class="card" style="margin-bottom:12px;background:linear-gradient(135deg,#0b1e45f2,#112d6ed9)">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+<div id="card-avatar" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--blue2),#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;overflow:hidden"></div>
+<div style="flex:1"><div style="font-size:16px;font-weight:800" id="profile-pseudo">—</div><div style="font-size:11px;color:var(--text2)">Amateur · Niveau 1</div></div>
+</div>
+<div id="profile-bio-display" style="font-size:12px;color:var(--text2);font-style:italic;margin-bottom:12px;line-height:1.6">Aucune présentation pour le moment.</div>
+<div class="g4">
+<div style="background:rgba(0,0,0,.2);border-radius:var(--r);padding:7px;text-align:center"><div style="font-size:15px;font-weight:800;color:var(--green)" id="pub-wins">0</div><div style="font-size:9px;color:var(--text2)">Victoires</div></div>
+<div style="background:rgba(0,0,0,.2);border-radius:var(--r);padding:7px;text-align:center"><div style="font-size:15px;font-weight:800;color:var(--blue)" id="pub-winrate">—%</div><div style="font-size:9px;color:var(--text2)">Win Rate</div></div>
+<div style="background:rgba(0,0,0,.2);border-radius:var(--r);padding:7px;text-align:center"><div style="font-size:15px;font-weight:800;color:var(--amber)" id="pub-catches">0</div><div style="font-size:9px;color:var(--text2)">Prises</div></div>
+<div style="background:rgba(0,0,0,.2);border-radius:var(--r);padding:7px;text-align:center"><div style="font-size:15px;font-weight:800;color:var(--amber)" id="pub-streak">🔥0</div><div style="font-size:9px;color:var(--text2)">Série</div></div>
+</div></div>
+
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+<div class="grade-card g-ama"><div class="grade-lv">1–10</div><div class="grade-icon"><svg viewBox="0 0 670 1280" width="20" height="38" style="filter:drop-shadow(0 0 6px rgba(148,163,184,.5))"><g transform="translate(0,1280) scale(0.1,-0.1)" fill="#94a3b8"><path d="M3683 12658c-107-131-110-133-163-145-291-64-629-60-772 11l-48 23 0-241c0-274-6-312-70-441-46-93-149-233-236-320-67-67-158-117-244-136-55-12-230-7-279 7-21 6-23 5-17-12 5-10 11-74 13-140 8-182-17-267-101-341-92-81-217-83-397-9-14 6-14-1 2-61 32-120 19-275-30-372-61-118-310-292-703-488-210-105-197-92-219-232-22-146 25-265 126-322 53-30 185-62 325-79 346-42 725 61 1005 274 84 64 127 87 219 115 143 44 325 37 480-18 45-16 121-43 169-60 135-48 273-81 367-87 101-7 161 6 405 91 180 62 226 67 379 40 274-48 397-194 341-404-32-121-127-254-203-284-124-49-301-18-522 91-52 26-98 48-101 50-3 1-9-35-13-80-17-206-82-353-210-479-45-44-101-89-126-101-67-33-192-36-349-9-68 12-125 20-126 19-2-2 10-43 27-91 74-222 38-407-106-546-86-82-139-105-236-104-41 1-110 8-153 16-72 13-78 13-74-2 3-9 17-56 33-106 25-80 28-106 28-230 1-137 0-141-31-207-44-93-95-139-201-181-163-65-255-71-374-23-34 14-63 24-65 22-2-2 5-24 16-49 33-77 53-194 46-265-14-129-80-214-229-293-62-33-78-34-223-13l-41 6 25-68c48-132 40-285-20-384-52-85-174-191-274-238-48-22-72-27-139-27l-81 0 17-41c10-22 23-66 30-96 18-78 8-292-17-383-54-196-200-355-368-400-36-10-65-20-65-23 0-2 21-27 46-55 68-76 94-134 94-209-1-178-84-357-202-434l-44-28 56-56c137-134 160-318 73-592-4-13 11-25 64-51 112-57 152-110 189-252 25-98 23-180-5-238-24-50-82-106-137-132-19-9-34-17-34-19 0-2 46-50 103-107 118-119 170-193 204-290 52-150 37-296-50-468-23-47-43-87-44-90-2-3 30-6 70-6 92-1 161-25 235-80 103-77 115-103 162-336 22-112 45-224 51-249l10-45 107 0c108-1 188-18 282-63l35-17 37-184c20-101 38-185 40-187 2-1 78-10 168-18 266-25 448-55 513-84 86-37 170-133 239-269 29-60 59-123 65-142l12-33 49 35c97 72 224 104 364 94 72-6 89-12 256-96l180-90 37 63c69 119 182 205 325 250 146 46 163 45 357-23 94-34 173-61 176-61 2 0 7 31 10 69 8 95 45 171 121 246 66 65 178 133 284 173 85 32 218 37 271 9 19-9 37-17 41-17 4 0 10 62 14 138 3 75 9 169 13 208l6 72 184 158 184 159-8 60c-12 93-9 302 6 380 18 95 63 230 100 304l31 60-174 150c-95 82-176 158-180 168-4 10-10 56-13 103-8 122 10 216 62 316l42 82-74 6c-91 8-213 43-314 89-85 39-104 62-140 170-16 47-20 80-17 139l3 77-25-7c-14-4-83-7-155-6-113 1-141 5-215 28-56 18-97 39-119 59-44 42-123 161-152 232-12 30-25 55-29 55-3 0-14-17-25-37-29-55-147-175-239-245l-80-60-66 6c-100 10-178 34-259 77-55 30-71 35-66 22 43-103 41-184-5-281-48-101-138-147-292-147l-87 0 25-33c57-74 114-254 114-360 0-112-84-218-196-247l-43-11 130-97c79-60 141-116 160-143 65-95 108-245 109-384 0-53 6-74 29-116 67-117 201-184 310-154 62 16 125 79 151 148 31 81 28 132-10 237-60 162-52 345 20 458 58 92 204 128 350 88 41-12 98-27 125-34 95-25 152-71 195-156 25-51 50-158 50-221 0-39-4-48-27-61-16-9-83-48-149-87l-122-71 28-84c95-280 62-496-88-584-43-26-55-28-152-28-116 0-187 19-312 81-37 19-70 34-72 34-3 0-14-20-25-45-29-66-102-138-169-169-76-33-191-50-286-41l-75 7-75 127-76 127-186 24-186 24 6 105c4 58 9 126 12 151l6 45-151 75-151 74-17 51c-13 36-17 80-16 155 1 127 24 222 86 353l42 90-72 73c-123 126-187 296-165 444 14 94 45 153 122 230 71 71 181 136 283 165 32 9 57 20 55 23-93 178-117 269-99 367 18 98 75 186 141 220 133 69 272 72 342 8 16-15 17-14 8 18-24 83-2 225 55 362 47 110 81 164 107 170 13 3 111 22 218 42 107 20 196 38 197 39 2 1-2 29-8 62-15 78-6 217 21 331 20 85 25 96 63 129 99 84 243 123 337 90 24-8 45-14 47-12 2 1 8 182 14 402 7 257 15 408 23 423 6 13 28 35 48 49 44 29 77 25 114-15 22-24 24-34 24-134 0-296 61-542 180-722 50-77 150-178 214-217 39-23 40-23 165-11 446 42 761 224 914 526 26 53 60 156 53 163-3 2-42 12-89 23-266 59-511 174-663 312-29 26-73 78-99 116-45 66-47 73-52 152-5 75 5 182 23 247l7 24-42-21c-92-47-211-47-333 0-88 33-101 48-106 117-5 68 9 122 45 170 23 31 27 32 91 32 214 0 490-140 677-342 66-71 148-180 190-251 15-26 29-47 30-45 2 2 25 62 51 133 25 72 52 133 58 137 36 24 237-1 309-39l29-15-6 39c-15 104-17 157-6 253l11 105 46 47c58 58 124 95 194 105 62 10 147 0 189-22l28-15-33 56c-47 77-59 144-52 294 7 179 20 229 71 281 22 23 70 55 105 72 53 25 77 30 140 31 42 0 89-3 105-7 28-8 27-6-13 27-165 138-221 326-177 596 34 211 121 300 328 334l36 7-55 52c-67 63-119 137-178 254-60 119-125 290-125 327 0 78 100 220 213 303l49 36-79 27c-43 14-100 39-127 55-68 40-146 122-183 192-39 73-73 207-73 288 0 119 57 280 149 423 23 34 41 64 41 66 0 2-44 6-97 9-103 6-203 32-285 73-52 26-113 76-128 105-7 12 1 88 25 247 19 127 35 237 35 245 0 12-27 15-157 20-168 5-239 18-330 63-82 40-129 92-144 161-21 93-16 282 9 387 12 49 21 90 20 91-2 1-129 7-282 13-153 7-281 13-283 15-2 2-12 71-23 153-11 82-23 164-26 182l-5 32-44-30c-134-92-341-122-547-79l-57 12-97 158c-53 88-101 159-105 159-4 0-56-60-116-132z"/></g></svg></div>
+<div class="grade-nm">Amateur</div><div class="grade-xp">0–800 XP</div></div>
+
+<div class="grade-card g-con"><div class="grade-lv">11–20</div><div class="grade-icon"><svg viewBox="0 0 1273 1280" width="34" height="36" style="filter:drop-shadow(0 0 8px rgba(52,211,153,.5))"><g transform="translate(0,1280) scale(0.1,-0.1)" fill="#34d399"><path d="M3225 12752c-64-58-156-102-287-137-193-52-302-87-363-117-74-38-148-113-240-243-100-143-156-207-211-243-26-18-51-32-55-32-18 0 6 71 61 180 106 211 115 323 39 516l-43 109-13-50c-27-102-70-168-198-305-194-207-212-265-185-567 16-168 8-233-40-330-33-66-70-103-102-103-36 0-84 60-97 120-21 92-23 275-8 470 8 102 14 186 13 187-3 3-111-145-164-223-56-83-115-204-146-295-57-170-58-316-5-559 26-115 33-169 33-260 1-104-2-120-25-170l-27-55-15 35c-8 19-20 79-26 133-14 121-24 152-94 274-31 54-59 111-63 126-5 21-12 27-27 25-17-2-21-11-23-44-2-45-24-92-88-193-24-36-53-92-65-124-44-120-45-324-1-482 87-312 88-350 26-497l-45-103-15 36c-9 22-18 97-25 202-14 243-39 287-180 311-29 5-32 4-26-12 4-9 10-42 13-74 4-54 1-62-56-170-79-148-105-236-106-353-1-132 23-215 97-332 76-122 90-165 76-241-13-68-37-163-43-170-3-2-21 6-40 17-93 58-184 212-215 367l-18 89-36-57c-20-31-48-92-63-135-24-72-26-87-21-203 6-155 32-245 120-410 96-183 98-186 113-242 7-29 14-73 14-97l0-45-31 30c-54 51-99 163-99 247 0 43-3 44-62 18-97-42-133-102-133-221 1-119 29-199 195-540 144-298 170-361 170-417l0-34-31 18c-68 40-161 177-171 253-3 28-15 40-38 40-28 0-73-133-78-232-9-166 45-271 257-506 65-72 135-154 155-181 41-55 91-159 101-209 7-32 6-33-14-23-11 7-57 64-102 127-45 64-100 129-122 145-42 30-133 63-148 53-19-11-8-44 22-65 44-31 74-105 98-241 50-282 172-495 378-663 173-140 369-342 351-360-7-8-239 61-303 90-32 14-74 37-92 51-26 20-37 23-52 14-20-10-20-11-1-65 67-194 193-330 418-451 165-89 227-127 287-177 64-52 337-318 332-323-2-2-54 15-117 37-110 39-122 41-267 46l-153 6 0-27c0-23 4-26 34-26 49 0 88-37 144-138 59-107 146-196 233-239 95-47 180-63 332-63 73 0 148-5 167-10 24-7 71-44 145-115 60-57 106-107 103-110-3-3-68 9-144 26-111 26-162 32-254 33-109 0-119-1-205-35l-90-36 60-12c148-29 192-53 401-213 182-139 336-193 622-218 146-13 245-28 297-47 46-16 129-63 122-69-2-2-53 8-113 22-89 22-146 28-309 35-110 4-212 11-227 15-25 6-28 4-28-19 0-19 6-26 31-31 59-12 115-44 254-147 190-141 227-157 424-178l156-17-117-14c-65-7-118-16-118-20 0-15 188-89 265-105 66-14 130-16 360-14 355 2 425 1 425-9 0-15-74-43-186-70-105-26-109-28-106-52 2-14 5-26 6-27 7-7 303-44 401-49l120-7 153-146 153-146-128-69c-277-150-585-345-813-515-388-289-734-641-955-972-35-52-62-95-60-97 2-2 27 16 57 40 80 65 238 170 476 317 118 72 225 139 238 148 19 12 13-2-29-69-87-139-132-263-213-588-65-259-85-327-119-415-10-26-15-31 102 110 274 328 637 631 1264 1055 104 71 189 127 189 125 0-1-7-19-15-38-8-20-15-41-15-47 0-5 37 10 83 34 88 47 204 92 213 83 3-3-41-288-99-634-57-345-103-630-102-631 2-2 361 186 798 417 437 232 801 421 807 421 7 0 370-185 807-411 437-226 796-409 798-407 1 2-39 257-91 568-51 310-91 566-89 569 7 6 242-198 411-357 88-82 341-328 564-548 382-375 565-548 545-514-5 8-18 31-30 50-33 53-99 223-129 330-54 196-71 389-42 473 32 90 120 153 228 164 122 12 272-36 593-192 235-114 286-137 292-131 3 2-10 12-29 22-60 31-251 162-359 246-147 114-299 249-604 533-556 518-725 653-1134 909l-43 28 33 35c19 19 95 92 169 163l135 128 180 11c160 10 229 17 343 36 26 5 32 11 32 30 0 25-9 29-150 65-65 17-140 51-140 63 0 7 79 7 253 1 469-17 565-8 730 68 81 38 80 39-73 61l-95 14 100 7c248 19 292 34 475 166 132 96 229 150 269 150 33 0 40 6 34 28-4 16-23 17-211 14-170-2-230-7-333-27-151-30-152-30-114-5 75 52 173 75 360 85 152 9 319 37 414 69 97 34 172 77 310 180 142 105 199 133 315 155l91 17-77 32c-149 62-242 66-481 17-71-15-130-25-133-23-9 9 162 181 200 201 37 20 57 22 196 23 85 1 180 6 210 12 180 34 300 126 400 304 41 74 81 108 126 108 30 0 34 3 34 25l0 25-151 0c-145 0-154-1-256-35-132-44-149-44-98-3 22 18 90 80 151 139 155 147 206 184 393 283 90 47 191 106 226 130 117 84 209 204 264 343 20 51 20 53 2 63-15 8-31 2-75-24-31-18-93-45-138-59-125-39-268-75-268-68 0 16 256 256 366 343 139 110 198 174 271 294 69 113 109 219 144 382 31 146 60 210 109 239 23 13 28 22 24 38-9 29-9 29-61 16-88-23-134-65-252-229-24-34-55-69-69-78l-25-16 6 31c21 102 88 200 268 391 168 179 212 241 249 351 34 99 26 204-22 327-17 42-25 52-41 50-14-2-24-17-34-52-26-87-118-206-192-245-18-10-21-9-21 7 0 49 44 150 180 417 163 318 209 433 217 541 5 58 2 79-16 119-12 27-29 58-39 68-17 19-103 67-121 67-5 0-14-30-21-67-13-78-45-154-84-200-36-43-46-41-46 5 0 83 22 135 143 344 111 193 153 420 109 588-15 57-88 207-97 198-2-2-13-41-24-87-40-161-132-304-230-359-22-13-41-22-41-20 0 2-9 53-20 114-27 144-22 164 80 320 130 200 131 388 3 656-67 143-73 170-48 246 7 20 4 22-26 22-18 0-52-9-75-20-75-37-90-79-109-297-17-209-35-256-70-185-76 159-75 236 8 517 83 278 73 466-32 640-79 130-93 164-89 206 3 31 0 40-14 45-23 7-38-3-38-25 0-10-25-60-57-112-79-132-91-163-108-284-8-58-23-121-32-138l-16-32-21 45c-18 38-21 64-20 170 0 110 5 144 39 285 36 146 39 172 39 295 0 188-35 309-141 494-48 84-186 287-191 281-2-1 2-91 8-199 20-343-10-523-93-568-48-25-111 44-147 161-25 78-25 146-3 325 29 241 5 310-183 521-133 149-158 186-178 274-8 35-17 65-19 67-5 5-52-99-78-174-46-134-31-251 56-430 30-63 58-132 61-154l7-40-33 17c-55 29-130 113-220 245-169 251-220 286-548 380-172 48-270 92-334 149-66 59-78 56-78-22 0-132 50-249 157-366 82-90 160-153 397-322 170-121 352-266 344-274-2-2-30 3-63 10-33 8-122 21-197 30-213 23-281 45-366 115l-37 31-13-53c-42-174 60-349 264-455 131-68 200-83 429-93 272-11 309-23 374-121 23-34 41-62 41-63 0-2-24-1-52 2-32 2-93-5-153-18-285-62-382-48-549 79-37 29-70 50-73 47-8-8 35-166 61-222 88-193 283-378 454-433 55-18 88-22 145-19 68 3 86 9 202 67 88 43 144 64 179 68l51 5 67-118 68-119-78-6c-42-4-131-18-198-32-286-62-491-53-562 23-20 22-52 18-52-5 0-20 79-199 130-295 60-114 162-218 254-261 52-25 85-32 151-36 110-7 149 3 329 89 108 52 163 73 200 76l52 4 47-108c26-60 47-115 47-121 0-7-9-13-19-13-32 0-101-34-223-109-127-78-170-96-264-111-121-20-246 19-342 105-28 25-53 45-56 45-13 0-5-81 13-139 40-130 229-354 351-416 76-40 185-45 333-16 59 12 130 21 157 21 61 0 169-22 243-50 52-20 57-24 67-63 6-23 15-55 21-80 6-23 9-45 7-47-2-2-21 3-43 12-61 26-204 29-435 9-171-15-225-16-294-7-80 10-150 36-188 70-16 14-19 14-34-1-15-15-15-18-1-34 9-10 41-73 71-141 30-67 67-139 82-158 49-65 141-120 300-182 44-17 145-56 224-87 199-77 289-126 370-201 64-59 69-68 73-112 3-26 3-49 2-51-2-1-18 8-36 22-120 89-284 152-468 178-206 29-268 54-335 131-19 23-36 40-38 37-11-14-52-212-52-250 0-61 41-121 178-260 151-164 204-197 444-279 152-52 200-77 254-131 36-36 37-44 9-208l-11-65-29 36c-60 75-237 201-328 233-25 9-97 27-161 40-165 33-208 58-260 154l-24 43-13-53c-19-77-18-231 2-313 22-91 69-178 124-226 24-22 111-87 193-146 168-120 264-215 309-304l30-60-37-100c-20-55-39-100-43-100-3 0-13 22-23 48-22 63-87 136-147 167-25 13-105 40-176 60-71 20-151 48-178 63-57 31-102 87-116 146-22 87-21 87-81 26-60-62-105-140-140-245-34-101-34-268-1-340 50-109 95-135 265-151 116-10 133-15 170-41 123-86 163-308 85-468-18-36-35-65-39-65-3 0-9 20-12 45-9 62-48 134-96 178-94 85-190 107-362 83-166-23-221-22-256 8-26 23-28 29-28 103 0 73-1 78-22 81-18 3-27-7-52-55-66-132-81-261-41-368 34-89 143-194 274-260 173-88 231-160 229-285-1-84-7-98-91-203-67-84-72-87-78-63-9 36-53 71-116 91-143 47-222 111-276 226-39 83-60 173-68 286l-7 92-60-41c-166-113-251-269-251-463 1-199 75-361 236-514l78-75 0-55c0-56 0-56-66-118-69-65-84-74-84-48 0 24-60 85-142 142-98 69-161 139-187 208-17 46-41 215-41 292 0 32-65 51-118 35-117-35-242-235-242-389 0-68 21-151 65-257 76-185 116-359 101-439-5-29-16-43-47-63-63-39-66-39-61 2 3 20-1 62-8 93-21 96-66 171-204 341-33 41-79 103-102 138l-42 63-101-203c-122-246-137-298-125-443 15-173 11-265-11-309-18-36-30-43-139-88-65-27-120-47-123-45-2 3 3 39 12 81 20 99 20 254 0 329-8 31-26 80-40 108l-26 50-29-21c-71-51-106-116-180-341-28-85-54-160-59-168-8-13-24-13-116 2-59 8-108 17-109 19 0 2-21 44-45 93l-45 90-6-42c-8-54-53-123-77-117-10 2-198 31-418 64-464 70-445 66-445 84 0 8-4 16-9 18-6 2-386 746-419 820-2 4 12 9 30 12 321 49 509 91 718 159 489 161 977 448 1329 782 330 312 553 612 754 1015 427 852 501 1795 212 2690-109 337-281 685-478 965-353 503-808 889-1372 1161-507 244-1000 358-1555 358-574 0-1087-123-1610-385-692-347-1224-876-1570-1560-270-534-395-1047-395-1629 0-582 125-1097 395-1630 343-675 875-1206 1555-1550 346-175 699-291 1068-351 75-13 137-26 137-30 0-7-418-838-427-848-2-3-38-10-81-17-42-7-219-35-392-63-173-29-324-53-334-54-16-2-22 7-30 48l-11 49-18-39c-33-74-35-74-179-99l-134-22-57 176c-59 185-94 252-154 297l-32 25-31-61c-57-114-74-257-49-412 7-38 9-72 6-75-16-17-96-5-152 22-111 54-137 131-110 332 28 207 15 268-119 544-42 86-76 161-76 167 0 22-16 10-42-32-15-23-64-87-110-142-190-230-236-321-225-451l5-63-40 22c-58 32-73 67-72 162 0 100 26 194 104 380 70 168 88 250 70 337-26 134-114 268-207 317-29 15-105 14-125-2-11-8-18-45-26-127-6-67-19-139-31-171-38-100-68-130-251-257-64-44-100-93-100-136l-1-31-51 55c-59 63-87 119-88 172 0 58 14 82 80 134 154 121 250 321 250 519 0 198-79 348-247 467l-52 37-6-67c-27-293-117-444-303-512-31-11-76-27-100-36-54-20-75-52-76-114l-1-48-27 31c-43 50-117 206-129 270-21 117 26 220 128 284 26 17 82 47 123 67 230 111 327 284 274 489-22 86-74 189-92 182-7-3-17-5-21-5-5 0-8-33-7-74 1-60-3-78-18-95-32-36-81-42-186-25-162 25-249 28-311 11-139-41-235-159-242-298-3-59-11-51-44 37-34 93-43 239-19 328 21 76 76 151 131 180 31 16 67 22 162 27 106 5 127 10 166 32 108 64 151 223 112 412-21 100-92 239-154 299l-50 49-6-29c-23-102-60-157-131-196-27-14-105-41-174-58-245-62-301-105-360-281l-27-81-38 102-37 103 18 60c37 124 137 237 319 362 222 152 258 180 292 230 42 63 82 186 90 280 6 76-13 235-28 235-5 0-9-4-9-8 0-5-14-30-31-55-46-70-92-92-254-121-111-20-157-34-220-65-102-51-193-120-278-211-37-40-67-69-67-64-1 5-7 54-14 109-15 112-13 120 47 190 53 61 128 100 282 146 211 62 278 100 412 235 130 130 173 191 173 246 0 39-37 223-50 247-5 10-14 4-34-22-60-78-133-106-346-132-182-22-338-78-467-167l-43-29 0 34c0 24 10 47 32 74 87 104 212 172 528 283 366 128 421 167 505 355 27 61 59 124 72 142 26 36 28 46 10 61-10 9-22 5-49-14-80-57-246-70-493-38-188 24-335 23-407-2l-58-21 7 26c28 113 35 125 100 157 63 31 165 58 260 69 38 4 89-2 180-21 73-16 161-27 205-27 69-1 85 3 150 36 174 86 361 329 375 488l6 62-69-53c-108-83-140-94-269-94-137 0-174 13-346 124-111 72-217 120-266 120-19 0-12 22 43 132 29 57 51 89 65 93 52 17 128-6 285-85 86-43 179-84 206-89 206-45 393 52 522 269 50 84 146 285 146 306 0 26-33 23-65-5-48-41-123-55-260-47-60 3-162 17-225 31-210 47-271 57-335 53-35-2-62-1-61 2 51 97 125 204 149 217 65 33 117 22 275-58l144-74 82 1c138 2 251 55 386 181 120 113 206 248 244 384 32 120 35 116-41 61-182-132-269-145-543-82-146 34-177 36-245 15-27-8-51-13-53-11-2 2 23 31 55 64 108 110 179 131 459 136 145 2 215 8 259 20 84 23 231 98 286 145 108 93 160 220 141 339-6 35-13 67-16 69-3 3-22-8-43-24-84-67-154-87-353-103-77-7-168-18-203-25-34-7-63-12-65-10-9 8 188 159 373 285 250 170 339 241 409 326 93 113 136 218 136 334 0 81-8 85-65 32z"/></g></svg></div>
+<div class="grade-nm">Confirmé</div><div class="grade-xp">800–3k XP</div></div>
+
+<div class="grade-card g-exp"><div class="grade-lv">21–40</div><div class="grade-icon"><svg viewBox="0 0 1280 1143" width="36" height="32" style="filter:drop-shadow(0 0 8px rgba(96,165,250,.5))"><g transform="translate(0,1143) scale(0.1,-0.1)" fill="#60a5fa"><path d="M3241 11384c-60-61-161-107-321-149-362-96-408-124-578-362-105-147-170-217-232-252l-43-24 5 39c3 22 33 96 67 164 107 218 113 314 34 512l-37 92-22-72c-28-94-51-127-179-262-127-135-157-177-186-261-20-60-21-74-13-209 17-314 10-376-57-481-55-87-130-84-170 5-38 87-44 361-13 651l6 60-49-65c-291-384-351-609-267-1005 27-125 37-197 38-272 1-95-1-105-29-157-16-31-33-56-37-56-12 0-27 62-38 158-13 117-24 148-94 270-31 54-56 101-56 104 0 4-4 18-10 32-15 39-40 23-40-25 0-44-27-103-94-207-76-117-90-173-90-347 0-138 3-159 33-270 82-300 83-312 17-463-48-110-50-113-63-89-8 15-17 91-23 187-5 88-14 178-20 199-19 73-66 112-147 126l-43 7 16-38c23-55 12-102-56-229-82-153-103-237-98-379 5-135 22-188 100-311 84-134 86-148 50-284-17-62-33-116-36-118-3-3-21 5-40 17-89 55-188 228-211 370l-18 89-36-57c-20-31-48-92-63-135-24-72-26-87-21-203 6-155 32-245 120-410 96-183 98-186 113-242 7-29 14-73 14-97l0-45-31 30c-54 51-99 163-99 247 0 43-3 44-62 18-97-42-133-102-133-221 1-119 29-199 195-540 144-298 170-361 170-417l0-34-31 18c-68 40-161 177-171 253-3 28-15 40-38 40-28 0-73-133-78-232-9-166 45-271 257-506 65-72 135-154 155-181 41-55 91-159 101-209 7-32 6-33-14-23-11 7-57 64-102 127-45 64-100 129-122 145-42 30-133 63-148 53-19-11-8-44 22-65 44-31 74-105 98-241 50-282 172-495 378-663 173-140 369-342 351-360-7-8-239 61-303 90-32 14-74 37-92 51-26 20-37 23-52 14-20-10-20-11-1-65 67-194 193-330 418-451 165-89 227-127 287-177 64-52 337-318 332-323-2-2-54 15-117 37-110 39-122 41-267 46l-153 6 0-27c0-23 4-26 34-26 49 0 88-37 144-138 59-107 146-196 233-239 101-50 187-66 351-66l137 0 38-32c74-63 234-211 231-214-2-1-75 13-163 33-142 31-172 34-270 31-94-4-121-9-185-35-81-34-80-35 20-53 94-17 154-49 299-160 244-187 365-232 706-265 93-8 196-22 227-31 52-13 184-82 175-90-2-2-53 8-113 22-89 22-146 28-309 35-110 4-212 11-227 15-25 6-28 4-28-19 0-19 6-26 31-31 59-12 115-44 254-147 190-141 227-157 424-178l156-17-117-14c-65-7-118-16-118-20 0-15 188-89 265-105 66-14 130-16 360-14 355 2 425 1 425-9 0-15-74-43-186-70-105-26-109-28-106-52 2-14 5-26 6-27 7-7 303-44 401-49l120-7 153-146 153-146-128-69c-277-150-585-345-813-515-388-289-734-641-955-972-35-52-62-95-60-97 2-2 27 16 57 40 80 65 238 170 476 317 118 72 225 139 238 148 19 12 13-2-29-69-87-139-132-263-213-588-65-259-85-327-119-415-10-26-15-31 102 110 274 328 637 631 1264 1055 104 71 189 127 189 125 0-1-7-19-15-38-8-20-15-41-15-47 0-5 37 10 83 34 88 47 204 92 213 83 3-3-41-288-99-634-57-345-103-630-102-631 2-2 361 186 798 417 437 232 801 421 807 421 7 0 370-185 807-411 437-226 796-409 798-407 1 2-39 257-91 568-51 310-91 566-89 569 7 6 242-198 411-357 88-82 341-328 564-548 382-375 565-548 545-514-5 8-18 31-30 50-33 53-99 223-129 330-54 196-71 389-42 473 32 90 120 153 228 164 122 12 272-36 593-192 235-114 286-137 292-131 3 2-10 12-29 22-60 31-251 162-359 246-147 114-299 249-604 533-556 518-725 653-1134 909l-43 28 33 35c19 19 95 92 169 163l135 128 180 11c160 10 229 17 343 36 26 5 32 11 32 30 0 25-9 29-150 65-65 17-140 51-140 63 0 7 79 7 253 1 469-17 565-8 730 68 81 38 80 39-73 61l-95 14 100 7c248 19 292 34 475 166 132 96 229 150 269 150 33 0 40 6 34 28-4 16-23 17-211 14-170-2-230-7-333-27-151-30-152-30-114-5 75 52 173 75 360 85 152 9 319 37 414 69 97 34 172 77 310 180 142 105 199 133 315 155l91 17-77 32c-149 62-242 66-481 17-71-15-130-25-133-23-9 9 162 181 200 201 37 20 57 22 196 23 85 1 180 6 210 12 180 34 300 126 400 304 41 74 81 108 126 108 30 0 34 3 34 25l0 25-151 0c-145 0-154-1-256-35-132-44-149-44-98-3 22 18 90 80 151 139 155 147 206 184 393 283 90 47 191 106 226 130 117 84 209 204 264 343 20 51 20 53 2 63-15 8-31 2-75-24-31-18-93-45-138-59-125-39-268-75-268-68 0 16 256 256 366 343 139 110 198 174 271 294 69 113 109 219 144 382 31 146 60 210 109 239 23 13 28 22 24 38-9 29-9 29-61 16-88-23-134-65-252-229-24-34-55-69-69-78l-25-16 6 31c21 102 88 200 268 391 168 179 212 241 249 351 34 99 26 204-22 327-17 42-25 52-41 50-14-2-24-17-34-52-26-87-118-206-192-245-18-10-21-9-21 7 0 49 44 150 180 417 163 318 209 433 217 541 5 58 2 79-16 119-12 27-29 58-39 68-17 19-103 67-121 67-5 0-14-30-21-67-13-78-45-154-84-200-36-43-46-41-46 5 0 83 22 135 143 344 111 193 153 420 109 588-15 57-88 207-97 198-2-2-13-41-24-87-40-161-132-304-230-359-22-13-41-22-41-20 0 2-9 53-20 114-27 144-22 164 80 320 130 200 131 388 3 656-67 143-73 170-48 246 7 20 4 22-26 22-18 0-52-9-75-20-75-37-90-79-109-297-17-209-35-256-70-185-76 159-75 236 8 517 83 278 73 466-32 640-79 130-93 164-89 206 3 31 0 40-14 45-23 7-38-3-38-25 0-10-25-60-57-112-79-132-91-163-108-284-8-58-23-121-32-138l-16-32-21 45c-18 38-21 64-20 170 0 110 5 144 39 285 36 146 39 172 39 295 0 188-35 309-141 494-48 84-186 287-191 281-2-1 2-91 8-199 20-343-10-523-93-568-48-25-111 44-147 161-25 78-25 146-3 325 29 241 5 310-183 521-133 149-158 186-178 274-8 35-17 65-19 67-5 5-52-99-78-174-46-134-31-251 56-430 30-63 58-132 61-154l7-40-33 17c-55 29-130 113-220 245-169 251-220 286-548 380-172 48-270 92-334 149-66 59-78 56-78-22 0-132 50-249 157-366 82-90 160-153 397-322 170-121 352-266 344-274-2-2-30 3-63 10-33 8-122 21-197 30-213 23-281 45-366 115l-37 31-13-53c-42-174 60-349 264-455 131-68 200-83 429-93 272-11 309-23 374-121 23-34 41-62 41-63 0-2-24-1-52 2-32 2-93-5-153-18-285-62-382-48-549 79-37 29-70 50-73 47-8-8 35-166 61-222 88-193 283-378 454-433 55-18 88-22 145-19 68 3 86 9 202 67 88 43 144 64 179 68l51 5 67-118 68-119-78-6c-42-4-131-18-198-32-286-62-491-53-562 23-20 22-52 18-52-5 0-20 79-199 130-295 60-114 162-218 254-261 52-25 85-32 151-36 110-7 149 3 329 89 108 52 163 73 200 76l52 4 47-108c26-60 47-115 47-121 0-7-9-13-19-13-32 0-101-34-223-109-127-78-170-96-264-111-121-20-246 19-342 105-28 25-53 45-56 45-13 0-5-81 13-139 40-130 229-354 351-416 76-40 185-45 333-16 59 12 130 21 157 21 61 0 169-22 243-50 52-20 57-24 67-63 6-23 15-55 21-80 6-23 9-45 7-47-2-2-21 3-43 12-61 26-204 29-435 9-171-15-225-16-294-7-80 10-150 36-188 70-16 14-19 14-34-1-15-15-15-18-1-34 9-10 41-73 71-141 30-67 67-139 82-158 49-65 141-120 300-182 44-17 145-56 224-87 199-77 289-126 370-201 64-59 69-68 73-112 3-26 3-49 2-51-2-1-18 8-36 22-120 89-284 152-468 178-206 29-268 54-335 131-19 23-36 40-38 37-11-14-52-212-52-250 0-61 41-121 178-260 151-164 204-197 444-279 152-52 200-77 254-131 36-36 37-44 9-208l-11-65-29 36c-60 75-237 201-328 233-25 9-97 27-161 40-165 33-208 58-260 154l-24 43-13-53c-19-77-18-231 2-313 22-91 69-178 124-226 24-22 111-87 193-146 168-120 264-215 309-304l30-60-37-100c-20-55-39-100-43-100-3 0-13 22-23 48-22 63-87 136-147 167-25 13-105 40-176 60-71 20-151 48-178 63-57 31-102 87-116 146-22 87-21 87-81 26-60-62-105-140-140-245-34-101-34-268-1-340 50-109 95-135 265-151 116-10 133-15 170-41 123-86 163-308 85-468-18-36-35-65-39-65-3 0-9 20-12 45-9 62-48 134-96 178-94 85-190 107-362 83-166-23-221-22-256 8-26 23-28 29-28 103 0 73-1 78-22 81-18 3-27-7-52-55-66-132-81-261-41-368 34-89 143-194 274-260 173-88 231-160 229-285-1-84-7-98-91-203-67-84-72-87-78-63-9 36-53 71-116 91-143 47-222 111-276 226-39 83-60 173-68 286l-7 92-60-41c-166-113-251-269-251-463 1-199 75-361 236-514l78-75 0-55c0-56 0-56-66-118-69-65-84-74-84-48 0 24-60 85-142 142-98 69-161 139-187 208-17 46-41 215-41 292 0 32-65 51-118 35-117-35-242-235-242-389 0-68 21-151 65-257 76-185 116-359 101-439-5-29-16-43-47-63-63-39-66-39-61 2 3 20-1 62-8 93-21 96-66 171-204 341-33 41-79 103-102 138l-42 63-101-203c-122-246-137-298-125-443 15-173 11-265-11-309-18-36-30-43-139-88-65-27-120-47-123-45-2 3 3 39 12 81 20 99 20 254 0 329-8 31-26 80-40 108l-26 50-29-21c-71-51-106-116-180-341-28-85-54-160-59-168-8-13-24-13-116 2-59 8-108 17-109 19 0 2-21 44-45 93l-45 90-6-42c-8-54-53-123-77-117-10 2-198 31-418 64-464 70-445 66-445 84 0 8-4 16-9 18-6 2-386 746-419 820-2 4 12 9 30 12 321 49 509 91 718 159 489 161 977 448 1329 782 330 312 553 612 754 1015 427 852 501 1795 212 2690-109 337-281 685-478 965-353 503-808 889-1372 1161-507 244-1000 358-1555 358-574 0-1087-123-1610-385-692-347-1224-876-1570-1560-270-534-395-1047-395-1629 0-582 125-1097 395-1630 343-675 875-1206 1555-1550 346-175 699-291 1068-351 75-13 137-26 137-30 0-7-418-838-427-848-2-3-38-10-81-17-42-7-219-35-392-63-173-29-324-53-334-54-16-2-22 7-30 48l-11 49-18-39c-33-74-35-74-179-99l-134-22-57 176c-59 185-94 252-154 297l-32 25-31-61c-57-114-74-257-49-412 7-38 9-72 6-75-16-17-96-5-152 22-111 54-137 131-110 332 28 207 15 268-119 544-42 86-76 161-76 167 0 22-16 10-42-32-15-23-64-87-110-142-190-230-236-321-225-451l5-63-40 22c-58 32-73 67-72 162 0 100 26 194 104 380 70 168 88 250 70 337-26 134-114 268-207 317-29 15-105 14-125-2-11-8-18-45-26-127-6-67-19-139-31-171-38-100-68-130-251-257-64-44-100-93-100-136l-1-31-51 55c-59 63-87 119-88 172 0 58 14 82 80 134 154 121 250 321 250 519 0 198-79 348-247 467l-52 37-6-67c-27-293-117-444-303-512-31-11-76-27-100-36-54-20-75-52-76-114l-1-48-27 31c-43 50-117 206-129 270-21 117 26 220 128 284 26 17 82 47 123 67 230 111 327 284 274 489-22 86-74 189-92 182-7-3-17-5-21-5-5 0-8-33-7-74 1-60-3-78-18-95-32-36-81-42-186-25-162 25-249 28-311 11-139-41-235-159-242-298-3-59-11-51-44 37-34 93-43 239-19 328 21 76 76 151 131 180 31 16 67 22 162 27 106 5 127 10 166 32 108 64 151 223 112 412-21 100-92 239-154 299l-50 49-6-29c-23-102-60-157-131-196-27-14-105-41-174-58-245-62-301-105-360-281l-27-81-38 102-37 103 18 60c37 124 137 237 319 362 222 152 258 180 292 230 42 63 82 186 90 280 6 76-13 235-28 235-5 0-9-4-9-8 0-5-14-30-31-55-46-70-92-92-254-121-111-20-157-34-220-65-102-51-193-120-278-211-37-40-67-69-67-64-1 5-7 54-14 109-15 112-13 120 47 190 53 61 128 100 282 146 211 62 278 100 412 235 130 130 173 191 173 246 0 39-37 223-50 247-5 10-14 4-34-22-60-78-133-106-346-132-182-22-338-78-467-167l-43-29 0 34c0 24 10 47 32 74 87 104 212 172 528 283 366 128 421 167 505 355 27 61 59 124 72 142 26 36 28 46 10 61-10 9-22 5-49-14-80-57-246-70-493-38-188 24-335 23-407-2l-58-21 7 26c28 113 35 125 100 157 63 31 165 58 260 69 38 4 89-2 180-21 73-16 161-27 205-27 69-1 85 3 150 36 174 86 361 329 375 488l6 62-69-53c-108-83-140-94-269-94-137 0-174 13-346 124-111 72-217 120-266 120-19 0-12 22 43 132 29 57 51 89 65 93 52 17 128-6 285-85 86-43 179-84 206-89 206-45 393 52 522 269 50 84 146 285 146 306 0 26-33 23-65-5-48-41-123-55-260-47-60 3-162 17-225 31-210 47-271 57-335 53-35-2-62-1-61 2 51 97 125 204 149 217 65 33 117 22 275-58l144-74 82 1c138 2 251 55 386 181 120 113 206 248 244 384 32 120 35 116-41 61-182-132-269-145-543-82-146 34-177 36-245 15-27-8-51-13-53-11-2 2 23 31 55 64 108 110 179 131 459 136 145 2 215 8 259 20 84 23 231 98 286 145 108 93 160 220 141 339-6 35-13 67-16 69-3 3-22-8-43-24-84-67-154-87-353-103-77-7-168-18-203-25-34-7-63-12-65-10-9 8 188 159 373 285 250 170 339 241 409 326 93 113 136 218 136 334 0 81-8 85-65 32z"/></g></svg></div>
+<div class="grade-nm">Expert</div><div class="grade-xp">3k–8k XP</div></div>
+
+<div class="grade-card g-cha"><div class="grade-lv">41–50</div><div class="grade-icon"><svg viewBox="0 0 1280 1086" width="36" height="30" style="filter:drop-shadow(0 0 8px rgba(167,139,250,.5))"><g transform="translate(0,1086) scale(0.1,-0.1)" fill="#a78bfa"><path d="M4452 10573c-12-10-40-51-62-91-39-70-45-92-126-490l-86-417-116-118-117-118-315-159c-482-244-673-367-878-564-141-137-222-249-272-377-29-73-34-103-42-229-17-255 6-700 47-926 26-142 82-281 164-404 57-87 146-175 266-264 114-86 225-195 225-223 0-25-175-193-292-279-146-108-284-193-466-287-417-216-650-279-852-232-204 48-438 237-535 431-55 111-71 203-57 328 12 108 48 239 89 321 100 197 285 368 465 428 51 17 89 21 198 21l135 1 48-40 47-39 0-101c0-125-13-206-50-320-37-113-54-223-46-297 9-85 41-168 77-202 30-27 36-28 94-23 173 13 314 156 388 392 38 123 51 225 51 405 0 161 0 167-34 264-89 262-307 465-576 537-112 31-314 31-436 1-174-43-301-104-455-219-344-258-615-755-674-1237-15-123-7-376 16-506 34-193 112-387 212-529 65-92 196-218 296-285 264-176 565-246 997-233 347 11 501 37 643 108 33 17 297 179 585 360 470 296 572 353 572 322 0-4-11-18-24-32-54-59-230-300-256-352-49-96-64-170-64-319 0-342 99-557 475-1030 200-252 292-381 327-456 103-224 74-431-83-590-61-62-125-94-187-94l-28 0 0 83c0 102-17 328-31 422-62 406-262 682-545 752-93 23-315 22-444-2-211-39-434-129-611-246-133-89-308-265-394-397-120-184-171-339-182-547-14-282 67-485 276-694 262-261 619-413 1061-452 131-11 211-7 295 16 28 7 75 16 105 19l55 6 23-137c31-182 42-207 109-250 68-43 85-78 72-146-9-53-31-88-94-157-70-76-121-186-101-218 10-17 137 7 219 42 112 47 149 56 244 56l82 0 28-36c53-69 360-196 593-245 152-33 453-33 588-2 310 73 623 274 847 543 141 169 232 328 292 509 38 116 52 243 53 502 1 300-35 477-240 1179-133 456-170 652-170 893 1 693 248 1122 630 1095 129-10 207-64 261-184 68-149 79-249 95-824 5-194 10-256 31-355 121-584 424-1096 820-1387 83-61 220-130 323-163l85-28 360-1c297-1 393 3 545 19 146 16 253 20 510 20l325-1 90-27c147-46 235-109 282-205 26-52 28-67 28-167 0-100-3-116-29-172-32-70-116-157-184-192-98-50-220-63-327-36-141 37-162 79-130 248 8 43 15 97 15 120-1 122-109 211-252 209-141-2-211-47-244-157-28-90-26-277 3-370 76-240 301-436 589-512 84-21 122-26 244-26 172-1 239 13 376 79 202 96 369 311 451 579 26 86 27 99 27 305 0 190-3 224-22 295-108 394-445 605-1087 680-558 65-885 144-1156 281-223 112-391 290-525 556-124 246-174 498-160 803 6 158 16 201 52 245 37 44 63 39 136-25 265-233 447-372 648-493 245-147 626-341 983-498 94-41 180-85 191-97 15-18 17-34 14-87-5-69-26-119-83-198-63-90-81-195-50-300 18-61 45-82 110-90 35-3 56 1 98 22 68 33 123 102 212 264 37 67 78 131 92 142 25 19 41 20 579 20 445 0 566 3 621 15 318 67 607 300 753 607 67 141 91 242 97 403 10 283-57 533-201 749-167 250-408 398-711 435-288 35-533-12-723-139-194-130-338-333-450-635-40-106-119-354-142-443-18-69-60-69-132-2-24 23-128 106-233 187-243 187-394 313-514 429l-96 92 40 7c110 19 389 93 545 145 390 130 730 306 975 503 135 109 265 252 313 345 83 160 82 143 82 921 0 655 6 814 31 926 18 80 72 186 123 242 65 72 121 98 216 97 42 0 85-6 98-13 28-15 268-233 336-304 139-147 223-309 255-490 18-100 24-259 12-303-17-62-40-85-174-174-67-45-137-96-154-113-49-46-66-101-61-194 6-133 42-173 160-181 163-10 281 37 403 161 124 127 203 299 241 526 66 406-116 959-424 1283-239 250-501 361-821 345-283-13-469-90-634-260-211-217-342-513-406-918-28-170-40-354-47-679-3-151-10-298-15-327-30-156-168-302-359-379-140-57-310-86-505-87-106-1-145 3-209 21-168 48-292 127-336 212-25 49-44 155-31 177 20 38 105 107 341 278 285 206 379 284 496 409 203 215 306 440 323 705 16 259-27 434-145 591-27 35-138 155-246 266-108 110-202 213-208 228-27 72 0 213 59 305 54 84 197 211 359 320 160 106 184 133 184 198 0 19-6 48-12 64-21 51-58 62-215 67-208 6-344-24-471-107-162-104-281-291-329-516-24-111-25-328-2-415 21-81 85-215 171-359 134-226 166-311 166-446 0-172-57-293-210-445-124-124-227-195-410-284-260-125-519-193-772-203-81-3-154-3-162 0-12 5 6 28 73 94 80 78 92 95 106 147 25 85 18 265-13 322-19 37-125 149-206 216l-29 24 28 50c16 27 39 62 52 77 13 16 23 35 23 42 0 8 6 12 14 9 23-9 48 25 41 55-9 37-22 48-43 35-10-6-18-27-20-48l-3-36-175 0c-96 0-174 2-174 5 0 3 38 53 85 112 107 135 280 378 328 461 211 364 188 784-64 1122-209 281-598 474-1034 511-531 45-1093-254-1321-703-135-266-123-601 33-912 50-100 177-314 252-426 30-44 51-86 51-102l0-28-192-2c-230-4-227-2-148-116 27-41 50-77 50-81 0-5-33-36-73-69-86-70-145-144-184-227-26-55-28-70-28-175 0-104 3-120 26-170 27-56 82-118 178-202 30-26 50-51 46-57-12-20-97-57-230-101l-130-44-320 0c-336-1-475 11-660 54-377 88-611 295-696 615-26 101-37 341-20 428 26 122 114 253 253 374 64 56 276 200 521 352 332 207 540 428 618 654 55 162 61 342 20 637-70 505-59 451-100 489-45 42-91 71-112 71-9 0-26-8-37-17z"/></g></svg></div>
+<div class="grade-nm">Chasseur</div><div class="grade-xp">8k–20k XP</div></div>
+
+<div class="grade-card g-leg"><div class="grade-lv">51–90</div><div class="grade-icon"><svg viewBox="0 0 849 1280" width="24" height="36" style="filter:drop-shadow(0 0 8px rgba(251,191,36,.5))"><g transform="translate(0,1280) scale(0.1,-0.1)" fill="#fbbf24"><path d="M4101 12785c-35-8-86-22-114-31-49-16-50-17-30-33 12-9 37-29 57-44 29-22 66-81 66-103 0-2-28-4-62-4-53 0-70 5-107 29-24 16-49 27-55 25-19-7-74-97-85-139-24-89-5-185 57-292 20-35 39-63 42-63 3 0 20 27 38 60l33 60 60 0 59 0 0-38c0-50-18-73-87-112-132-75-213-186-213-292 0-63 30-166 61-209 35-50 42-47-216-64-293-20-766-111-1112-215-72-22-137-40-143-40-6 0-39 21-73 48-34 26-116 79-181 117-131 77-242 172-284 244l-27 46-7-155c-5-114-15-193-37-300-17-80-31-171-31-202l0-58-62-31c-99-50-225-140-325-234l-93-86-117 88c-127 96-255 172-372 223-101 44-203 82-207 77-2-2 19-42 47-88 64-106 251-485 319-647 28-68 56-151 61-185 16-99 68-158 159-180 31-8 52-35 210-268l128-189-729 0-730 0 4-1717c3-1875 1-1793 63-2193 192-1245 813-2480 1823-3624 153-174 631-652 806-808 442-392 856-702 1437-1076l127-82 218 151c317 220 502 354 728 523 864 648 1520 1282 2023 1954 666 891 1069 1869 1206 2927 51 386 49 336 53 2198l4 1747-711 0c-392 0-710 3-708 8 2 4 76 115 165 248l161 241 62 12c46 9 71 21 98 46l37 33 1 99 2 99 172 379c180 397 192 425 185 425-15 0-476-249-548-295l-88-58-37 36c-66 63-218 171-320 226l-99 54-7 101c-3 56-17 153-30 216-14 63-35 165-47 225-12 61-24 116-25 123-3 9-25-5-61-37-34-31-109-78-187-118-124-64-241-143-323-217l-39-35-189 50c-330 86-648 141-1026 179-111 11-204 22-206 24-2 2 6 36 18 76 27 90 23 199-11 278-28 65-116 149-198 191-70 36-84 55-80 114l3 42 53-1c44-2 60-8 99-38 25-20 50-36 54-36 14 0 63 66 87 119 44 96 18 213-69 309-17 19-31 32-33 30-1-1-14-20-29-40-26-36-31-38-82-38-30 0-57 5-60 11-11 17 3 55 40 103l35 46-27 10c-16 6-39 15-53 20-103 39-254 49-369 25z"/></g></svg></div>
+<div class="grade-nm">Légende</div><div class="grade-xp">20k–50k XP</div></div>
+
+<div class="grade-card g-dieu"><span style="position:absolute;top:6px;right:6px;font-size:9px;opacity:.35;z-index:5">🔒</span><div class="grade-lv">91–100</div><div class="grade-icon"><svg viewBox="0 0 1280 797" width="46" height="29" style="filter:drop-shadow(0 0 10px rgba(255,215,0,.7))"><g transform="translate(0,797) scale(0.1,-0.1)" fill="#ffd700"><path d="M5563 6627c-138-227-190-329-267-526-170-432-291-950-338-1444l-12-127-35-9c-171-44-682-153-688-147-13 12-9 296 5 376 52 293 177 635 452 1230 149 324 272 608 268 622-6 18-79-70-148-181-39-63-103-150-142-195-179-206-390-512-534-776-114-207-160-325-234-589-100-357-136-451-212-536-38-44-106-65-206-65l-74 0 6 38c4 20 42 183 86 362 149 615 187 873 161 1074-37 278-133 340-531 340-173 0-209-3-323-27-347-73-642-223-850-431-154-153-252-318-304-514-28-102-28-103-20-532 1-86-12-123-104-285-113-200-159-315-159-394 0-34 4-38 88-90 113-71 456-314 598-425 135-105 272-244 303-308 46-95 27-231-59-418-129-282-240-418-405-497-74-35-183-63-247-63-49 0-49-17-2-96 104-173 265-247 491-224 171 18 315 65 628 205 91 40 179 72 224 81 41 8 182 19 314 24 365 15 476 41 505 118 35 93 22 153-70 313-134 233-237 499-273 702-33 184-5 367 59 383 40 10 96-15 142-63 65-66 126-199 206-447 112-347 192-534 320-747 131-217 329-462 534-659 108-104 424-384 424-375 0 3-121 200-269 438-148 237-287 469-310 514-131 262-247 652-306 1029-26 167-52 420-44 428 2 3 146 28 319 57 278 45 320 50 358 40 77-21 95-76 111-336 10-163 55-434 107-640 66-260 183-571 319-843 156-312 312-543 506-746 56-59 103-105 105-103 2 2-60 140-137 308-378 816-404 906-459 1253-15 99-37 420-29 429 4 5 588 60 640 61l30 0 22-218c13-122 31-250 43-291 72-253 230-521 376-636 32-25 61-45 65-45 11 0 3 19-117 270-209 435-237 550-203 838l12 102 331 0 332 0 28-107c57-223 138-388 237-485 102-101 102-76-2 142-87 184-110 254-117 362l-6 88 36 15c44 18 97 19 240 3 91-10 112-16 123-33 7-11 65-137 129-279 147-328 159-351 244-477 261-389 662-664 1093-753 136-28 378-47 378-29 0 3-155 160-344 347-421 418-580 598-733 829-109 165-177 329-185 442-3 35 9 60 90 195 131 219 235 354 391 510 179 178 315 278 755 555l95 61-18 31c-42 68-200 113-399 113-148 0-217-17-359-85-345-165-659-487-927-947-54-93-101-168-104-168-4 0-32 9-62 21-82 31-190 49-296 49-83 0-94 2-94 18 0 9 29 124 63 255 35 130 59 237 54 237-18 0-76-73-107-136-37-75-75-184-85-243-10-63-31-69-163-48-95 16-543 67-580 67-45 0 34 384 153 745 4 11-18-6-49-38-97-100-198-338-227-531-6-39-12-86-15-103l-5-33-360 0-361 0 7 78c26 300 58 599 71 666 9 44 60 218 114 388 53 169 91 303 83 297-7-7-33-44-58-83-162-261-360-842-411-1211-10-71-20-132-22-135-5-6-935-40-941-34-3 2 82 434 188 960 106 526 190 958 188 960-8 8-278-474-318-565-50-116-88-263-140-536-22-121-65-314-94-430-29-115-58-249-65-297l-13-86-106-6c-58-3-200-8-316-11-115-3-254-8-307-11l-98-6 0 98c0 55 9 155 20 224 12 69 45 294 75 500 89 617 125 786 240 1140 41 124 79 245 85 270 6 25 13 53 16 63 15 49-22-3-133-186z"/></g></svg></div>
+<div class="grade-nm">Dieu</div><div class="grade-xp">50k+ XP</div></div>
+</div>
+
+<div class="card" style="margin-bottom:12px;padding:14px">
+<div style="font-size:13px;font-weight:700;margin-bottom:10px">📊 Cumul de prises par espèce</div>
+<div class="csel-wrap" style="margin-bottom:10px">
+<div class="csel-btn" data-csel="perfspecies" id="perf-species-btn"><span>Toutes les espèces</span><span style="opacity:.5">▼</span></div>
+<div class="csel-dd" id="perf-species-dd"></div>
+</div>
+<div id="perf-chart" class="chart-bars"></div>
+<div id="perf-legend" style="display:flex;justify-content:center;gap:14px;margin-top:8px;font-size:9px;color:var(--text2)"></div>
+</div>
+
+<div class="card" style="margin-bottom:12px" id="hashtag-insights">
+<div style="font-size:11px;color:var(--text2);font-style:italic">Publie des prises pour voir tes statistiques ici.</div></div>
+
+<div class="card" style="margin-bottom:12px">
+<div style="display:flex;justify-content:space-between;margin-bottom:12px">
+<div style="font-size:13px;font-weight:700">Mon profil</div>
+<div style="display:flex;gap:8px">
+<button id="edit-toggle-btn" class="btn btn-g" style="font-size:11px;padding:5px 12px">✏️ Modifier</button>
+<button class="btn btn-d" id="btn-logout" style="font-size:11px;padding:5px 12px">Déconnexion</button>
+</div></div>
+<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.06)">
+<div id="avatar-display" style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--blue2),#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;overflow:hidden"></div>
+<div><div style="font-size:12px;font-weight:600;margin-bottom:5px">Photo de profil</div><label style="cursor:pointer"><input type="file" id="avatar-input" accept="image/*" style="display:none"><span class="btn btn-g" style="font-size:11px;padding:5px 12px">📷 Choisir</span></label></div>
+</div>
+<div id="profile-view">
+<div style="font-size:12px;color:var(--text2);line-height:2.4">
+<div>Pseudo : <span id="pv-pseudo" style="color:var(--text);font-weight:600">—</span></div>
+<div>Email : <span id="pv-email" style="color:var(--text);font-weight:600">—</span></div>
+<div>Membre depuis : <span id="pv-since" style="color:var(--text);font-weight:600">—</span></div>
+</div></div>
+<div id="profile-edit" style="display:none">
+<div class="fld"><label>Pseudo public</label><input type="text" id="edit-pseudo"></div>
+<div class="fld"><label>Présentation</label><textarea rows="3" id="edit-bio" maxlength="200" style="background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:var(--r);padding:9px 11px;color:var(--text);font-size:13px;outline:none;width:100%;resize:none" placeholder="Présente-toi en quelques mots, ton style de pêche, tes spots favoris..."></textarea></div>
+<button class="btn btn-p" style="width:100%;justify-content:center" id="btn-save-profile">💾 Sauvegarder</button>
+</div></div>
+
+<div id="profile-gallery" style="margin-bottom:20px">
+<div style="text-align:center;padding:24px;color:var(--text2);font-size:12px;border:1px dashed var(--border);border-radius:var(--rl)">📸 Aucune prise publiée.</div></div>
+
+<div style="border-top:1px solid rgba(255,255,255,.08);margin-top:24px;padding-top:20px;padding-bottom:100px;text-align:center">
+<div style="display:flex;justify-content:center;align-items:center;gap:24px;margin-bottom:14px">
+<a href="https://www.youtube.com/@fabfishing" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="4" fill="#FF0000"/><path d="M8.3 12.2V7.8L12.5 10l-4.2 2.2z" fill="white"/></svg></a>
+<a href="https://www.tiktok.com/@fabfishing" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="4" fill="#111"/><path d="M13.8 4.2a3.8 3.8 0 01-.9-2.5H10v11c0 1-.9 1.9-1.9 1.9s-1.9-.9-1.9-1.9.9-1.9 1.9-1.9c.2 0 .4 0 .5.1V8c-.2 0-.4 0-.5 0C5.5 8 3.3 10.2 3.3 13s2.2 5 4.8 5 4.8-2.2 4.8-5V8.2c1 .6 2.1 1 3.3 1V6.4c-.9 0-1.8-.8-2.4-2.2z" fill="white"/></svg></a>
+<a href="https://www.instagram.com/fabfishing.officiel" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><defs><linearGradient id="igp" x1="0" y1="20" x2="20" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#f09433"/><stop offset="50%" stop-color="#dc2743"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs><rect width="20" height="20" rx="4" fill="url(#igp)"/><rect x="4" y="4" width="12" height="12" rx="3.5" stroke="white" stroke-width="1.5"/><circle cx="10" cy="10" r="3" stroke="white" stroke-width="1.5"/><circle cx="14" cy="6" r="1" fill="white"/></svg></a>
+</div>
+<div style="font-size:14px;font-weight:700;color:rgba(255,255,255,.85)">FabFishing</div>
+<div style="font-size:11px;color:rgba(255,255,255,.45);margin-bottom:18px">Fondateur de BattleFish</div>
+<div style="display:flex;flex-wrap:wrap;justify-content:center;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);padding:10px 0;margin-bottom:12px">
+<a data-legal="mentions" style="color:rgba(255,255,255,.85);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">Mentions légales</a>
+<a data-legal="cgu" style="color:rgba(255,255,255,.85);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">CGU</a>
+<a data-legal="confidentialite" style="color:rgba(255,255,255,.85);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">Confidentialité</a>
+<a data-legal="cookies" style="color:rgba(255,255,255,.85);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">Cookies</a>
+<a data-legal="rgpd" style="color:rgba(255,255,255,.85);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">RGPD</a>
+<a data-legal="dpo" style="color:rgba(255,255,255,.85);font-size:10px;padding:4px 7px;cursor:pointer">DPO</a>
+</div>
+<div style="display:flex;flex-wrap:wrap;justify-content:center;padding-bottom:10px">
+<a data-legal="suppression" style="color:rgba(255,255,255,.85);font-size:10px;padding:4px 7px;border-right:1px solid rgba(255,255,255,.12);cursor:pointer">Supprimer compte</a>
+<a data-legal="signalement" style="color:rgba(255,255,255,.85);font-size:10px;padding:4px 7px;cursor:pointer">Signaler</a>
+</div>
+<div style="font-size:10px;font-weight:600;color:rgba(255,255,255,.4)">BattleFish © 2026 — FabFishing</div>
+</div></div>
+
+<div id="notifs" class="page">
+<div style="text-align:center;padding:40px 20px;color:var(--text2)"><div style="font-size:36px;margin-bottom:12px">🔔</div><div style="font-size:14px;font-weight:700">Aucune notification</div></div></div>
+
+<div id="legal-modal" class="modal-ov" style="z-index:600;align-items:flex-start;padding-top:40px">
+<div class="modal-box" id="legal-modal-box">
+<div class="modal-head"><h2 id="legal-title">Titre</h2><button class="modal-close" id="close-legal">×</button></div>
+<div id="legal-body" style="font-size:12px;line-height:1.8;color:rgba(255,255,255,.75)"></div>
+</div></div>
+
+<div id="bottomnav">
+<button class="tab-btn active" data-show="home"><span class="ti">🏠</span><span class="tl">Accueil</span></button>
+<button class="tab-btn" data-show="feed"><span class="ti">⚡</span><span class="tl">Feed</span></button>
+<button class="tab-upload" id="btn-upload-nav"><div class="upload-orb">📸</div></button>
+<button class="tab-btn" data-show="ranking"><span class="ti">🏆</span><span class="tl">Top</span></button>
+<button class="tab-btn" data-show="profile"><span class="ti">👤</span><span class="tl">Profil</span></button>
+</div></div>
+
+<div id="upload-modal" class="modal-ov">
+<div class="modal-box">
+<div class="modal-head"><h2 id="modal-upload-title">📸 Nouvelle prise</h2><button class="modal-close" id="close-upload">×</button></div>
+<label style="background:rgba(255,255,255,.03);border:2px dashed rgba(255,255,255,.12);border-radius:var(--rl);text-align:center;cursor:pointer;margin-bottom:12px;display:block;overflow:hidden;position:relative;min-height:130px">
+<input type="file" id="catch-photo-inp" accept="image/*" style="display:none">
+<div id="upload-placeholder" style="padding:28px 20px"><div style="font-size:28px">📷</div><div style="font-weight:600;font-size:13px">Ajouter une photo</div><div style="font-size:11px;color:var(--text2)">JPG, PNG · max 10 Mo</div></div>
+<div id="upload-preview" style="display:none;width:100%;height:160px;position:relative"><img id="upload-preview-img" style="width:100%;height:100%;object-fit:cover"></div>
+</label>
+<div class="g2">
+<div class="fld" style="grid-column:1/-1"><label>Espèce</label><div class="csel-wrap" style="margin-bottom:0"><div class="csel-btn" data-csel="species" id="species-btn"><span>Choisir une espèce...</span><span style="opacity:.5">▼</span></div><div class="csel-dd" id="species-dd"></div></div></div>
+<div class="fld"><label>Poids (kg)</label><input type="text" inputmode="decimal" id="w-inp" placeholder="3.5"></div>
+<div class="fld"><label>Taille (cm)</label><input type="text" inputmode="numeric" id="s-inp" placeholder="65"></div>
+<div class="fld"><label>Lieu</label><input type="text" id="loc-inp" placeholder="Loire..."></div>
+<div class="fld"><label>Technique</label><input type="text" id="tech-inp" placeholder="Leurre..."></div>
+</div>
+<div class="fld"><label>Description</label><textarea rows="2" id="desc-inp" style="background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:var(--r);padding:9px 11px;color:var(--text);font-size:13px;outline:none;width:100%;resize:none" placeholder="#brochet #loire..."></textarea></div>
+<div id="sc-prev" style="display:none;border-radius:var(--r);padding:12px;text-align:center;margin-bottom:10px">
+<div style="font-size:10px;color:var(--text2)">Score estimé</div>
+<div id="sc-val" style="font-size:28px;font-weight:800">0 pts</div>
+<div id="sc-badge" style="margin-top:4px"></div>
+</div>
+<div style="display:flex;gap:8px">
+<button class="btn btn-g" style="flex:1;justify-content:center" id="cancel-upload">Annuler</button>
+<button class="btn btn-p" style="flex:2;justify-content:center;font-weight:800" id="submit-catch">📤 Publier</button>
+</div>
+<div id="upload-loading" style="display:none;text-align:center;padding:10px;font-size:12px;color:var(--text2)">
+<div style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;vertical-align:middle"></div>
+<span id="upload-loading-text">Publication en cours...</span>
+</div></div></div>
+
+<div id="battle-modal" class="modal-ov">
+<div class="modal-box">
+<div class="modal-head"><h2>⚔️ Battle Arena</h2><button class="modal-close" id="close-battle">×</button></div>
+<div class="battle-arena">
+<div class="tcg-card tcg-com tcg-me" id="my-card">
+<div class="tcg-header"><span class="tcg-name" id="my-card-name">Moi</span><span class="tcg-hp">HP —</span></div>
+<div class="tcg-photo"><div class="tcg-ph-pl" id="my-ph">🎣</div><img id="my-img" style="display:none;width:100%;height:100%;object-fit:cover"><div class="tcg-ph-lbl" id="my-lbl">Aucune prise</div></div>
+<div class="tcg-body"><div class="tcg-sp" id="my-sp">Publie une prise</div></div>
+<div class="tcg-footer"><span class="tcg-score" id="my-score">— pts</span><span class="badge b-com tcg-bsm" id="my-badge">COMMUN</span></div>
+</div>
+<div class="vs-sep">VS</div>
+<div class="tcg-card tcg-epi">
+<div class="tcg-header"><span class="tcg-name">Adversaire</span><span class="tcg-hp">HP —</span></div>
+<div class="tcg-photo"><div class="tcg-ph-pl">❓</div><div class="tcg-ph-lbl">En attente</div></div>
+<div class="tcg-body"><div class="tcg-sp">Recherche...</div></div>
+<div class="tcg-footer"><span class="tcg-score">— pts</span><span class="badge b-epi tcg-bsm">—</span></div>
+</div></div>
+<button class="btn btn-p btn-big" id="launch-duel">⚔️ Lancer le Battle</button>
+<div id="battle-res" style="display:none"></div>
+</div></div>
+
+<div id="photo-modal" class="modal-ov" style="background:rgba(0,0,0,.95)">
+<div style="width:100%;max-width:420px;padding:16px;text-align:center" id="photo-modal-inner">
+<img id="photo-modal-img" style="width:100%;border-radius:var(--rl);max-height:70vh;object-fit:contain">
+<div id="photo-modal-caption" style="margin-top:12px;font-size:13px;font-weight:600;color:rgba(255,255,255,.8)"></div>
+</div></div>
+
+<div id="chat-fab">
+<div id="chat-panel">
+<div id="chat-head">
+<div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--blue2),#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:14px">🎣</div>
+<div style="flex:1"><div style="font-weight:700;font-size:12px;color:#fff">Coach BattleFish</div></div>
+<button id="close-chat" style="background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.6);cursor:pointer;width:24px;height:24px;border-radius:50%">×</button>
+</div>
+<div id="chat-msgs"><div class="cmsg-b">Salut ! Publie ta première prise 🎣</div></div>
+<div id="chat-qrow">
+<button class="cq" data-q="Max score ?">Max score ?</button>
+<button class="cq" data-q="Mes stats ?">Mes stats ?</button>
+</div>
+<div id="chat-irow"><input id="chat-inp" placeholder="Ta question..."><button class="csend" id="send-chat">→</button></div>
+</div>
+<button id="chat-fab-btn">💬</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+
+var SUPABASE_URL='https://ziufpxhmfwrlqpfmxhhi.supabase.co';
+var SUPABASE_KEY='sb_publishable_-XtcQX6IjPphMWBM41GC3w_sQJZ62f0';
+var sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+var currentUser=null;
+var currentProfile=null;
+function $(id){return document.getElementById(id);}
+function guardApp(){if(!currentUser){$('app').style.display='none';$('chat-fab').style.display='none';$('landing').style.display='flex';return false;}return true;}
+
+(function(){
+var bc=$('bubbles');if(!bc)return;
+for(var i=0;i<25;i++){
+var b=document.createElement('div');b.className='bubble';
+var sz=Math.random()*14+5,dur=Math.random()*8+8,delay=-(Math.random()*dur),left=Math.random()*92+4;
+b.style.width=sz+'px';b.style.height=sz+'px';b.style.left=left+'%';
+b.style.animationDuration=dur+'s';b.style.animationDelay=delay+'s';
+bc.appendChild(b);
+}
+})();
+
+var BAN=['connard','salope','pute','putain','enculé','merde','nazi','raciste','nègre','porn','xxx','sex','nude','naked','nsfw','hentai','hitler','viol','pédophile'];
+function normTxt(s){return s.toLowerCase().replace(/[^a-zàâäéèêëîïôöùûüç\s]/g,'');}
+function checkText(t){if(!t||!t.trim())return{ok:true};var n=normTxt(t);for(var i=0;i<BAN.length;i++){if(n.includes(BAN[i]))return{ok:false,reason:'Contenu inapproprié.'};}if(t.length>500)return{ok:false,reason:'Texte trop long.'};return{ok:true};}
+function checkPhoto(f){if(!f)return{ok:false,reason:'Aucun fichier.'};if(!['image/jpeg','image/png','image/webp'].includes(f.type))return{ok:false,reason:'Format non autorisé.'};if(f.size>10*1024*1024)return{ok:false,reason:'Photo trop lourde.'};return{ok:true};}
+
+function compressImage(file,maxDim,quality){
+return new Promise(function(resolve){
+var reader=new FileReader();
+reader.onload=function(e){
+var img=new Image();
+img.onload=function(){
+var w=img.width,h=img.height;
+if(w>h&&w>maxDim){h=Math.round(h*maxDim/w);w=maxDim;}
+else if(h>=w&&h>maxDim){w=Math.round(w*maxDim/h);h=maxDim;}
+var canvas=document.createElement('canvas');
+canvas.width=w;canvas.height=h;
+var ctx=canvas.getContext('2d');
+ctx.drawImage(img,0,0,w,h);
+canvas.toBlob(function(blob){
+if(!blob){resolve(file);return;}
+var compressedFile=new File([blob],file.name,{type:'image/jpeg'});
+resolve(compressedFile);
+},'image/jpeg',quality);
+};
+img.onerror=function(){resolve(file);};
+img.src=e.target.result;
+};
+reader.onerror=function(){resolve(file);};
+reader.readAsDataURL(file);
+});
+}
+function showAlert(msg){
+var el=$('mod-alert');
+if(!el){el=document.createElement('div');el.id='mod-alert';el.style.cssText='position:fixed;top:56px;left:50%;transform:translateX(-50%);border-radius:12px;padding:11px 16px;font-size:12px;font-weight:600;z-index:2000;max-width:360px;width:90%;text-align:center;background:#1e3a5f;border:1px solid #3b82f6;color:#93c5fd';document.body.appendChild(el);}
+el.style.display='block';el.textContent='⚠️ '+msg;
+clearTimeout(el._t);el._t=setTimeout(function(){el.style.display='none';},4000);
+}
+
+var FDB=[
+{n:"Thon rouge",s:"Thunnus thynnus",z:"Marine",t:"150–300 cm",p:"30–600 kg",r:"Trophée",mult:6,eco:"tro",em:"🐟"},
+{n:"Sériole",s:"Seriola dumerili",z:"Méditerranée",t:"80–200 cm",p:"5–80 kg",r:"Trophée",mult:6,eco:"tro",em:"⚡"},
+{n:"Marlin bleu",s:"Makaira nigricans",z:"Marine",t:"150–450 cm",p:"50–600 kg",r:"Trophée",mult:6,eco:"tro",em:"🐠"},
+{n:"Liche",s:"Lichia amia",z:"Méditerranée",t:"50–200 cm",p:"2–30 kg",r:"Trophée",mult:6,eco:"tro",em:"🌊"},
+{n:"Carangue GT",s:"Caranx ignobilis",z:"Marine",t:"60–170 cm",p:"5–80 kg",r:"Trophée",mult:6,eco:"tro",em:"🌪️"},
+{n:"Maquereau espagnol",s:"Scomberomorus commerson",z:"Marine",t:"60–200 cm",p:"3–40 kg",r:"Trophée",mult:6,eco:"tro",em:"🌀"},
+{n:"Brochet commun",s:"Esox lucius",z:"Eau douce",t:"60–130 cm",p:"1–20 kg",r:"Légendaire",mult:5,eco:"leg",em:"🐊"},
+{n:"Silure",s:"Silurus glanis",z:"Eau douce",t:"100–300 cm",p:"10–150 kg",r:"Légendaire",mult:5,eco:"leg",em:"🐋"},
+{n:"Saumon atlantique",s:"Salmo salar",z:"Eau douce",t:"60–150 cm",p:"2–35 kg",r:"Légendaire",mult:5,eco:"leg",em:"🎣"},
+{n:"Espadon",s:"Xiphias gladius",z:"Marine",t:"150–300 cm",p:"30–250 kg",r:"Légendaire",mult:5,eco:"leg",em:"⚔️"},
+{n:"Anguille",s:"Anguilla anguilla",z:"Eau douce",t:"40–150 cm",p:"0.5–6 kg",r:"Légendaire",mult:5,eco:"leg",em:"🐍"},
+{n:"Bonite",s:"Sarda sarda",z:"Marine",t:"40–90 cm",p:"1–8 kg",r:"Légendaire",mult:5,eco:"leg",em:"🏃"},
+{n:"Tassergal",s:"Pomatomus saltatrix",z:"Marine",t:"40–120 cm",p:"1–12 kg",r:"Légendaire",mult:5,eco:"leg",em:"⚡"},
+{n:"Sandre",s:"Sander lucioperca",z:"Eau douce",t:"40–100 cm",p:"0.5–12 kg",r:"Épique",mult:4,eco:"epi",em:"🐟"},
+{n:"Bar commun",s:"Dicentrarchus labrax",z:"Marine",t:"30–90 cm",p:"0.3–10 kg",r:"Épique",mult:4,eco:"epi",em:"🐬"},
+{n:"Daurade royale",s:"Sparus aurata",z:"Méditerranée",t:"30–70 cm",p:"0.3–8 kg",r:"Épique",mult:4,eco:"epi",em:"🌟"},
+{n:"Turbot",s:"Scophthalmus maximus",z:"Marine",t:"40–100 cm",p:"1–15 kg",r:"Épique",mult:4,eco:"epi",em:"🎯"},
+{n:"Lieu jaune",s:"Pollachius pollachius",z:"Marine",t:"40–110 cm",p:"0.5–10 kg",r:"Épique",mult:4,eco:"epi",em:"💛"},
+{n:"Truite fario",s:"Salmo trutta fario",z:"Eau douce",t:"20–70 cm",p:"0.2–5 kg",r:"Rare",mult:3,eco:"rar",em:"🎣"},
+{n:"Carpe commune",s:"Cyprinus carpio",z:"Eau douce",t:"40–120 cm",p:"1–30 kg",r:"Rare",mult:3,eco:"rar",em:"🐡"},
+{n:"Black-bass",s:"Micropterus salmoides",z:"Eau douce",t:"20–55 cm",p:"0.3–5 kg",r:"Rare",mult:3,eco:"rar",em:"🖤"},
+{n:"Maquereau",s:"Scomber scombrus",z:"Marine",t:"20–45 cm",p:"0.1–1 kg",r:"Rare",mult:3,eco:"rar",em:"💨"},
+{n:"Cabillaud",s:"Gadus morhua",z:"Marine",t:"40–150 cm",p:"1–40 kg",r:"Rare",mult:3,eco:"rar",em:"⚪"},
+{n:"Brème commune",s:"Abramis brama",z:"Eau douce",t:"25–70 cm",p:"0.3–6 kg",r:"Peu commun",mult:2.5,eco:"unc",em:"🟡"},
+{n:"Tanche",s:"Tinca tinca",z:"Eau douce",t:"20–50 cm",p:"0.3–4 kg",r:"Peu commun",mult:2.5,eco:"unc",em:"🟢"},
+{n:"Saint-Pierre",s:"Zeus faber",z:"Marine",t:"20–60 cm",p:"0.2–5 kg",r:"Peu commun",mult:2.5,eco:"unc",em:"🟡"},
+{n:"Perche",s:"Perca fluviatilis",z:"Eau douce",t:"15–50 cm",p:"0.1–3 kg",r:"Peu commun",mult:2.5,eco:"unc",em:"🟠"},
+{n:"Gardon",s:"Rutilus rutilus",z:"Eau douce",t:"10–35 cm",p:"0.05–1 kg",r:"Commun",mult:2,eco:"com",em:"⚪"},
+{n:"Ablette",s:"Alburnus alburnus",z:"Eau douce",t:"8–20 cm",p:"0.01–0.1 kg",r:"Commun",mult:2,eco:"com",em:"✨"},
+{n:"Rouget barbet",s:"Mullus surmuletus",z:"Méditerranée",t:"15–35 cm",p:"0.1–0.8 kg",r:"Commun",mult:2,eco:"com",em:"🔴"}
+];
+function gb(e){return{tro:'b-tro',leg:'b-leg',epi:'b-epi',rar:'b-rar',unc:'b-unc',com:'b-com'}[e]||'b-com';}
+function rl(e){return{tro:'TROPHÉE',leg:'LÉGEND.',epi:'ÉPIQUE',rar:'RARE',unc:'P.COM.',com:'COMMUN'}[e]||'COMMUN';}
+function rc(e){return{tro:'var(--gold)',leg:'var(--purple)',epi:'var(--amber)',rar:'var(--teal)',unc:'var(--blue)',com:'var(--text2)'}[e]||'var(--text2)';}
+function xpu(e){return{tro:180,leg:110,epi:65,rar:35,unc:25,com:15}[e]||15;}
+
+var speciesDD=$('species-dd');
+if(speciesDD){
+var cats=[{l:'🏆 Trophée',f:'tro'},{l:'🟣 Légendaire',f:'leg'},{l:'🟠 Épique',f:'epi'},{l:'🔵 Rare',f:'rar'},{l:'🟢 Peu commun',f:'unc'},{l:'⚪ Commun',f:'com'}];
+var html='';
+cats.forEach(function(c){
+var items=FDB.filter(function(f){return f.eco===c.f;});
+if(!items.length)return;
+html+='<div class="csel-cat">'+c.l+'</div>';
+items.forEach(function(f){html+='<div class="csel-opt" data-species-idx="'+FDB.indexOf(f)+'">'+f.em+' '+f.n+'</div>';});
+});
+speciesDD.innerHTML=html;
+}
+
+var curSpecies=null;
+var POSTS=[],lastCatch=null,photoData=null,photoFile=null,editingCatchId=null;
+
+function tSince(t){var s=Math.floor((Date.now()-t)/1000);if(s<60)return'À l\'instant';if(s<3600)return Math.floor(s/60)+' min';return Math.floor(s/3600)+'h';}
+
+function htags(t){if(!t)return[];return(t.match(/#[\wàâäéèêëîïôöùûüç]+/gi)||[]);}
+function descWithoutTags(t){if(!t)return'';return t.replace(/#[\wàâäéèêëîïôöùûüç]+/gi,'').trim();}
+
+function postHTML(p,inGallery){
+var col=rc(p.eco);
+var img=p.photo?'<div class="post-img"><img src="'+p.photo+'"></div>':'<div class="post-img" style="display:flex;align-items:center;justify-content:center;height:140px">'+p.em+'</div>';
+var ps=p.pseudo||(currentUser?currentUser.pseudo:'Pêcheur');var ini=ps.replace('@','')[0].toUpperCase();
+var isMine=currentUser&&p.user_id===currentUser.id;
+var actBtns=isMine?'<button class="act-btn" data-edit-catch="'+p.id+'" style="margin-left:auto;color:var(--blue)">✏️ Modifier</button><button class="act-btn" data-delete-catch="'+p.id+'" style="color:var(--red)">🗑</button>':'';
+
+var details='';
+if(p.size)details+='<span>📏 '+p.size+' cm</span>';
+if(p.technique)details+=(details?' · ':'')+'<span>🎣 '+p.technique+'</span>';
+var detailsHtml=details?'<div style="font-size:11px;color:var(--text2);margin-bottom:6px">'+details+'</div>':'';
+
+var descClean=descWithoutTags(p.desc);
+var descHtml=descClean?'<div style="font-size:12px;color:var(--text);margin-bottom:6px;line-height:1.5">'+descClean+'</div>':'';
+
+var tags=htags(p.desc);
+var tagsHtml=tags.length?'<div style="margin-bottom:8px">'+tags.map(function(t){return'<span class="tag">'+t+'</span>';}).join('')+'</div>':'';
+
+var liked=currentUser&&p.likedByMe;
+var likeBtn='<button class="act-btn'+(liked?' liked':'')+'" data-like-catch="'+p.id+'">'+(liked?'❤️':'🤍')+' <span data-like-count="'+p.id+'">'+p.likes+'</span></button>';
+var commentBtn='<button class="act-btn" data-comment-catch="'+p.id+'">💬 <span data-comment-count="'+p.id+'">'+(p.commentCount||0)+'</span></button>';
+
+return'<div class="post" data-post-id="'+p.id+'"><div style="display:flex;align-items:center;gap:9px;margin-bottom:10px"><div class="ava" style="width:34px;height:34px;background:var(--blue2);color:#fff;font-size:12px">'+ini+'</div><div style="flex:1"><div style="font-weight:700;font-size:13px">'+ps+'</div><div style="font-size:10px;color:var(--text2)">'+tSince(p.ts)+(p.loc?' · 📍 '+p.loc:'')+'</div></div></div>'+img
++'<div style="margin:10px 0 5px"><strong style="color:'+col+'">'+p.species+' — '+p.weight+' kg</strong> <span class="badge '+gb(p.eco)+'">'+rl(p.eco)+'</span></div>'
++detailsHtml
++descHtml
++tagsHtml
++'<div style="font-size:12px;color:var(--text2);margin-bottom:8px">Score : <strong style="color:'+col+'">'+p.score+' pts</strong></div>'
++'<div class="post-acts">'+likeBtn+commentBtn+(inGallery?actBtns:'')+'</div>'
++'<div id="comments-'+p.id+'" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.06)"></div>'
++'</div>';
+}
+function renderFeed(){
+var f=$('feed-posts');
+if(!POSTS.length){f.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--text2)"><div style="font-size:36px;margin-bottom:12px">📭</div><div style="font-size:14px;font-weight:700">Aucune publication</div></div>';return;}
+f.innerHTML=POSTS.map(function(p){return postHTML(p,false);}).join('');
+attachPostListeners(f);
+}
+function renderGallery(){
+var el=$('profile-gallery');
+var mine=currentUser?POSTS.filter(function(p){return p.user_id===currentUser.id;}):[];
+if(!mine.length){el.innerHTML='<div style="text-align:center;padding:24px;color:var(--text2);font-size:12px;border:1px dashed var(--border);border-radius:var(--rl)">📸 Aucune prise.</div>';return;}
+el.innerHTML=mine.map(function(p){return postHTML(p,true);}).join('');
+el.querySelectorAll('[data-delete-catch]').forEach(function(b){
+b.addEventListener('click',async function(){
+if(!confirm('Supprimer cette prise ?'))return;
+var catchId=this.dataset.deleteCatch;
+var del=await sb.from('catches').delete().eq('id',catchId);
+if(del.error){showAlert('Erreur lors de la suppression.');console.error(del.error);return;}
+var newCatches=Math.max(0,(currentProfile.catches||1)-1);
+await sb.from('profiles').update({catches:newCatches}).eq('id',currentUser.id);
+currentProfile.catches=newCatches;currentUser.catches=newCatches;
+updateUI();
+await loadCatches();
+renderGallery();
+});
+});
+el.querySelectorAll('[data-edit-catch]').forEach(function(b){
+b.addEventListener('click',function(){
+var catchId=this.dataset.editCatch;
+var p=POSTS.find(function(x){return x.id===catchId;});
+if(!p)return;
+openEditCatch(p);
+});
+});
+attachPostListeners(el);
+}
+
+function attachPostListeners(container){
+container.querySelectorAll('[data-like-catch]').forEach(function(b){
+b.addEventListener('click',async function(){
+if(!guardApp())return;
+var catchId=this.dataset.likeCatch;
+var p=POSTS.find(function(x){return x.id===catchId;});
+if(!p)return;
+if(p.likedByMe){
+await sb.from('likes').delete().eq('catch_id',catchId).eq('user_id',currentUser.id);
+p.likedByMe=false;p.likes=Math.max(0,p.likes-1);
+}else{
+await sb.from('likes').insert({catch_id:catchId,user_id:currentUser.id});
+p.likedByMe=true;p.likes=p.likes+1;
+}
+await sb.from('catches').update({likes_count:p.likes}).eq('id',catchId);
+this.classList.toggle('liked',p.likedByMe);
+this.innerHTML=(p.likedByMe?'❤️':'🤍')+' <span data-like-count="'+catchId+'">'+p.likes+'</span>';
+});
+});
+container.querySelectorAll('[data-comment-catch]').forEach(function(b){
+b.addEventListener('click',function(){
+var catchId=this.dataset.commentCatch;
+toggleComments(catchId);
+});
+});
+}
+
+async function toggleComments(catchId){
+var box=$('comments-'+catchId);
+if(!box)return;
+var open=box.style.display==='none'||box.style.display==='';
+if(!open){box.style.display='none';return;}
+box.style.display='block';
+box.innerHTML='<div style="font-size:11px;color:var(--text2)">Chargement...</div>';
+var r=await sb.from('comments').select('*, profiles(pseudo)').eq('catch_id',catchId).order('created_at',{ascending:true});
+var commentsHtml='';
+if(!r.error&&r.data.length){
+commentsHtml=r.data.map(function(c){
+var pseudo=c.profiles?c.profiles.pseudo:'Pêcheur';
+return'<div style="font-size:12px;margin-bottom:6px"><strong style="color:var(--blue)">'+pseudo+'</strong> '+c.text+'</div>';
+}).join('');
+}else{
+commentsHtml='<div style="font-size:11px;color:var(--text2);margin-bottom:8px">Aucun commentaire.</div>';
+}
+var inputHtml=currentUser?'<div style="display:flex;gap:6px;margin-top:8px"><input type="text" placeholder="Ajouter un commentaire..." data-comment-input="'+catchId+'" style="flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:var(--r);padding:7px 10px;color:var(--text);font-size:12px;outline:none"><button class="btn btn-p" style="padding:7px 12px;font-size:12px" data-send-comment="'+catchId+'">→</button></div>':'';
+box.innerHTML=commentsHtml+inputHtml;
+var sendBtn=box.querySelector('[data-send-comment]');
+if(sendBtn){
+sendBtn.addEventListener('click',function(){submitComment(catchId);});
+var inp=box.querySelector('[data-comment-input]');
+inp.addEventListener('keydown',function(e){if(e.key==='Enter')submitComment(catchId);});
+}
+}
+
+async function submitComment(catchId){
+var inp=document.querySelector('[data-comment-input="'+catchId+'"]');
+if(!inp)return;
+var text=inp.value.trim();
+if(!text)return;
+var ck=checkText(text);if(!ck.ok){showAlert(ck.reason);return;}
+var ins=await sb.from('comments').insert({catch_id:catchId,user_id:currentUser.id,text:text}).select().single();
+if(ins.error){showAlert('Erreur lors de l\'envoi.');console.error(ins.error);return;}
+var p=POSTS.find(function(x){return x.id===catchId;});
+if(p)p.commentCount=(p.commentCount||0)+1;
+document.querySelectorAll('[data-comment-count="'+catchId+'"]').forEach(function(el){el.textContent=p?p.commentCount:0;});
+inp.value='';
+box.style.display='none';
+toggleComments(catchId);
+}
+
+function openEditCatch(p){
+if(!guardApp())return;
+editingCatchId=p.id;
+var f=FDB.find(function(x){return x.n===p.species;});
+curSpecies=f?{name:f.n,mult:f.mult,eco:f.eco,em:f.em}:{name:p.species,mult:1,eco:p.eco,em:p.em};
+$('species-btn').querySelector('span').textContent=curSpecies.em+' '+curSpecies.name;
+$('w-inp').value=p.weight;
+$('s-inp').value=p.size!=null?p.size:'';
+$('loc-inp').value=p.loc||'';
+$('tech-inp').value=p.technique||'';
+$('desc-inp').value=p.desc||'';
+if(p.photo){
+photoData=p.photo;
+$('upload-placeholder').style.display='none';
+$('upload-preview-img').src=p.photo;
+$('upload-preview').style.display='block';
+}else{
+resetUploadPlaceholder();
+$('upload-preview').style.display='none';
+}
+calcPrev();
+$('modal-upload-title').textContent='✏️ Modifier la prise';
+$('submit-catch').textContent='💾 Enregistrer';
+$('upload-modal').classList.add('open');
+}
+function renderInsights(){
+var el=$('hashtag-insights');
+if(!POSTS.length){el.innerHTML='<div style="font-size:11px;color:var(--text2);font-style:italic">Publie des prises pour voir tes stats.</div>';return;}
+var tot=POSTS.length,avg=Math.round(POSTS.reduce(function(s,p){return s+p.score;},0)/tot);
+var best=POSTS.reduce(function(b,p){return p.score>b.score?p:b;},POSTS[0]);
+el.innerHTML='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px"><div style="background:rgba(255,255,255,.04);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--blue)">'+tot+'</div><div style="font-size:9px;color:var(--text2)">Prises</div></div><div style="background:rgba(255,255,255,.04);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--amber)">'+avg+'</div><div style="font-size:9px;color:var(--text2)">Score moy.</div></div></div><div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:var(--r);padding:9px 11px;display:flex;align-items:center;gap:8px"><div style="font-size:20px">🏆</div><div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;font-weight:700">Meilleure prise</div><div style="font-size:12px;font-weight:700;color:var(--amber)">'+best.species+' — '+best.weight+' kg</div></div></div>';
+}
+
+var perfSpeciesFilter='';
+function renderPerfChart(){
+var el=$('perf-chart'),leg=$('perf-legend');if(!el)return;
+var mine=currentUser?POSTS.filter(function(p){return p.user_id===currentUser.id;}):[];
+if(perfSpeciesFilter)mine=mine.filter(function(p){return p.species===perfSpeciesFilter;});
+if(!mine.length){
+el.innerHTML='<div style="width:100%;text-align:center;color:var(--text2);font-size:11px;padding:20px 0">Aucune prise enregistrée pour le moment.</div>';
+if(leg)leg.innerHTML='';
+return;
+}
+var byYear={};
+mine.forEach(function(p){
+var y=new Date(p.ts).getFullYear();
+byYear[y]=(byYear[y]||0)+1;
+});
+var years=Object.keys(byYear).sort();
+var max=Math.max.apply(null,years.map(function(y){return byYear[y];}))||1;
+el.innerHTML=years.map(function(y){
+var v=byYear[y];
+var h=Math.max(4,Math.round(v/max*100));
+return'<div class="chart-col"><div style="font-size:9px;color:var(--amber);font-weight:700;margin-bottom:2px">'+v+'</div><div class="chart-bar" style="height:'+h+'%;background:linear-gradient(180deg,var(--blue),rgba(255,255,255,.1))"></div><div class="chart-lbl">'+y+'</div></div>';
+}).join('');
+var bySpecies={};
+mine.forEach(function(p){bySpecies[p.species]=(bySpecies[p.species]||0)+1;});
+var topSp=Object.keys(bySpecies).sort(function(a,b){return bySpecies[b]-bySpecies[a];}).slice(0,5);
+if(leg)leg.innerHTML=topSp.map(function(s){return'<span>'+s+' <strong style="color:var(--text)">×'+bySpecies[s]+'</strong></span>';}).join('');
+}
+
+(function(){
+var dd=$('perf-species-dd');if(!dd)return;
+var allSpecies=FDB.map(function(f){return f.n;});
+var html='<div class="csel-opt" data-perfspecies="">Toutes les espèces</div>';
+allSpecies.forEach(function(n){html+='<div class="csel-opt" data-perfspecies="'+n+'">'+n+'</div>';});
+dd.innerHTML=html;
+dd.querySelectorAll('[data-perfspecies]').forEach(function(o){
+o.addEventListener('click',function(){
+perfSpeciesFilter=this.dataset.perfspecies;
+$('perf-species-btn').querySelector('span').textContent=this.textContent;
+renderPerfChart();
+});
+});
+})();
+
+function updateUI(){
+if(!currentUser)return;
+var ps=currentUser.pseudo,ini=ps.replace('@','')[0].toUpperCase();
+$('nav-xp').textContent=currentUser.xp||0;
+$('nav-streak').textContent=currentUser.streak||0;
+$('home-pseudo').textContent=ps;
+$('home-xp').textContent=currentUser.xp||0;
+$('home-xpbar').style.width=Math.min((currentUser.xp||0)/800*100,100)+'%';
+$('stat-wins').textContent=currentUser.wins||0;
+$('stat-catches').textContent=currentUser.catches||0;
+$('stat-streak').textContent='🔥'+(currentUser.streak||0);
+$('profile-pseudo').textContent=ps;
+$('pv-pseudo').textContent=ps;
+$('pv-email').textContent=currentUser.email;
+$('pv-since').textContent=currentUser.since;
+var avatarUrl=currentProfile&&currentProfile.avatar_url;
+if(avatarUrl){
+var imgHtml='<img src="'+avatarUrl+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+$('nav-avatar').innerHTML=imgHtml;
+$('card-avatar').innerHTML=imgHtml;
+$('avatar-display').innerHTML=imgHtml;
+}else{
+$('nav-avatar').textContent=ini;
+$('card-avatar').textContent=ini;
+$('avatar-display').textContent=ini;
+}
+var wr=currentUser.catches>0?Math.round((currentUser.wins||0)/currentUser.catches*100)+'%':'—%';
+$('pub-wins').textContent=currentUser.wins||0;
+$('pub-winrate').textContent=wr;
+$('pub-catches').textContent=currentUser.catches||0;
+$('pub-streak').textContent='🔥'+(currentUser.streak||0);
+var bioEl=$('profile-bio-display');
+if(bioEl)bioEl.textContent=currentUser.bio&&currentUser.bio.trim()?currentUser.bio:'Aucune présentation pour le moment.';
+if(bioEl)bioEl.style.fontStyle=currentUser.bio&&currentUser.bio.trim()?'normal':'italic';
+}
+
+function showPage(id){
+if(!guardApp())return;
+document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+var el=$(id);if(el)el.classList.add('active');
+document.querySelectorAll('#bottomnav .tab-btn').forEach(function(b){b.classList.remove('active');});
+var btn=document.querySelector('#bottomnav [data-show="'+id+'"]');
+if(btn)btn.classList.add('active');
+if(id==='profile'){renderGallery();renderInsights();renderPerfChart();}
+window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function enterApp(){
+$('landing').style.display='none';
+$('app').style.display='flex';
+$('app').style.flexDirection='column';
+$('chat-fab').style.display='flex';
+updateUI();loadCatches();
+}
+
+async function loadProfile(userId){
+var r=await sb.from('profiles').select('*').eq('id',userId).single();
+if(r.error||!r.data)return null;
+return r.data;
+}
+
+async function ensureProfile(userId,pseudo){
+var existing=await loadProfile(userId);
+if(existing)return existing;
+var r=await sb.from('profiles').insert({id:userId,pseudo:pseudo,xp:50}).select().single();
+if(r.error){console.error(r.error);return null;}
+return r.data;
+}
+
+function profileToCurrentUser(p,email){
+return{
+id:p.id,
+pseudo:p.pseudo,
+email:email,
+xp:p.xp||0,
+wins:p.wins||0,
+catches:p.catches||0,
+streak:p.streak||0,
+bio:p.bio||'',
+since:new Date(p.created_at).toLocaleDateString('fr-FR')
+};
+}
+
+async function loadCatches(){
+var r=await sb.from('catches').select('*, profiles(pseudo)').order('created_at',{ascending:false}).limit(50);
+if(r.error){console.error(r.error);return;}
+var catchIds=r.data.map(function(c){return c.id;});
+var myLikes={};
+var commentCounts={};
+if(currentUser&&catchIds.length){
+var likesR=await sb.from('likes').select('catch_id').eq('user_id',currentUser.id).in('catch_id',catchIds);
+if(!likesR.error){likesR.data.forEach(function(l){myLikes[l.catch_id]=true;});}
+}
+if(catchIds.length){
+var commentsR=await sb.from('comments').select('catch_id').in('catch_id',catchIds);
+if(!commentsR.error){
+commentsR.data.forEach(function(c){commentCounts[c.catch_id]=(commentCounts[c.catch_id]||0)+1;});
+}
+}
+POSTS=r.data.map(function(c){
+return{
+id:c.id,
+user_id:c.user_id,
+photo:c.photo_url,
+species:c.species,
+weight:c.weight,
+size:c.size_cm,
+technique:c.technique,
+score:c.score,
+eco:c.rarity,
+em:c.emoji,
+loc:c.location,
+desc:c.description,
+likes:c.likes_count||0,
+likedByMe:!!myLikes[c.id],
+commentCount:commentCounts[c.id]||0,
+ts:new Date(c.created_at).getTime(),
+pseudo:c.profiles?c.profiles.pseudo:'Pêcheur'
+};
+});
+renderFeed();
+}
+
+(async function checkSession(){
+var s=await sb.auth.getSession();
+if(s.data.session){
+var user=s.data.session.user;
+var profile=await loadProfile(user.id);
+if(profile){
+currentProfile=profile;
+currentUser=profileToCurrentUser(profile,user.email);
+enterApp();
+}
+}
+})();
+
+document.querySelectorAll('[data-auth]').forEach(function(b){
+b.addEventListener('click',function(){
+var m=this.dataset.auth;
+$('form-login').style.display=m==='login'?'block':'none';
+$('form-reg').style.display=m==='register'?'block':'none';
+document.querySelectorAll('.auth-tab').forEach(function(t){t.classList.toggle('active',t.dataset.auth===m);});
+});
+});
+
+$('pw-toggle').addEventListener('click',function(){
+var i=$('pw-inp');i.type=i.type==='password'?'text':'password';
+this.textContent=i.type==='password'?'Afficher':'Masquer';
+});
+
+$('btn-login').addEventListener('click',async function(){
+var email=$('login-email').value.trim(),pw=$('pw-inp').value.trim();
+if(!email||!email.includes('@')){showAlert('Email invalide.');return;}
+if(!pw||pw.length<6){showAlert('Mot de passe trop court.');return;}
+var r=await sb.auth.signInWithPassword({email:email,password:pw});
+if(r.error){showAlert(r.error.message==='Invalid login credentials'?'Email ou mot de passe incorrect.':r.error.message);return;}
+var profile=await loadProfile(r.data.user.id);
+if(!profile){showAlert('Profil introuvable.');return;}
+currentProfile=profile;
+currentUser=profileToCurrentUser(profile,email);
+enterApp();
+});
+
+$('btn-register').addEventListener('click',async function(){
+if(!$('age-check').checked){showAlert('Confirme avoir 18 ans ou plus.');return;}
+if(!$('cgu-check').checked){showAlert('Accepte les CGU.');return;}
+if(!$('rgpd-check').checked){showAlert('Accepte le RGPD.');return;}
+var pseudo=$('reg-pseudo').value.trim();
+if(!pseudo){showAlert('Choisis un pseudo.');return;}
+var pc=checkText(pseudo);if(!pc.ok){showAlert(pc.reason);return;}
+var email=$('reg-email').value.trim();
+if(!email||!email.includes('@')){showAlert('Email invalide.');return;}
+var pw=$('reg-pw').value.trim();
+if(!pw||pw.length<6){showAlert('Mot de passe trop court.');return;}
+var finalPseudo=pseudo.startsWith('@')?pseudo:'@'+pseudo;
+var r=await sb.auth.signUp({email:email,password:pw});
+if(r.error){showAlert(r.error.message);return;}
+if(!r.data.user){showAlert('Vérifie ton email pour confirmer ton compte.');return;}
+var profile=await ensureProfile(r.data.user.id,finalPseudo);
+if(!profile){showAlert('Erreur lors de la création du profil.');return;}
+currentProfile=profile;
+currentUser=profileToCurrentUser(profile,email);
+enterApp();
+});
+
+$('rules-btn').addEventListener('click',function(){
+var d=$('rules-dd'),a=$('rules-arrow');
+var open=d.style.display==='none'||d.style.display==='';
+a.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+d.style.display=open?'block':'none';
+});
+
+document.querySelectorAll('[data-show]').forEach(function(b){
+b.addEventListener('click',function(){showPage(this.dataset.show);});
+});
+$('logo-home').addEventListener('click',function(){showPage('home');});
+
+document.querySelectorAll('[data-rank]').forEach(function(b){
+b.addEventListener('click',function(){
+document.querySelectorAll('[data-rank]').forEach(function(t){t.classList.remove('active');});
+this.classList.add('active');
+});
+});
+
+document.querySelectorAll('[data-csel]').forEach(function(btn){
+btn.addEventListener('click',function(e){
+e.stopPropagation();
+var dd=this.nextElementSibling;
+var open=dd.classList.contains('open');
+document.querySelectorAll('.csel-dd.open').forEach(function(d){d.classList.remove('open');});
+if(!open)dd.classList.add('open');
+});
+});
+document.addEventListener('click',function(e){
+if(!e.target.closest('.csel-wrap'))document.querySelectorAll('.csel-dd.open').forEach(function(d){d.classList.remove('open');});
+});
+
+var zoneFilter='';
+document.querySelectorAll('[data-zone]').forEach(function(o){
+o.addEventListener('click',function(){
+zoneFilter=this.dataset.zone;
+var btn=this.closest('.csel-dd').previousElementSibling;
+btn.querySelector('span').textContent=this.textContent;
+filterFish($('fish-search').value);
+});
+});
+
+if(speciesDD){
+speciesDD.querySelectorAll('[data-species-idx]').forEach(function(o){
+o.addEventListener('click',function(){
+var f=FDB[parseInt(this.dataset.speciesIdx)];
+curSpecies={name:f.n,mult:f.mult,eco:f.eco,em:f.em};
+$('species-btn').querySelector('span').textContent=f.em+' '+f.n;
+calcPrev();
+});
+});
+}
+
+function calcPrev(){
+var raw=$('w-inp').value.replace(',','.').trim();
+var w=parseFloat(raw);
+if(!curSpecies||isNaN(w)||w<=0){$('sc-prev').style.display='none';return;}
+var score=Math.round(w*curSpecies.mult*20);
+var col=rc(curSpecies.eco);
+$('sc-prev').style.display='block';
+$('sc-val').style.color=col;$('sc-val').textContent=score+' pts';
+$('sc-badge').innerHTML='<span class="badge '+gb(curSpecies.eco)+'">'+rl(curSpecies.eco)+'</span>';
+}
+$('w-inp').addEventListener('input',calcPrev);
+
+var rarFilter='';
+document.querySelectorAll('[data-rar]').forEach(function(b){
+b.addEventListener('click',function(){
+rarFilter=this.dataset.rar;
+document.querySelectorAll('[data-rar]').forEach(function(t){t.classList.remove('active');});
+this.classList.add('active');
+filterFish($('fish-search').value);
+});
+});
+
+function renderFish(list){
+var el=$('fish-list');
+if(!list.length){el.innerHTML='<div style="padding:18px;text-align:center;color:var(--text2)">Aucune espèce trouvée</div>';return;}
+el.innerHTML=list.map(function(f){
+return'<div class="fish-row" data-fish="'+FDB.indexOf(f)+'"><div style="font-size:22px;width:36px;text-align:center">'+f.em+'</div><div style="flex:1"><div style="font-weight:700;font-size:12px">'+f.n+'</div><div style="font-size:10px;color:var(--text2);font-style:italic">'+f.s+'</div></div><span class="badge '+gb(f.eco)+'">'+rl(f.eco)+'</span></div>';
+}).join('');
+el.querySelectorAll('[data-fish]').forEach(function(r){
+r.addEventListener('click',function(){showFishDetail(FDB[parseInt(this.dataset.fish)]);});
+});
+}
+function filterFish(q){
+renderFish(FDB.filter(function(f){
+var mq=!q||f.n.toLowerCase().includes(q.toLowerCase());
+var mz=!zoneFilter||f.z===zoneFilter;var mr=!rarFilter||f.r===rarFilter;
+return mq&&mz&&mr;
+}));
+}
+$('fish-search').addEventListener('input',function(){filterFish(this.value);});
+function showFishDetail(f){
+$('fish-detail').innerHTML='<div class="card" style="margin-top:10px"><div style="font-size:32px">'+f.em+'</div><div style="font-size:15px;font-weight:800">'+f.n+'</div><div style="font-size:11px;color:var(--text2);font-style:italic">'+f.s+'</div><div class="g2" style="margin-top:10px"><div class="card-sm"><div style="font-size:10px;color:var(--text2)">Taille</div><div style="font-weight:700">'+f.t+'</div></div><div class="card-sm"><div style="font-size:10px;color:var(--text2)">Poids</div><div style="font-weight:700">'+f.p+'</div></div></div></div>';
+}
+renderFish(FDB);
+
+$('btn-upload-home').addEventListener('click',openUpload);
+$('btn-upload-home2').addEventListener('click',openUpload);
+$('btn-upload-nav').addEventListener('click',openUpload);
+function openUpload(){if(!guardApp())return;resetUploadPlaceholder();$('upload-modal').classList.add('open');}
+function resetUploadPlaceholder(){
+$('upload-placeholder').innerHTML='<div style="font-size:28px">📷</div><div style="font-weight:600;font-size:13px">Ajouter une photo</div><div style="font-size:11px;color:var(--text2)">JPG, PNG · max 10 Mo</div>';
+}
+$('close-upload').addEventListener('click',closeUpload);
+$('cancel-upload').addEventListener('click',closeUpload);
+function closeUpload(){
+$('upload-modal').classList.remove('open');
+editingCatchId=null;
+$('modal-upload-title').textContent='📸 Nouvelle prise';
+$('submit-catch').textContent='📤 Publier';
+resetSubmitState();
+}
+$('upload-modal').addEventListener('click',function(e){if(e.target===this)closeUpload();});
+
+$('catch-photo-inp').addEventListener('change',async function(){
+if(!this.files||!this.files[0])return;
+var f=this.files[0];var ck=checkPhoto(f);
+if(!ck.ok){showAlert(ck.reason);this.value='';return;}
+$('upload-placeholder').innerHTML='<div style="font-size:24px">⏳</div><div style="font-size:12px;color:var(--text2)">Optimisation de la photo...</div>';
+$('upload-placeholder').style.display='block';
+$('upload-preview').style.display='none';
+var compressed=await compressImage(f,1600,0.82);
+photoFile=compressed;
+var reader=new FileReader();
+reader.onload=function(e){
+photoData=e.target.result;
+$('upload-placeholder').style.display='none';
+$('upload-preview-img').src=photoData;
+$('upload-preview').style.display='block';
+};
+reader.readAsDataURL(compressed);
+});
+
+$('submit-catch').addEventListener('click',async function(){
+if(!guardApp())return;
+var rawW=$('w-inp').value.replace(',','.').trim();
+var w=parseFloat(rawW);
+if(!curSpecies||isNaN(w)||w<=0){showAlert('Espèce et poids requis.');return;}
+var rawS=$('s-inp').value.replace(',','.').trim();
+var sizeCm=rawS?parseFloat(rawS):null;
+if(rawS&&isNaN(sizeCm))sizeCm=null;
+var technique=$('tech-inp').value.trim()||null;
+var desc=$('desc-inp').value||'';
+var dc=checkText(desc);if(!dc.ok){showAlert(dc.reason);return;}
+var loc=$('loc-inp').value||'';
+var score=Math.round(w*curSpecies.mult*20);
+
+$('submit-catch').disabled=true;$('cancel-upload').disabled=true;
+$('upload-loading').style.display='block';
+$('upload-loading-text').textContent=editingCatchId?'Mise à jour en cours...':'Publication en cours...';
+
+var photoUrl=editingCatchId?(POSTS.find(function(x){return x.id===editingCatchId;})||{}).photo:null;
+if(photoFile){
+$('upload-loading-text').textContent='Envoi de la photo...';
+var fileExt=photoFile.name&&photoFile.name.split('.').pop()||'jpg';
+var fileName=currentUser.id+'-'+Date.now()+'.'+fileExt;
+var up=await sb.storage.from('catches').upload(fileName,photoFile);
+if(!up.error){
+var pub=sb.storage.from('catches').getPublicUrl(fileName);
+photoUrl=pub.data.publicUrl;
+}
+}
+$('upload-loading-text').textContent=editingCatchId?'Mise à jour en cours...':'Publication en cours...';
+
+if(editingCatchId){
+var upd=await sb.from('catches').update({
+species:curSpecies.name,weight:w,size_cm:sizeCm,technique:technique,score:score,rarity:curSpecies.eco,emoji:curSpecies.em,
+location:loc,description:desc,photo_url:photoUrl,is_trophy:curSpecies.eco==='tro'
+}).eq('id',editingCatchId);
+if(upd.error){showAlert('Erreur lors de la modification.');console.error(upd.error);resetSubmitState();return;}
+closeUpload();await loadCatches();renderGallery();
+}else{
+var ins=await sb.from('catches').insert({
+user_id:currentUser.id,species:curSpecies.name,weight:w,size_cm:sizeCm,technique:technique,score:score,
+rarity:curSpecies.eco,emoji:curSpecies.em,location:loc,description:desc,
+photo_url:photoUrl,is_trophy:curSpecies.eco==='tro'
+}).select().single();
+if(ins.error){showAlert('Erreur lors de la publication.');console.error(ins.error);resetSubmitState();return;}
+var newCatches=(currentProfile.catches||0)+1;
+var newXp=(currentProfile.xp||0)+xpu(curSpecies.eco);
+await sb.from('profiles').update({catches:newCatches,xp:newXp}).eq('id',currentUser.id);
+currentProfile.catches=newCatches;currentProfile.xp=newXp;
+currentUser.catches=newCatches;currentUser.xp=newXp;
+updateUI();
+lastCatch={photo:photoUrl,species:curSpecies.name,weight:w,score:score,eco:curSpecies.eco,em:curSpecies.em};
+closeUpload();showPage('feed');await loadCatches();
+}
+
+curSpecies=null;photoFile=null;photoData=null;editingCatchId=null;
+$('w-inp').value='';$('s-inp').value='';$('loc-inp').value='';$('desc-inp').value='';$('tech-inp').value='';
+$('sc-prev').style.display='none';
+$('species-btn').querySelector('span').textContent='Choisir une espèce...';
+resetUploadPlaceholder();
+$('upload-preview').style.display='none';
+$('modal-upload-title').textContent='📸 Nouvelle prise';
+$('submit-catch').textContent='📤 Publier';
+resetSubmitState();
+});
+
+function resetSubmitState(){
+$('submit-catch').disabled=false;$('cancel-upload').disabled=false;
+$('upload-loading').style.display='none';
+}
+
+$('btn-battle-home').addEventListener('click',openBattle);
+function openBattle(){if(!guardApp())return;updateMyCard();$('battle-modal').classList.add('open');}
+$('close-battle').addEventListener('click',function(){$('battle-modal').classList.remove('open');});
+$('battle-modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+
+function updateMyCard(){
+$('my-card-name').textContent=currentUser?currentUser.pseudo:'Moi';
+if(!lastCatch){$('my-lbl').textContent='Aucune prise';$('my-sp').textContent='Publie une prise';$('my-score').textContent='— pts';return;}
+if(lastCatch.photo){$('my-ph').style.display='none';$('my-img').style.display='block';$('my-img').src=lastCatch.photo;}
+else{$('my-ph').style.display='flex';$('my-ph').textContent=lastCatch.em;$('my-img').style.display='none';}
+$('my-lbl').textContent=lastCatch.species+' · '+lastCatch.weight+' kg';
+$('my-sp').textContent=lastCatch.species;
+$('my-score').textContent=lastCatch.score+' pts';
+$('my-badge').textContent=rl(lastCatch.eco);
+$('my-badge').className='badge '+gb(lastCatch.eco)+' tcg-bsm';
+}
+
+$('launch-duel').addEventListener('click',function(){
+var myS=lastCatch?lastCatch.score:0;
+var v=(Math.random()-.5)*60;
+var win=myS>0&&(myS+v)>200;
+if(win&&currentUser){currentUser.wins=(currentUser.wins||0)+1;currentUser.xp=(currentUser.xp||0)+100;currentUser.streak=(currentUser.streak||0)+1;updateUI();}
+var res=$('battle-res');res.style.display='block';
+res.innerHTML='<div class="res-box '+(win?'rw':'rl')+'"><div style="font-size:34px">'+(win?'🏆':'😤')+'</div><div style="font-size:20px;font-weight:800;color:'+(win?'var(--green)':'var(--red)')+'">'+(myS===0?'Publie une prise !':win?'Victoire !':'Défaite')+'</div><button class="btn btn-g" style="width:100%;justify-content:center;margin-top:10px" id="close-battle-res">Fermer</button></div>';
+$('close-battle-res').addEventListener('click',function(){$('battle-res').style.display='none';});
+});
+
+$('edit-toggle-btn').addEventListener('click',function(){
+var v=$('profile-view'),e=$('profile-edit');
+var ed=e.style.display==='none'||e.style.display==='';
+v.style.display=ed?'none':'block';e.style.display=ed?'block':'none';
+this.textContent=ed?'✕ Annuler':'✏️ Modifier';
+if(ed&&currentUser){
+$('edit-pseudo').value=currentUser.pseudo;
+$('edit-bio').value=currentUser.bio||'';
+}
+});
+$('btn-save-profile').addEventListener('click',async function(){
+var np=$('edit-pseudo').value.trim();
+var nb=$('edit-bio').value.trim();
+if(!currentUser)return;
+var updates={};
+if(np){updates.pseudo=np.startsWith('@')?np:'@'+np;}
+updates.bio=nb;
+var upd=await sb.from('profiles').update(updates).eq('id',currentUser.id);
+if(upd.error){showAlert('Erreur lors de la sauvegarde.');console.error(upd.error);return;}
+if(updates.pseudo){currentUser.pseudo=updates.pseudo;currentProfile.pseudo=updates.pseudo;}
+currentUser.bio=nb;currentProfile.bio=nb;
+updateUI();
+$('profile-view').style.display='block';$('profile-edit').style.display='none';
+$('edit-toggle-btn').textContent='✏️ Modifier';
+});
+$('btn-logout').addEventListener('click',async function(){
+await sb.auth.signOut();
+currentUser=null;currentProfile=null;POSTS=[];lastCatch=null;photoData=null;photoFile=null;
+$('app').style.display='none';$('chat-fab').style.display='none';$('landing').style.display='flex';
+$('login-email').value='';$('pw-inp').value='';
+});
+$('avatar-input').addEventListener('change',async function(){
+if(!this.files||!this.files[0])return;
+var f=this.files[0];
+var ck=checkPhoto(f);if(!ck.ok){showAlert(ck.reason);return;}
+if(!currentUser){showAlert('Connecte-toi pour changer ta photo.');return;}
+var fileExt=f.name.split('.').pop();
+var fileName=currentUser.id+'-'+Date.now()+'.'+fileExt;
+var up=await sb.storage.from('avatars').upload(fileName,f,{upsert:true});
+if(up.error){showAlert('Erreur upload photo.');console.error(up.error);return;}
+var pub=sb.storage.from('avatars').getPublicUrl(fileName);
+var avatarUrl=pub.data.publicUrl;
+var upd=await sb.from('profiles').update({avatar_url:avatarUrl}).eq('id',currentUser.id);
+if(upd.error){showAlert('Erreur sauvegarde profil.');console.error(upd.error);return;}
+currentProfile.avatar_url=avatarUrl;
+['avatar-display','card-avatar'].forEach(function(id){$(id).innerHTML='<img src="'+avatarUrl+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';});
+$('nav-avatar').innerHTML='<img src="'+avatarUrl+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+});
+
+var chatOpen=false;
+$('chat-fab-btn').addEventListener('click',function(){chatOpen=!chatOpen;$('chat-panel').classList.toggle('open',chatOpen);});
+$('close-chat').addEventListener('click',function(){chatOpen=false;$('chat-panel').classList.remove('open');});
+function getReply(msg){
+var m=msg.toLowerCase();
+if(m.includes('score'))return'Score = poids × multiplicateur × 20. Max : Thon rouge ×6.';
+if(m.includes('stat'))return POSTS.length>0?'Tu as publié '+POSTS.length+' prise(s).':'Publie ta première prise !';
+return'Publie des prises pour des conseils personnalisés !';
+}
+function sendChat(){
+var inp=$('chat-inp');var msg=inp.value.trim();if(!msg)return;
+var box=$('chat-msgs');box.innerHTML+='<div class="cmsg-u">'+msg+'</div>';
+inp.value='';box.scrollTop=9999;
+setTimeout(function(){box.innerHTML+='<div class="cmsg-b">'+getReply(msg)+'</div>';box.scrollTop=9999;},600);
+}
+$('send-chat').addEventListener('click',sendChat);
+$('chat-inp').addEventListener('keydown',function(e){if(e.key==='Enter')sendChat();});
+document.querySelectorAll('.cq').forEach(function(b){
+b.addEventListener('click',function(){$('chat-inp').value=this.dataset.q;sendChat();});
+});
+
+$('photo-modal').addEventListener('click',function(){this.classList.remove('open');});
+$('photo-modal-inner').addEventListener('click',function(e){e.stopPropagation();});
+
+var LC={
+mentions:{t:'Mentions légales',b:'<p><strong>BattleFish</strong> — projet personnel en phase de test bêta</p><p style="margin-top:6px"><strong>Responsable :</strong> Fabien Haller — contact.battlefish@gmail.com</p><p style="margin-top:4px"><strong>Hébergement :</strong> Vercel Inc.</p>'},
+cgu:{t:'CGU',b:'<p>BattleFish est réservé aux personnes majeures (+18 ans). Tout contenu inapproprié entraîne une suspension immédiate. Les données ne sont jamais vendues. Droit applicable : français.</p>'},
+confidentialite:{t:'Confidentialité',b:'<p><strong>Responsable :</strong> Fabien Haller — contact.battlefish@gmail.com</p><p style="margin-top:8px">Données collectées : email, pseudo, photos de prises, données de jeu. Finalité : fonctionnement de la plateforme. Suppression sous 30 jours après demande.</p>'},
+cookies:{t:'Cookies',b:'<p>BattleFish utilise uniquement des cookies techniques strictement nécessaires (session, authentification). Aucun cookie publicitaire ou de tracking tiers.</p>'},
+rgpd:{t:'RGPD',b:'<p>Droits : accès, rectification, effacement, portabilité, opposition. Contact : contact.battlefish@gmail.com · Délai : 30 jours. Recours : cnil.fr</p>'},
+dpo:{t:'DPO',b:'<p><strong>Fabien Haller</strong> — contact.battlefish@gmail.com · Délai de réponse : 30 jours.</p>'},
+suppression:{t:'Supprimer mon compte',b:'<p>Envoyez un email à <strong>contact.battlefish@gmail.com</strong> avec l\'objet "Suppression de compte BattleFish" et votre pseudo. Délai : 30 jours. <strong>Action irréversible.</strong></p>'},
+signalement:{t:'Signaler un contenu',b:'<p>Via le bouton 🚩 sur les publications ou par email à contact.battlefish@gmail.com. Traitement sous 48h.</p>'}
+};
+document.querySelectorAll('[data-legal]').forEach(function(b){
+b.addEventListener('click',function(){
+var c=LC[this.dataset.legal];if(!c)return;
+$('legal-title').textContent=c.t;
+$('legal-body').innerHTML=c.b;
+$('legal-modal').classList.add('open');
+});
+});
+$('close-legal').addEventListener('click',function(){$('legal-modal').classList.remove('open');});
+$('legal-modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+$('legal-modal-box').addEventListener('click',function(e){e.stopPropagation();});
+
+renderPerfChart();
+$('app').style.display='none';
+$('chat-fab').style.display='none';
+
+});
+</script>
+</body>
+</html>
